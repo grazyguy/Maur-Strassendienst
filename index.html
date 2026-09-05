@@ -1,260 +1,461 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#111827">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<meta name="viewport"
+      content="width=device-width,
+               initial-scale=1.0,
+               viewport-fit=cover">
+
+<meta name="theme-color"
+      content="#111827">
+
+<meta name="apple-mobile-web-app-capable"
+      content="yes">
+
+<meta name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent">
 
 <title>Maur Strassendienst</title>
 
-<link rel="manifest" href="./manifest.json">
-<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.7.0/dist/maplibre-gl.css">
+<link rel="manifest"
+      href="./manifest.json">
+
+<link rel="stylesheet"
+      href="https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.css">
 
 <style>
+
 * {
     box-sizing: border-box;
 }
 
 html,
 body {
+
     margin: 0;
     padding: 0;
+
     width: 100%;
     height: 100%;
+
     overflow: hidden;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-    background: #111827;
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    background: #eef2f7;
 }
 
 #app {
+
     position: relative;
+
     width: 100%;
     height: 100%;
 }
 
 #map {
+
     position: absolute;
+
     inset: 0;
 }
 
+
+/* =========================
+   HEADER
+========================= */
+
 header {
+
     position: absolute;
+
     top: 0;
     left: 0;
     right: 0;
+
     z-index: 1000;
+
     padding: 12px;
-    padding-top: calc(12px + env(safe-area-inset-top));
-    background: rgba(17, 24, 39, 0.95);
+
+    padding-top:
+        calc(12px + env(safe-area-inset-top));
+
+    background:
+        rgba(17,24,39,.96);
+
     color: white;
+
+    box-shadow:
+        0 2px 10px rgba(0,0,0,.25);
 }
 
 .header-top {
+
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 }
 
 .logo {
-    font-size: 20px;
+
+    font-size: 21px;
+
     font-weight: 800;
+
+    letter-spacing: .5px;
 }
 
 .subtitle {
+
     font-size: 12px;
-    opacity: 0.75;
+
+    opacity: .75;
 }
 
 .status {
-    font-size: 12px;
+
     padding: 6px 9px;
+
     border-radius: 20px;
+
+    font-size: 12px;
+
     background: #166534;
 }
 
+
+/* =========================
+   SEARCH
+========================= */
+
 .search {
+
     display: flex;
+
     gap: 7px;
+
     margin-top: 10px;
 }
 
 .search input {
+
     flex: 1;
+
     min-width: 0;
+
     border: 0;
+
     border-radius: 10px;
+
     padding: 12px;
+
     font-size: 15px;
+
     outline: none;
 }
 
 .search button {
+
     border: 0;
+
     border-radius: 10px;
-    padding: 11px 13px;
+
+    padding: 11px 14px;
+
     background: white;
+
     color: #111827;
+
     font-weight: 700;
 }
 
+
+/* =========================
+   BOTTOM BAR
+========================= */
+
 .bottom-bar {
+
     position: absolute;
+
     left: 10px;
     right: 10px;
-    bottom: calc(10px + env(safe-area-inset-bottom));
+
+    bottom:
+        calc(10px + env(safe-area-inset-bottom));
+
     z-index: 1000;
+
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+
+    grid-template-columns:
+        repeat(4,1fr);
+
     gap: 7px;
 }
 
 .bottom-bar button {
+
     border: 0;
-    border-radius: 10px;
-    background: rgba(17, 24, 39, 0.95);
+
+    border-radius: 11px;
+
+    background:
+        rgba(17,24,39,.96);
+
     color: white;
-    padding: 13px 5px;
+
+    padding: 13px 4px;
+
     font-size: 14px;
+
     font-weight: 700;
+
+    box-shadow:
+        0 3px 10px rgba(0,0,0,.25);
 }
 
+
+/* =========================
+   PANELS
+========================= */
+
 .panel {
+
     display: none;
+
     position: absolute;
+
     left: 10px;
     right: 10px;
-    bottom: calc(75px + env(safe-area-inset-bottom));
+
+    bottom:
+        calc(76px + env(safe-area-inset-bottom));
+
     z-index: 2000;
+
     background: white;
+
     border-radius: 16px;
+
     padding: 16px;
-    box-shadow: 0 8px 30px rgba(0,0,0,.35);
+
+    box-shadow:
+        0 8px 30px rgba(0,0,0,.35);
+
     max-height: 70vh;
+
     overflow-y: auto;
 }
 
 .panel.active {
+
     display: block;
 }
 
 .panel h2 {
+
     margin: 0 0 12px;
+
     font-size: 19px;
 }
 
 .panel-row {
+
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
+
     padding: 10px 0;
-    border-bottom: 1px solid #e5e7eb;
+
+    border-bottom:
+        1px solid #e5e7eb;
 }
 
 .panel-row:last-child {
+
     border-bottom: 0;
 }
 
 .panel input[type="checkbox"] {
+
     width: 20px;
     height: 20px;
 }
 
 .panel button {
+
     width: 100%;
+
     margin-top: 10px;
+
     border: 0;
+
     border-radius: 10px;
+
     padding: 12px;
+
     font-weight: 700;
 }
 
-.close {
-    background: #111827;
-    color: white;
-}
-
 .blue {
+
     background: #2563eb;
+
     color: white;
 }
 
-.red {
-    background: #dc2626;
+.close {
+
+    background: #111827;
+
     color: white;
 }
 
-.info-box {
-    background: #f3f4f6;
-    border-radius: 10px;
-    padding: 10px;
-    margin-top: 10px;
-    font-size: 14px;
-}
+
+/* =========================
+   TOAST
+========================= */
 
 .toast {
+
     display: none;
+
     position: absolute;
+
     left: 50%;
-    bottom: calc(85px + env(safe-area-inset-bottom));
-    transform: translateX(-50%);
+
+    bottom:
+        calc(90px + env(safe-area-inset-bottom));
+
+    transform:
+        translateX(-50%);
+
     z-index: 3000;
+
     background: #111827;
+
     color: white;
+
     padding: 10px 15px;
+
     border-radius: 20px;
+
     font-size: 13px;
+
     white-space: nowrap;
+
+    box-shadow:
+        0 4px 15px rgba(0,0,0,.3);
 }
 
-.maplibregl-ctrl-top-right {
-    top: 135px;
-}
+
+/* =========================
+   GPS MARKER
+========================= */
 
 .gps-marker {
+
     width: 22px;
     height: 22px;
+
     background: #2563eb;
+
     border: 4px solid white;
+
     border-radius: 50%;
-    box-shadow: 0 2px 8px rgba(0,0,0,.4);
+
+    box-shadow:
+        0 2px 8px rgba(0,0,0,.5);
 }
 
+
+/* =========================
+   OWN MARKER
+========================= */
+
 .own-marker {
-    width: 30px;
-    height: 30px;
+
+    width: 31px;
+    height: 31px;
+
     background: #111827;
+
     color: white;
+
     border-radius: 50%;
+
     display: flex;
+
     align-items: center;
+
     justify-content: center;
+
     border: 3px solid white;
-    box-shadow: 0 2px 8px rgba(0,0,0,.4);
-    font-size: 14px;
+
+    box-shadow:
+        0 2px 8px rgba(0,0,0,.4);
 }
+
+
+/* =========================
+   MAP CONTROLS
+========================= */
+
+.maplibregl-ctrl-top-right {
+
+    top: 145px;
+}
+
 </style>
+
 </head>
+
 
 <body>
 
+
 <div id="app">
+
 
 <header>
 
     <div class="header-top">
 
         <div>
-            <div class="logo">MAUR</div>
-            <div class="subtitle">Strassendienst</div>
+
+            <div class="logo">
+                MAUR
+            </div>
+
+            <div class="subtitle">
+                Strassendienst
+            </div>
+
         </div>
 
-        <div id="connectionStatus" class="status">
+
+        <div id="connectionStatus"
+             class="status">
+
             ● Online
+
         </div>
 
     </div>
+
 
     <div class="search">
 
@@ -272,389 +473,1024 @@ header {
 
 </header>
 
+
 <div id="map"></div>
 
 
-<!-- EBENEN -->
+<!-- =====================
+     EBENEN
+===================== -->
 
-<div id="layersPanel" class="panel">
+<div id="layersPanel"
+     class="panel">
 
-    <h2>Ebenen</h2>
+    <h2>
+        Ebenen
+    </h2>
 
-    <div class="panel-row">
-        <span>Strassen</span>
-        <input id="roadsCheck" type="checkbox" checked>
-    </div>
-
-    <div class="panel-row">
-        <span>Abfallkübel</span>
-        <input id="binsCheck" type="checkbox">
-    </div>
 
     <div class="panel-row">
-        <span>Winterdienst</span>
-        <input id="winterCheck" type="checkbox">
+
+        <span>
+            Strassen
+        </span>
+
+        <input
+            id="roadsCheck"
+            type="checkbox"
+            checked
+        >
+
     </div>
+
 
     <div class="panel-row">
-        <span>Sonderpunkte</span>
-        <input id="specialCheck" type="checkbox">
+
+        <span>
+            Gebäude
+        </span>
+
+        <input
+            id="buildingsCheck"
+            type="checkbox"
+            checked
+        >
+
     </div>
+
 
     <div class="panel-row">
-        <span>Gemeindeliegenschaften</span>
-        <input id="propertiesCheck" type="checkbox">
+
+        <span>
+            Landschaft
+        </span>
+
+        <input
+            id="landCheck"
+            type="checkbox"
+            checked
+        >
+
     </div>
+
 
     <div class="panel-row">
-        <span>Eigene Punkte</span>
-        <input id="ownCheck" type="checkbox" checked>
+
+        <span>
+            Wasser
+        </span>
+
+        <input
+            id="waterCheck"
+            type="checkbox"
+            checked
+        >
+
     </div>
 
-    <button class="close" onclick="closePanels()">
+
+    <div class="panel-row">
+
+        <span>
+            Eigene Punkte
+        </span>
+
+        <input
+            id="ownCheck"
+            type="checkbox"
+            checked
+        >
+
+    </div>
+
+
+    <button
+        class="close"
+        onclick="closePanels()">
+
         Schliessen
+
     </button>
 
 </div>
 
 
-<!-- NAVIGATION -->
+<!-- =====================
+     NAVIGATION
+===================== -->
 
-<div id="navPanel" class="panel">
+<div id="navPanel"
+     class="panel">
 
-    <h2>Navigation</h2>
+    <h2>
+        Navigation
+    </h2>
 
-    <div class="info-box">
 
+    <p>
         <b>Ziel:</b>
+    </p>
 
-        <div id="destinationText">
-            Noch kein Ziel ausgewählt.
-        </div>
+
+    <div id="destinationText">
+
+        Noch kein Ziel ausgewählt.
 
     </div>
 
-    <button class="blue" onclick="useCurrentLocationAsStart()">
+
+    <button
+        class="blue"
+        onclick="useCurrentLocationAsStart()">
+
         📍 Aktuellen Standort verwenden
+
     </button>
 
-    <button class="blue" onclick="openGoogleMaps()">
+
+    <button
+        class="blue"
+        onclick="openGoogleMaps()">
+
         🧭 Navigation starten
+
     </button>
 
-    <button class="close" onclick="closePanels()">
+
+    <button
+        class="close"
+        onclick="closePanels()">
+
         Schliessen
+
     </button>
 
 </div>
 
 
-<!-- EIGENER PUNKT -->
+<!-- =====================
+     EIGENER PUNKT
+===================== -->
 
-<div id="pointPanel" class="panel">
+<div id="pointPanel"
+     class="panel">
 
-    <h2>Eigenen Punkt setzen</h2>
+    <h2>
+        Eigenen Punkt setzen
+    </h2>
 
-    <div class="info-box">
-        Tippe anschliessend auf der Karte auf die gewünschte Stelle.
-    </div>
 
-    <button class="blue" onclick="startAddPoint()">
+    <p>
+
+        Setze einen Punkt direkt
+        auf der Karte.
+
+    </p>
+
+
+    <button
+        class="blue"
+        onclick="startAddPoint()">
+
         📍 Punkt auf Karte setzen
+
     </button>
 
-    <button class="close" onclick="closePanels()">
+
+    <button
+        class="close"
+        onclick="closePanels()">
+
         Abbrechen
+
     </button>
 
 </div>
 
 
-<div id="toast" class="toast"></div>
+<div id="toast"
+     class="toast">
+</div>
 
 
-<!-- UNTERE NAVIGATION -->
+<!-- =====================
+     BOTTOM BAR
+===================== -->
 
 <div class="bottom-bar">
 
     <button onclick="goToLocation()">
-        📍<br>Standort
+
+        📍<br>
+        Standort
+
     </button>
+
 
     <button onclick="openLayers()">
-        ☰<br>Ebenen
+
+        ☰<br>
+        Ebenen
+
     </button>
+
 
     <button onclick="openNavigation()">
-        🧭<br>Navi
+
+        🧭<br>
+        Navi
+
     </button>
+
 
     <button onclick="openPointPanel()">
-        ➕<br>Punkt
+
+        ➕<br>
+        Punkt
+
     </button>
 
 </div>
 
+
 </div>
 
 
-<script src="https://unpkg.com/pmtiles@4.5.0/dist/pmtiles.js"></script>
+<!-- =========================
+     LIBRARIES
+========================= -->
 
-<script type="module">
+<script
+    src="https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.js">
+</script>
 
-import * as maplibregl
-    from "https://unpkg.com/maplibre-gl@6.7.0/dist/maplibre-gl.mjs";
+<script
+    src="https://unpkg.com/pmtiles@4.5.0/dist/pmtiles.js">
+</script>
 
 
-/* ==========================================
+<script>
+
+
+/* =========================
    PMTILES
-========================================== */
+========================= */
 
-const protocol = new pmtiles.Protocol();
+const protocol =
+    new pmtiles.Protocol();
 
 maplibregl.addProtocol(
     "pmtiles",
     protocol.tile
 );
 
+
 const PMTILES_URL =
     "./maur.pmtiles";
 
-const p =
-    new pmtiles.PMTiles(PMTILES_URL);
 
-protocol.add(p);
+const pmtilesArchive =
+    new pmtiles.PMTiles(
+        PMTILES_URL
+    );
 
 
-/* ==========================================
-   KARTE
-========================================== */
+protocol.add(
+    pmtilesArchive
+);
+
+
+/* =========================
+   MAP
+========================= */
 
 let map;
 
-p.getHeader().then(header => {
 
-    map = new maplibregl.Map({
+pmtilesArchive
+.getHeader()
+.then(header => {
 
-        container: "map",
 
-        center: [
-            header.centerLon || 8.667,
-            header.centerLat || 47.337
-        ],
+    const centerLon =
+        header.centerLon ||
+        8.667;
 
-        zoom: 13,
 
-        minZoom: 10,
+    const centerLat =
+        header.centerLat ||
+        47.337;
 
-        maxZoom: 19,
 
-        style: {
+    map =
+        new maplibregl.Map({
 
-            version: 8,
+            container: "map",
 
-            sources: {
+            center: [
+                centerLon,
+                centerLat
+            ],
 
-                maur: {
+            zoom: 13,
 
-                    type: "vector",
+            minZoom: 8,
 
-                    url:
-                        "pmtiles://" +
-                        PMTILES_URL,
+            maxZoom: 19,
 
-                    attribution:
-                        "© OpenStreetMap contributors"
 
-                }
+            style: {
 
-            },
+                version: 8,
 
-            layers: [
 
-                /* Wasser */
+                /* Schrift */
 
-                {
-                    id: "water",
-                    type: "fill",
-                    source: "maur",
-                    "source-layer": "water",
-                    paint: {
-                        "fill-color": "#9ecae1"
+                glyphs:
+                    "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
+
+
+                sources: {
+
+                    maur: {
+
+                        type: "vector",
+
+                        url:
+                            "pmtiles://" +
+                            PMTILES_URL,
+
+                        attribution:
+                            "© OpenStreetMap contributors"
+
                     }
+
                 },
 
 
-                /* Land */
+                layers: [
 
-                {
-                    id: "landuse",
-                    type: "fill",
-                    source: "maur",
-                    "source-layer": "landuse",
-                    paint: {
-                        "fill-color": "#e5e7eb",
-                        "fill-opacity": 0.55
+
+                    /* =================
+                       HINTERGRUND
+                    ================= */
+
+                    {
+
+                        id: "background",
+
+                        type: "background",
+
+                        paint: {
+
+                            "background-color":
+                                "#f1f3f5"
+
+                        }
+
+                    },
+
+
+                    /* =================
+                       LAND
+                    ================= */
+
+                    {
+
+                        id: "land",
+
+                        type: "fill",
+
+                        source: "maur",
+
+                        "source-layer":
+                            "land",
+
+                        paint: {
+
+                            "fill-color":
+
+                                [
+
+                                    "match",
+
+                                    [
+                                        "get",
+                                        "kind"
+                                    ],
+
+                                    "forest",
+                                    "#c8dfc0",
+
+                                    "grass",
+                                    "#dcebd4",
+
+                                    "meadow",
+                                    "#e2efd7",
+
+                                    "orchard",
+                                    "#d7e7c5",
+
+                                    "vineyard",
+                                    "#dce6c5",
+
+                                    "#e7eadf"
+
+                                ]
+
+                        }
+
+                    },
+
+
+                    /* =================
+                       SITES
+                    ================= */
+
+                    {
+
+                        id: "sites",
+
+                        type: "fill",
+
+                        source: "maur",
+
+                        "source-layer":
+                            "sites",
+
+                        paint: {
+
+                            "fill-color":
+                                "#e3e8dc",
+
+                            "fill-opacity":
+                                0.75
+
+                        }
+
+                    },
+
+
+                    /* =================
+                       WASSER
+                    ================= */
+
+                    {
+
+                        id: "water",
+
+                        type: "fill",
+
+                        source: "maur",
+
+                        "source-layer":
+                            "water_polygons",
+
+                        paint: {
+
+                            "fill-color":
+                                "#9ecae1"
+
+                        }
+
+                    },
+
+
+                    /* =================
+                       WASSERLINIEN
+                    ================= */
+
+                    {
+
+                        id: "water-lines",
+
+                        type: "line",
+
+                        source: "maur",
+
+                        "source-layer":
+                            "water_lines",
+
+                        paint: {
+
+                            "line-color":
+                                "#78aeda",
+
+                            "line-width":
+                                1.5
+
+                        }
+
+                    },
+
+
+                    /* =================
+                       STRASSEN FLÄCHEN
+                    ================= */
+
+                    {
+
+                        id: "street-polygons",
+
+                        type: "fill",
+
+                        source: "maur",
+
+                        "source-layer":
+                            "street_polygons",
+
+                        paint: {
+
+                            "fill-color":
+                                "#eeeeee"
+
+                        }
+
+                    },
+
+
+                    /* =================
+                       STRASSEN AUSSEN
+                    ================= */
+
+                    {
+
+                        id: "streets-casing",
+
+                        type: "line",
+
+                        source: "maur",
+
+                        "source-layer":
+                            "streets",
+
+                        paint: {
+
+                            "line-color":
+                                "#b5b5b5",
+
+                            "line-width":
+
+                                [
+
+                                    "interpolate",
+
+                                    ["linear"],
+                                    ["zoom"],
+
+                                    8,
+                                    0.5,
+
+                                    12,
+                                    1.2,
+
+                                    15,
+                                    2.5,
+
+                                    18,
+                                    7
+
+                                ]
+
+                        }
+
+                    },
+
+
+                    /* =================
+                       STRASSEN INNEN
+                    ================= */
+
+                    {
+
+                        id: "streets",
+
+                        type: "line",
+
+                        source: "maur",
+
+                        "source-layer":
+                            "streets",
+
+                        paint: {
+
+                            "line-color":
+
+                                [
+
+                                    "match",
+
+                                    [
+                                        "get",
+                                        "kind"
+                                    ],
+
+                                    "motorway",
+                                    "#f2b35d",
+
+                                    "trunk",
+                                    "#f2b35d",
+
+                                    "primary",
+                                    "#f5c76a",
+
+                                    "secondary",
+                                    "#ffffff",
+
+                                    "tertiary",
+                                    "#ffffff",
+
+                                    "residential",
+                                    "#ffffff",
+
+                                    "unclassified",
+                                    "#ffffff",
+
+                                    "service",
+                                    "#eeeeee",
+
+                                    "living_street",
+                                    "#eeeeee",
+
+                                    "pedestrian",
+                                    "#e8e8e8",
+
+                                    "track",
+                                    "#d8c6a5",
+
+                                    "footway",
+                                    "#c9c9c9",
+
+                                    "path",
+                                    "#c9c9c9",
+
+                                    "cycleway",
+                                    "#b8c9d8",
+
+                                    "#ffffff"
+
+                                ],
+
+
+                            "line-width":
+
+                                [
+
+                                    "interpolate",
+
+                                    ["linear"],
+                                    ["zoom"],
+
+                                    8,
+                                    0.4,
+
+                                    12,
+                                    1,
+
+                                    14,
+                                    2,
+
+                                    16,
+                                    4,
+
+                                    18,
+                                    8
+
+                                ]
+
+                        }
+
+                    },
+
+
+                    /* =================
+                       GEBÄUDE
+                    ================= */
+
+                    {
+
+                        id: "buildings",
+
+                        type: "fill",
+
+                        source: "maur",
+
+                        "source-layer":
+                            "buildings",
+
+                        paint: {
+
+                            "fill-color":
+                                "#d6d6d6",
+
+                            "fill-opacity":
+                                0.85
+
+                        }
+
+                    },
+
+
+                    /* =================
+                       STRASSENNAMEN
+                    ================= */
+
+                    {
+
+                        id: "street-labels",
+
+                        type: "symbol",
+
+                        source: "maur",
+
+                        "source-layer":
+                            "street_labels",
+
+                        layout: {
+
+                            "text-field":
+
+                                [
+
+                                    "coalesce",
+
+                                    [
+                                        "get",
+                                        "name_de"
+                                    ],
+
+                                    [
+                                        "get",
+                                        "name"
+                                    ],
+
+                                    ""
+
+                                ],
+
+                            "text-size":
+
+                                [
+
+                                    "interpolate",
+
+                                    ["linear"],
+                                    ["zoom"],
+
+                                    12,
+                                    9,
+
+                                    16,
+                                    12
+
+                                ],
+
+                            "symbol-placement":
+                                "line"
+
+                        },
+
+                        paint: {
+
+                            "text-color":
+                                "#555555",
+
+                            "text-halo-color":
+                                "#ffffff",
+
+                            "text-halo-width":
+                                1
+
+                        }
+
+                    },
+
+
+                    /* =================
+                       WASSERNAMEN
+                    ================= */
+
+                    {
+
+                        id: "water-labels",
+
+                        type: "symbol",
+
+                        source: "maur",
+
+                        "source-layer":
+                            "water_polygons_labels",
+
+                        layout: {
+
+                            "text-field":
+
+                                [
+
+                                    "coalesce",
+
+                                    [
+                                        "get",
+                                        "name_de"
+                                    ],
+
+                                    [
+                                        "get",
+                                        "name"
+                                    ]
+
+                                ],
+
+                            "text-size": 12
+
+                        },
+
+                        paint: {
+
+                            "text-color":
+                                "#36759e",
+
+                            "text-halo-color":
+                                "#ffffff",
+
+                            "text-halo-width":
+                                1
+
+                        }
+
+                    },
+
+
+                    /* =================
+                       ADRESSEN
+                    ================= */
+
+                    {
+
+                        id: "addresses",
+
+                        type: "symbol",
+
+                        source: "maur",
+
+                        "source-layer":
+                            "addresses",
+
+                        minzoom: 16,
+
+                        layout: {
+
+                            "text-field":
+
+                                [
+
+                                    "coalesce",
+
+                                    [
+                                        "get",
+                                        "housenumber"
+                                    ],
+
+                                    ""
+
+                                ],
+
+                            "text-size": 10
+
+                        },
+
+                        paint: {
+
+                            "text-color":
+                                "#555555",
+
+                            "text-halo-color":
+                                "#ffffff",
+
+                            "text-halo-width":
+                                1
+
+                        }
+
                     }
-                },
+
+                ]
+
+            }
+
+        });
 
 
-                /* Gebäude */
+    /* =========================
+       CONTROLS
+    ========================= */
 
-                {
-                    id: "buildings",
-                    type: "fill",
-                    source: "maur",
-                    "source-layer": "buildings",
-                    paint: {
-                        "fill-color": "#d1d5db",
-                        "fill-opacity": 0.8
-                    }
-                },
+    map.addControl(
 
+        new maplibregl.NavigationControl(),
 
-                /* Strassen */
+        "top-right"
 
-                {
-                    id: "roads",
-
-                    type: "line",
-
-                    source: "maur",
-
-                    "source-layer": "transportation",
-
-                    paint: {
-
-                        "line-color": "#ffffff",
-
-                        "line-width": [
-                            "interpolate",
-                            ["linear"],
-                            ["zoom"],
-                            10, 0.5,
-                            13, 2,
-                            16, 5,
-                            19, 9
-                        ]
-
-                    }
-                },
+    );
 
 
-                /* Grössere Strassen */
+    /* =========================
+       KLICK AUF KARTE
+    ========================= */
 
-                {
-                    id: "major-roads",
-
-                    type: "line",
-
-                    source: "maur",
-
-                    "source-layer": "transportation",
-
-                    filter: [
-                        "in",
-                        "class",
-                        "motorway",
-                        "trunk",
-                        "primary",
-                        "secondary"
-                    ],
-
-                    paint: {
-
-                        "line-color": "#f4b942",
-
-                        "line-width": [
-                            "interpolate",
-                            ["linear"],
-                            ["zoom"],
-                            10, 1,
-                            13, 2,
-                            16, 5,
-                            19, 10
-                        ]
-
-                    }
-                }
-
-            ]
-
-        }
-
-    });
+    map.on(
+        "click",
+        function(e) {
 
 
-    /* ======================================
-       MAP LOAD
-    ====================================== */
-
-    map.on("load", function() {
-
-        map.addControl(
-            new maplibregl.NavigationControl(),
-            "top-right"
-        );
-
-        map.on("click", function(e) {
-
-            if (window.addingPoint) {
+            if (
+                window.addingPoint
+            ) {
 
                 createOwnPoint(
+
                     e.lngLat.lat,
+
                     e.lngLat.lng
+
                 );
 
                 return;
+
             }
 
 
             window.lastDestination = {
 
-                lat: e.lngLat.lat,
+                lat:
+                    e.lngLat.lat,
 
-                lng: e.lngLat.lng,
+                lng:
+                    e.lngLat.lng,
 
                 name:
-                    e.lngLat.lat.toFixed(6) +
-                    ", " +
-                    e.lngLat.lng.toFixed(6)
+
+                    e.lngLat.lat
+                    .toFixed(6)
+
+                    + ", " +
+
+                    e.lngLat.lng
+                    .toFixed(6)
 
             };
 
-            document.getElementById(
-                "destinationText"
-            ).textContent =
-                window.lastDestination.name;
 
-        });
+            document
+                .getElementById(
+                    "destinationText"
+                )
+                .textContent =
+                    window
+                    .lastDestination
+                    .name;
 
-        loadOwnPoints();
 
-    });
+            showToast(
+                "Ziel ausgewählt."
+            );
+
+        }
+    );
+
+
+    loadOwnPoints();
+
 
 });
 
 
-/* ==========================================
+/* =========================
    GPS
-========================================== */
+========================= */
 
-let currentLocationMarker = null;
+let currentLocation =
+    null;
 
-let currentLocation = null;
+
+let currentLocationMarker =
+    null;
 
 
-window.goToLocation = function() {
+window.goToLocation =
+function() {
 
-    if (!navigator.geolocation) {
+
+    if (
+        !navigator.geolocation
+    ) {
 
         showToast(
             "GPS wird nicht unterstützt."
         );
 
         return;
+
     }
 
 
@@ -663,48 +1499,73 @@ window.goToLocation = function() {
     );
 
 
-    navigator.geolocation.getCurrentPosition(
+    navigator.geolocation
+    .getCurrentPosition(
 
         function(position) {
 
+
             const lat =
                 position.coords.latitude;
+
 
             const lng =
                 position.coords.longitude;
 
 
             currentLocation = {
+
                 lat: lat,
+
                 lng: lng
+
             };
 
 
-            if (currentLocationMarker) {
+            if (
+                currentLocationMarker
+            ) {
 
-                currentLocationMarker.remove();
+                currentLocationMarker
+                    .remove();
 
             }
 
 
             const element =
-                document.createElement("div");
+                document
+                .createElement(
+                    "div"
+                );
+
 
             element.className =
                 "gps-marker";
 
 
             currentLocationMarker =
+
                 new maplibregl.Marker({
-                    element: element
+
+                    element:
+                        element
+
                 })
-                .setLngLat([lng, lat])
+
+                .setLngLat([
+                    lng,
+                    lat
+                ])
+
                 .addTo(map);
 
 
             map.flyTo({
 
-                center: [lng, lat],
+                center: [
+                    lng,
+                    lat
+                ],
 
                 zoom: 17,
 
@@ -719,6 +1580,7 @@ window.goToLocation = function() {
 
         },
 
+
         function() {
 
             showToast(
@@ -727,13 +1589,17 @@ window.goToLocation = function() {
 
         },
 
+
         {
 
-            enableHighAccuracy: true,
+            enableHighAccuracy:
+                true,
 
-            timeout: 10000,
+            timeout:
+                10000,
 
-            maximumAge: 30000
+            maximumAge:
+                30000
 
         }
 
@@ -742,19 +1608,22 @@ window.goToLocation = function() {
 };
 
 
-/* ==========================================
+/* =========================
    ADRESSSUCHE
-========================================== */
+========================= */
 
-window.searchAddress = async function() {
+window.searchAddress =
+async function() {
 
-    const input =
-        document.getElementById(
-            "searchInput"
-        );
 
     const query =
-        input.value.trim();
+
+        document
+        .getElementById(
+            "searchInput"
+        )
+        .value
+        .trim();
 
 
     if (!query) {
@@ -764,16 +1633,18 @@ window.searchAddress = async function() {
         );
 
         return;
+
     }
 
 
     if (!navigator.onLine) {
 
         showToast(
-            "Die Suche benötigt Internet."
+            "Adresssuche benötigt Internet."
         );
 
         return;
+
     }
 
 
@@ -784,14 +1655,22 @@ window.searchAddress = async function() {
 
     try {
 
+
         const url =
+
             "https://nominatim.openstreetmap.org/search" +
+
             "?format=json" +
+
             "&limit=5" +
+
             "&countrycodes=ch" +
+
             "&q=" +
+
             encodeURIComponent(
-                query + ", Maur, Schweiz"
+                query +
+                ", Maur, Schweiz"
             );
 
 
@@ -810,6 +1689,7 @@ window.searchAddress = async function() {
             );
 
             return;
+
         }
 
 
@@ -820,13 +1700,17 @@ window.searchAddress = async function() {
         const lat =
             Number(result.lat);
 
+
         const lon =
             Number(result.lon);
 
 
         map.flyTo({
 
-            center: [lon, lat],
+            center: [
+                lon,
+                lat
+            ],
 
             zoom: 17,
 
@@ -835,567 +1719,31 @@ window.searchAddress = async function() {
         });
 
 
-        new maplibregl.Marker()
+        const marker =
 
-            .setLngLat([lon, lat])
+            new maplibregl.Marker()
+
+            .setLngLat([
+                lon,
+                lat
+            ])
 
             .setPopup(
 
                 new maplibregl.Popup()
-                    .setHTML(
-                        "<b>Suchergebnis</b><br>" +
-                        escapeHtml(
-                            result.display_name
-                        )
-                    )
+
+                .setText(
+                    result.display_name
+                )
 
             )
 
-            .addTo(map)
+            .addTo(map);
 
-            .togglePopup();
+
+        marker.togglePopup();
 
 
         window.lastDestination = {
 
-            lat: lat,
-
-            lng: lon,
-
-            name:
-                result.display_name
-
-        };
-
-
-        document.getElementById(
-            "destinationText"
-        ).textContent =
-            result.display_name;
-
-
-        showToast(
-            "Adresse gefunden."
-        );
-
-
-    } catch (error) {
-
-        console.error(error);
-
-        showToast(
-            "Suche fehlgeschlagen."
-        );
-
-    }
-
-};
-
-
-/* ==========================================
-   EIGENE PUNKTE
-========================================== */
-
-window.addingPoint = false;
-
-
-window.startAddPoint = function() {
-
-    closePanels();
-
-    window.addingPoint = true;
-
-    showToast(
-        "Tippe jetzt auf die Karte."
-    );
-
-    document.getElementById(
-        "map"
-    ).style.cursor = "crosshair";
-
-};
-
-
-function createOwnPoint(lat, lng) {
-
-    window.addingPoint = false;
-
-    document.getElementById(
-        "map"
-    ).style.cursor = "";
-
-
-    const name =
-        prompt(
-            "Name des Punktes:"
-        );
-
-
-    if (!name) {
-
-        return;
-
-    }
-
-
-    const description =
-        prompt(
-            "Beschreibung (optional):"
-        ) || "";
-
-
-    const point = {
-
-        id: Date.now(),
-
-        name: name,
-
-        description: description,
-
-        lat: lat,
-
-        lng: lng
-
-    };
-
-
-    const points =
-        getOwnPoints();
-
-
-    points.push(point);
-
-
-    localStorage.setItem(
-
-        "maurOwnPoints",
-
-        JSON.stringify(points)
-
-    );
-
-
-    addOwnMarker(point);
-
-
-    showToast(
-        "Punkt gespeichert."
-    );
-
-}
-
-
-function addOwnMarker(point) {
-
-    const element =
-        document.createElement("div");
-
-    element.className =
-        "own-marker";
-
-    element.textContent =
-        "📍";
-
-
-    const marker =
-        new maplibregl.Marker({
-            element: element
-        })
-
-        .setLngLat([
-            point.lng,
-            point.lat
-        ])
-
-        .setPopup(
-
-            new maplibregl.Popup()
-
-                .setHTML(
-
-                    "<b>" +
-                    escapeHtml(point.name) +
-                    "</b><br>" +
-
-                    escapeHtml(
-                        point.description
-                    ) +
-
-                    "<br><br>" +
-
-                    "<button onclick=\"deleteOwnPoint(" +
-                    point.id +
-                    ")\" style='padding:8px;background:#dc2626;color:white;border:0;border-radius:8px'>" +
-                    "Punkt löschen" +
-                    "</button>"
-
-                )
-
-        )
-
-        .addTo(map);
-
-
-    point._marker =
-        marker;
-
-}
-
-
-function loadOwnPoints() {
-
-    const points =
-        getOwnPoints();
-
-
-    points.forEach(
-        point =>
-            addOwnMarker(point)
-    );
-
-}
-
-
-function getOwnPoints() {
-
-    try {
-
-        return JSON.parse(
-
-            localStorage.getItem(
-                "maurOwnPoints"
-            ) || "[]"
-
-        );
-
-    } catch {
-
-        return [];
-
-    }
-
-}
-
-
-window.deleteOwnPoint = function(id) {
-
-    const points =
-        getOwnPoints().filter(
-            p => p.id !== id
-        );
-
-
-    localStorage.setItem(
-
-        "maurOwnPoints",
-
-        JSON.stringify(points)
-
-    );
-
-
-    location.reload();
-
-};
-
-
-/* ==========================================
-   NAVIGATION
-========================================== */
-
-window.lastDestination = null;
-
-
-window.useCurrentLocationAsStart = function() {
-
-    if (!currentLocation) {
-
-        showToast(
-            "Zuerst Standort ermitteln."
-        );
-
-        goToLocation();
-
-        return;
-    }
-
-
-    showToast(
-        "Aktueller Standort ist Startpunkt."
-    );
-
-};
-
-
-window.openGoogleMaps = function() {
-
-    if (!window.lastDestination) {
-
-        showToast(
-            "Bitte zuerst ein Ziel auswählen."
-        );
-
-        return;
-    }
-
-
-    let url;
-
-
-    if (currentLocation) {
-
-        url =
-            "https://www.google.com/maps/dir/" +
-
-            currentLocation.lat +
-            "," +
-            currentLocation.lng +
-
-            "/" +
-
-            window.lastDestination.lat +
-            "," +
-            window.lastDestination.lng;
-
-    } else {
-
-        url =
-            "https://www.google.com/maps/dir/?api=1" +
-
-            "&destination=" +
-
-            window.lastDestination.lat +
-            "," +
-            window.lastDestination.lng;
-
-    }
-
-
-    window.open(
-        url,
-        "_blank"
-    );
-
-};
-
-
-/* ==========================================
-   PANELS
-========================================== */
-
-window.openLayers = function() {
-
-    closePanels();
-
-    document
-        .getElementById("layersPanel")
-        .classList.add("active");
-
-};
-
-
-window.openNavigation = function() {
-
-    closePanels();
-
-    document
-        .getElementById("navPanel")
-        .classList.add("active");
-
-};
-
-
-window.openPointPanel = function() {
-
-    closePanels();
-
-    document
-        .getElementById("pointPanel")
-        .classList.add("active");
-
-};
-
-
-window.closePanels = function() {
-
-    document
-        .querySelectorAll(".panel")
-        .forEach(
-            panel =>
-                panel.classList.remove("active")
-        );
-
-};
-
-
-/* ==========================================
-   EBENEN
-========================================== */
-
-document
-    .getElementById("ownCheck")
-    .addEventListener(
-        "change",
-        function() {
-
-            document
-                .querySelectorAll(".own-marker")
-                .forEach(marker => {
-
-                    marker.style.display =
-                        this.checked
-                            ? "flex"
-                            : "none";
-
-                });
-
-        }
-    );
-
-
-/* ==========================================
-   ONLINE / OFFLINE
-========================================== */
-
-function updateConnectionStatus() {
-
-    const status =
-        document.getElementById(
-            "connectionStatus"
-        );
-
-
-    if (navigator.onLine) {
-
-        status.textContent =
-            "● Online";
-
-        status.style.background =
-            "#166534";
-
-    } else {
-
-        status.textContent =
-            "● Offline";
-
-        status.style.background =
-            "#991b1b";
-
-    }
-
-}
-
-
-window.addEventListener(
-    "online",
-    updateConnectionStatus
-);
-
-
-window.addEventListener(
-    "offline",
-    updateConnectionStatus
-);
-
-
-updateConnectionStatus();
-
-
-/* ==========================================
-   TOAST
-========================================== */
-
-function showToast(message) {
-
-    const toast =
-        document.getElementById(
-            "toast"
-        );
-
-
-    toast.textContent =
-        message;
-
-
-    toast.style.display =
-        "block";
-
-
-    clearTimeout(
-        window.toastTimer
-    );
-
-
-    window.toastTimer =
-        setTimeout(
-            () => {
-
-                toast.style.display =
-                    "none";
-
-            },
-            3000
-        );
-
-}
-
-
-/* ==========================================
-   HTML SICHER MACHEN
-========================================== */
-
-function escapeHtml(text) {
-
-    return String(text)
-
-        .replaceAll("&", "&amp;")
-
-        .replaceAll("<", "&lt;")
-
-        .replaceAll(">", "&gt;")
-
-        .replaceAll('"', "&quot;")
-
-        .replaceAll("'", "&#039;");
-
-}
-
-
-/* ==========================================
-   SERVICE WORKER
-========================================== */
-
-if ("serviceWorker" in navigator) {
-
-    window.addEventListener(
-        "load",
-        function() {
-
-            navigator.serviceWorker
-
-                .register("./sw.js")
-
-                .then(
-                    () =>
-                        console.log(
-                            "Maur Strassendienst: Service Worker aktiv"
-                        )
-                )
-
-                .catch(
-                    error =>
-                        console.error(
-                            "Service Worker Fehler:",
-                            error
-                        )
-                );
-
-        }
-    );
-
-}
-
-</script>
-
-</body>
-</html>
+           
