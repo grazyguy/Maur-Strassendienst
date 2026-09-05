@@ -3,30 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#111827">
 
 <title>Maur Strassendienst V19</title>
 
 <link rel="manifest" href="./manifest.json">
-
-<link rel="stylesheet"
-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.3/papaparse.min.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.3/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
-
 *{box-sizing:border-box}
 
 html,body{
   margin:0;
-  width:100%;
   height:100%;
   overflow:hidden;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
@@ -35,36 +26,26 @@ html,body{
 }
 
 button,input,textarea,select{font:inherit}
-
-button{
-  border:0;
-  cursor:pointer
-}
+button{border:0;cursor:pointer}
 
 .topbar{
-  position:absolute;
-  z-index:3000;
-  top:0;
-  left:0;
-  right:0;
   height:64px;
-  padding:0 14px;
+  background:#111827;
+  color:#fff;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  background:#111827;
-  color:white
+  padding:0 14px;
+  position:relative;
+  z-index:2000
 }
 
-.brand{
-  font-size:16px;
-  font-weight:900
-}
+.brand{font-weight:800;font-size:15px}
 
 .status{
-  margin-top:3px;
   font-size:10px;
-  color:#9ca3af
+  color:#9ca3af;
+  margin-top:3px
 }
 
 .iconbtn{
@@ -78,24 +59,16 @@ button{
 
 #map{
   position:absolute;
-  z-index:1;
   top:64px;
   bottom:74px;
   left:0;
-  right:0
+  right:0;
+  z-index:1
 }
-
-.leaflet-pane.maur-mask-pane{z-index:350}
-.leaflet-pane.route-pane{z-index:450}
-.leaflet-pane.label-pane{z-index:500}
-.leaflet-pane.boundary-pane{z-index:700}
-.leaflet-pane.work-pane{z-index:750}
-.leaflet-pane.track-pane{z-index:760}
-.leaflet-pane.closure-pane{z-index:770}
 
 .searchwrap{
   position:absolute;
-  z-index:2500;
+  z-index:1500;
   top:76px;
   left:12px;
   right:12px
@@ -104,87 +77,83 @@ button{
 .search{
   width:100%;
   height:48px;
-  padding:0 15px;
   border:1px solid #d1d5db;
   border-radius:14px;
+  padding:0 15px;
   background:white;
-  box-shadow:0 3px 14px #0003;
+  box-shadow:0 3px 14px #0002;
   outline:none
 }
 
 .results{
-  overflow:hidden;
-  background:white;
+  background:#fff;
   border-radius:0 0 14px 14px;
-  box-shadow:0 5px 15px #0003
+  box-shadow:0 5px 15px #0002;
+  overflow:hidden
 }
 
 .result{
-  padding:12px;
+  padding:12px 14px;
   border-top:1px solid #e5e7eb
 }
 
 .result small{
   display:block;
-  margin-top:3px;
-  color:#6b7280
+  color:#6b7280;
+  margin-top:3px
 }
 
 .panel{
   position:absolute;
-  z-index:4000;
-  top:76px;
+  z-index:1900;
   left:10px;
   right:10px;
-  max-height:calc(100vh - 150px);
+  top:74px;
+  bottom:84px;
+  background:white;
+  border-radius:17px;
+  box-shadow:0 8px 28px #0004;
   overflow:auto;
   padding:16px;
-  background:white;
-  border-radius:18px;
-  box-shadow:0 10px 30px #0004;
   display:none
 }
 
 .panel.open{display:block}
 
-.close{
-  float:right;
-  width:38px;
-  height:38px;
-  border-radius:11px;
-  background:#f3f4f6
-}
-
 .panel h2{
-  margin:0 0 15px;
+  margin:0 0 14px;
   font-size:19px
 }
 
 .panel h3{
-  margin:20px 0 9px;
+  margin:18px 0 8px;
   font-size:14px
 }
 
-.primary,
-.secondary,
-.green,
-.red,
-.orange,
-.dark{
-  width:100%;
-  padding:12px;
-  border-radius:11px;
-  font-weight:700
+.close{
+  float:right;
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  background:#f3f4f6
 }
 
 .primary{
   background:#2563eb;
-  color:white
+  color:white;
+  padding:12px;
+  border-radius:11px;
+  width:100%;
+  font-weight:700
 }
 
 .secondary{
   background:#e5e7eb;
-  color:#111827
+  color:#111827;
+  padding:12px;
+  border-radius:11px;
+  width:100%;
+  font-weight:600
 }
 
 .green{
@@ -207,16 +176,33 @@ button{
   color:white
 }
 
-.smallbtn{
-  padding:8px 7px;
-  border-radius:9px;
-  background:#e5e7eb;
-  font-size:12px
+.hint{
+  font-size:12px;
+  color:#6b7280;
+  line-height:1.45
 }
 
-.danger{
-  background:#fee2e2;
-  color:#991b1b
+.form-label{
+  display:block;
+  font-size:12px;
+  font-weight:700;
+  margin:10px 0 5px
+}
+
+.form-input,
+.form-textarea,
+.form-select{
+  width:100%;
+  border:1px solid #d1d5db;
+  border-radius:10px;
+  padding:10px;
+  background:#fff;
+  outline:none
+}
+
+.form-textarea{
+  min-height:85px;
+  resize:vertical
 }
 
 .dashboard{
@@ -226,35 +212,35 @@ button{
 }
 
 .stat{
-  padding:12px;
-  border-radius:13px;
-  background:#f3f4f6
+  background:#f3f4f6;
+  border-radius:12px;
+  padding:11px
 }
 
 .stat span{
+  display:block;
   font-size:11px;
   color:#6b7280
 }
 
 .stat strong{
   display:block;
-  margin-top:2px;
-  font-size:22px
+  font-size:21px;
+  margin-top:3px
 }
 
 .progress{
-  height:10px;
-  margin:10px 0 13px;
-  overflow:hidden;
+  height:9px;
+  border-radius:10px;
   background:#e5e7eb;
-  border-radius:10px
+  overflow:hidden;
+  margin:10px 0
 }
 
 .progressbar{
   height:100%;
   width:0;
-  background:#16a34a;
-  transition:.3s
+  background:#16a34a
 }
 
 .category-grid{
@@ -265,106 +251,38 @@ button{
 
 .category-btn{
   padding:13px 9px;
-  text-align:left;
-  border:1px solid #e5e7eb;
   border-radius:12px;
-  background:#f9fafb
+  background:#f3f4f6;
+  border:1px solid #e5e7eb;
+  text-align:left
 }
 
 .category-btn b{
   display:block;
-  margin-top:2px
+  font-size:13px
 }
 
 .category-btn small{
-  color:#6b7280
-}
-
-.form-label{
   display:block;
-  margin:11px 0 5px;
-  font-size:12px;
-  font-weight:800
-}
-
-.form-input,
-.form-textarea,
-.form-select{
-  width:100%;
-  padding:10px;
-  border:1px solid #d1d5db;
-  border-radius:10px;
-  background:white;
-  outline:none
-}
-
-.form-textarea{
-  min-height:90px;
-  resize:vertical
+  color:#6b7280;
+  margin-top:2px
 }
 
 .photo-preview{
-  display:none;
   width:100%;
-  max-height:220px;
-  margin-top:8px;
+  max-height:230px;
   object-fit:cover;
-  border-radius:12px
+  border-radius:12px;
+  margin-top:8px;
+  display:none
 }
 
-.priority-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:7px
+.point-item{
+  border-bottom:1px solid #e5e7eb;
+  padding:12px 0
 }
 
-.priority{
-  padding:10px 5px;
-  border-radius:10px;
-  background:#e5e7eb
-}
-
-.priority.active.high{
-  background:#dc2626;
-  color:white
-}
-
-.priority.active.medium{
-  background:#ea580c;
-  color:white
-}
-
-.priority.active.low{
-  background:#16a34a;
-  color:white
-}
-
-.checkgrid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:7px
-}
-
-.checkitem{
-  padding:10px;
-  border:1px solid #e5e7eb;
-  border-radius:10px;
-  background:#f9fafb
-}
-
-.checkitem input{
-  margin-right:6px
-}
-
-.point-item,
-.tour-item,
-.stop-item,
-.closure-item{
-  padding:13px 0;
-  border-bottom:1px solid #e5e7eb
-}
-
-.point-title{
+.point-head{
   display:flex;
   justify-content:space-between;
   gap:8px
@@ -373,11 +291,10 @@ button{
 .badge{
   display:inline-block;
   padding:4px 7px;
-  margin:2px;
   border-radius:7px;
+  background:#e5e7eb;
   font-size:10px;
-  font-weight:900;
-  background:#e5e7eb
+  font-weight:800
 }
 
 .badge.done{
@@ -385,156 +302,171 @@ button{
   color:#166534
 }
 
-.badge.open{
-  background:#fee2e2;
-  color:#991b1b
-}
-
-.badge.high{
-  background:#fee2e2;
-  color:#991b1b
-}
-
-.badge.medium{
-  background:#ffedd5;
-  color:#9a3412
-}
-
-.badge.low{
-  background:#dcfce7;
-  color:#166534
-}
-
-.point-actions{
+.actions{
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:7px;
   margin-top:8px
 }
 
-.hint{
-  color:#6b7280;
-  font-size:12px;
-  line-height:1.45
+.smallbtn{
+  padding:8px 5px;
+  border-radius:9px;
+  background:#e5e7eb;
+  font-size:11px
 }
 
-.track-info{
-  padding:12px;
-  border:1px solid #bfdbfe;
+.tour-stop{
+  padding:9px;
+  background:#f8fafc;
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+  margin-bottom:6px
+}
+
+.route-summary{
   background:#eff6ff;
-  border-radius:12px
+  border:1px solid #bfdbfe;
+  padding:12px;
+  border-radius:12px;
+  margin:10px 0
 }
 
-.track-row{
-  display:flex;
-  justify-content:space-between;
-  margin:5px 0
+.route-summary strong{
+  font-size:19px
 }
 
-.navinfo{
+.navbox{
   position:absolute;
-  z-index:2600;
+  z-index:1600;
   left:12px;
   right:12px;
   bottom:88px;
-  padding:13px;
-  border-radius:17px;
-  background:white;
-  box-shadow:0 6px 22px #0004;
+  background:#fff;
+  border-radius:16px;
+  padding:12px;
+  box-shadow:0 5px 20px #0004;
   display:none
 }
 
-.navinfo.show{display:block}
+.navbox.show{display:block}
 
-.navmain{
-  font-weight:900
+.navtitle{
+  font-weight:800
 }
 
 .navsub{
-  margin-top:4px;
   color:#6b7280;
-  font-size:13px
+  font-size:13px;
+  margin-top:3px
 }
 
-.navbuttons{
+.navactions{
   display:flex;
   gap:7px;
-  margin-top:10px
+  margin-top:9px
 }
 
-.navbuttons button{
+.navactions button{
   flex:1;
   padding:10px;
   border-radius:10px;
   background:#111827;
-  color:white
-}
-
-.navbuttons button.off{
-  background:#e5e7eb;
-  color:#111827
+  color:#fff
 }
 
 .bottom{
+  height:74px;
   position:absolute;
-  z-index:3000;
+  z-index:2000;
   left:0;
   right:0;
   bottom:0;
-  height:74px;
-  padding-bottom:env(safe-area-inset-bottom);
+  background:#fff;
+  border-top:1px solid #d1d5db;
   display:grid;
   grid-template-columns:repeat(5,1fr);
-  background:white;
-  border-top:1px solid #d1d5db
+  padding-bottom:env(safe-area-inset-bottom)
 }
 
 .bottom button{
-  background:white;
+  background:#fff;
   color:#6b7280;
-  font-size:10px
+  font-size:9px
 }
 
 .bottom button.active{
   color:#2563eb;
-  font-weight:900
+  font-weight:800
 }
 
 .bottom span{
   display:block;
-  margin-bottom:2px;
-  font-size:20px
+  font-size:20px;
+  margin-bottom:2px
 }
 
 .toast{
   position:absolute;
-  z-index:6000;
+  z-index:3000;
   left:50%;
-  bottom:94px;
   transform:translateX(-50%);
-  display:none;
-  max-width:90%;
-  padding:11px 15px;
-  text-align:center;
-  color:white;
+  bottom:92px;
   background:#111827;
+  color:#fff;
+  padding:11px 15px;
   border-radius:12px;
-  box-shadow:0 5px 20px #0004
+  font-size:13px;
+  display:none;
+  max-width:92%;
+  text-align:center
 }
 
 .toast.show{display:block}
 
-.mapmsg{
-  position:absolute;
-  z-index:2400;
-  top:132px;
-  left:12px;
-  right:12px;
-  display:none;
-  padding:10px 12px;
-  color:#991b1b;
-  background:#fee2e2;
-  border-radius:12px
+.work-icon{
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  background:#fff;
+  border:3px solid #111827;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+  box-shadow:0 3px 9px #0005
+}
+
+.work-icon.done{
+  opacity:.45;
+  filter:grayscale(1)
+}
+
+.construction-icon{
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  background:#f97316;
+  border:3px solid white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+  box-shadow:0 3px 10px #0006
+}
+
+.number-icon{
+  width:31px;
+  height:31px;
+  border-radius:50%;
+  background:#2563eb;
+  border:3px solid white;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:800;
+  box-shadow:0 2px 7px #0006
 }
 
 .gps-icon{
@@ -543,94 +475,27 @@ button{
   border-radius:50%;
   background:#2563eb;
   border:3px solid white;
-  box-shadow:0 1px 8px #0008
+  box-shadow:0 1px 7px #0007
 }
 
-.work-icon{
-  width:36px;
-  height:36px;
-  border-radius:50%;
-  background:white;
-  border:3px solid #111827;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:19px;
-  box-shadow:0 3px 10px #0006
+.leaflet-pane.maur-mask-pane{z-index:350}
+.leaflet-pane.road-pane{z-index:450}
+.leaflet-pane.label-pane{z-index:500}
+.leaflet-pane.boundary-pane{z-index:700}
+.leaflet-pane.work-pane{z-index:750}
+.leaflet-pane.tour-pane{z-index:760}
+.leaflet-pane.gps-pane{z-index:770}
+.leaflet-pane.construction-pane{z-index:780}
+
+.street-label{
+  background:transparent;
+  border:0;
+  box-shadow:none;
+  color:#111827;
+  font-weight:700;
+  text-shadow:0 1px 2px #fff;
+  font-size:12px
 }
-
-.work-icon.done{
-  opacity:.45;
-  filter:grayscale(1)
-}
-
-.work-icon.high{border-color:#dc2626}
-.work-icon.medium{border-color:#ea580c}
-.work-icon.low{border-color:#16a34a}
-
-.closure-icon{
-  width:38px;
-  height:38px;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:#dc2626;
-  color:white;
-  border:3px solid white;
-  box-shadow:0 3px 10px #0007;
-  font-size:20px
-}
-
-.maur-label{
-  padding:4px 8px;
-  color:white;
-  background:#0057d9;
-  border:2px solid white;
-  border-radius:8px;
-  font-weight:900
-}
-
-.loading{
-  padding:12px;
-  background:#eff6ff;
-  border:1px solid #bfdbfe;
-  border-radius:12px
-}
-
-.route-summary{
-  padding:12px;
-  margin:10px 0;
-  background:#eff6ff;
-  border:1px solid #bfdbfe;
-  border-radius:12px
-}
-
-.route-option{
-  padding:12px;
-  margin-top:8px;
-  border:1px solid #e5e7eb;
-  border-radius:12px
-}
-
-.route-option.active{
-  border:2px solid #2563eb;
-  background:#eff6ff
-}
-
-.number{
-  display:inline-flex;
-  width:28px;
-  height:28px;
-  align-items:center;
-  justify-content:center;
-  margin-right:6px;
-  border-radius:50%;
-  background:#2563eb;
-  color:white;
-  font-weight:900
-}
-
 </style>
 </head>
 
@@ -638,652 +503,436 @@ button{
 
 <header class="topbar">
   <div>
-    <div class="brand">MAUR STRASSENDIENST</div>
+    <div class="brand">🚜 MAUR STRASSENDIENST</div>
     <div class="status" id="status">ONLINE • V19</div>
   </div>
-  <button class="iconbtn" id="settingsBtn">⚙️</button>
+  <button class="iconbtn" onclick="openPanel('settingsPanel')">⚙️</button>
 </header>
 
 <div class="searchwrap" id="searchWrap">
-  <input
-    id="search"
-    class="search"
-    placeholder="Strasse, Ort oder Adresse suchen …"
-    autocomplete="off">
+  <input id="search" class="search"
+         placeholder="Strasse, Adresse oder Ort suchen …"
+         autocomplete="off">
   <div id="results" class="results"></div>
 </div>
 
-<div id="mapmsg" class="mapmsg"></div>
 <div id="map"></div>
 
-<section id="navInfo" class="navinfo">
-  <div id="navMain" class="navmain">Keine Navigation</div>
+<div id="navBox" class="navbox">
+  <div id="navTitle" class="navtitle">Navigation</div>
   <div id="navSub" class="navsub"></div>
 
-  <div class="navbuttons">
-    <button id="voiceBtn">🔊 Sprache an</button>
-    <button id="followBtn">📍 Folgen aus</button>
-    <button id="stopNavBtn">✕ Stop</button>
+  <div class="navactions">
+    <button onclick="toggleVoice()">🔊 Sprache</button>
+    <button onclick="nextTourStop()">➡️ Nächster</button>
+    <button onclick="stopNavigation()">✕ Stop</button>
   </div>
-</section>
+</div>
 
 <!-- WERKDIENST -->
 
 <section id="dashboardPanel" class="panel">
+  <button class="close" onclick="closePanels()">✕</button>
 
-<button class="close" id="closeDashboard">✕</button>
+  <h2>🚜 Werkdienst</h2>
 
-<h2>🚜 Werkdienst V19</h2>
+  <div class="dashboard">
+    <div class="stat">
+      <span>Alle Punkte</span>
+      <strong id="totalPoints">0</strong>
+    </div>
 
-<div class="dashboard">
-  <div class="stat">
-    <span>Aufgaben</span>
-    <strong id="dashTotal">0</strong>
+    <div class="stat">
+      <span>Offen</span>
+      <strong id="openPoints">0</strong>
+    </div>
+
+    <div class="stat">
+      <span>Erledigt</span>
+      <strong id="donePoints">0</strong>
+    </div>
+
+    <div class="stat">
+      <span>Tour km</span>
+      <strong id="tourKm">0.0</strong>
+    </div>
   </div>
 
-  <div class="stat">
-    <span>Erledigt</span>
-    <strong id="dashDone">0</strong>
+  <div class="progress">
+    <div id="progressBar" class="progressbar"></div>
   </div>
 
-  <div class="stat">
-    <span>Offen</span>
-    <strong id="dashOpen">0</strong>
+  <h3>Punkt hinzufügen</h3>
+
+  <div class="category-grid">
+
+    <button class="category-btn" onclick="openPointForm('abfall')">
+      🗑️
+      <b>Abfallkübel</b>
+      <small>Entleerung</small>
+    </button>
+
+    <button class="category-btn" onclick="openPointForm('robidog')">
+      🐕
+      <b>Robidog</b>
+      <small>Beutel / Leerung</small>
+    </button>
+
+    <button class="category-btn" onclick="openPointForm('schacht')">
+      🕳️
+      <b>Schacht</b>
+      <small>Saugen / Reinigen</small>
+    </button>
+
+    <button class="category-btn" onclick="openPointForm('vitaparcours')">
+      🏃
+      <b>Vitaparcours</b>
+      <small>Kontrolle / Unterhalt</small>
+    </button>
+
+    <button class="category-btn" onclick="openPointForm('blumentopf')">
+      🪴
+      <b>Blumentopf</b>
+      <small>Giessen</small>
+    </button>
+
+    <button class="category-btn" onclick="openPointForm('schaden')">
+      🚧
+      <b>Schaden</b>
+      <small>Melden</small>
+    </button>
+
+    <button class="category-btn" onclick="openPointForm('beleuchtung')">
+      💡
+      <b>Beleuchtung</b>
+      <small>Kontrolle</small>
+    </button>
+
+    <button class="category-btn" onclick="openPointForm('gruen')">
+      🌳
+      <b>Grünanlage</b>
+      <small>Pflege</small>
+    </button>
+
+    <button class="category-btn" onclick="openPointForm('brunnen')">
+      💧
+      <b>Brunnen</b>
+      <small>Kontrolle</small>
+    </button>
+
+    <button class="category-btn" onclick="openPointForm('sonstiges')">
+      📍
+      <b>Sonstiges</b>
+      <small>Eigener Punkt</small>
+    </button>
+
   </div>
 
-  <div class="stat">
-    <span>Tour km</span>
-    <strong id="dashKm">0.0</strong>
-  </div>
+  <h3>📥 Daten / Tour importieren</h3>
 
-  <div class="stat">
-    <span>Dringend</span>
-    <strong id="dashUrgent">0</strong>
-  </div>
+  <button class="primary" onclick="document.getElementById('importTourFile').click()">
+    📂 Foto oder Datei hochladen
+  </button>
 
-  <div class="stat">
-    <span>Tourzeit</span>
-    <strong id="dashTime">00:00</strong>
-  </div>
-</div>
+  <input id="importTourFile"
+         type="file"
+         accept=".csv,.json,.gpx,.xlsx,.xls,.txt,.jpg,.jpeg,.png,.webp"
+         style="display:none">
 
-<div class="progress">
-  <div id="dashProgress" class="progressbar"></div>
-</div>
+  <p class="hint">
+    Unterstützt werden CSV, JSON, GPX, Excel und Textdateien.
+    Auch Fotos von Listen können ausgewählt werden.
+  </p>
 
-<div id="dashProgressText" class="hint">0 / 0 erledigt</div>
+  <h3>🗺️ Tour planen</h3>
 
-<br>
+  <button class="primary green" onclick="openPanel('tourPanel')">
+    🧭 Tour planen / schnellste Route
+  </button>
 
-<button class="primary" id="openTourBtn">
-  🗺️ Tour planen
-</button>
+  <div style="height:7px"></div>
 
-<div style="height:8px"></div>
-
-<button class="secondary" id="startTourBtn">
-  ▶️ Optimierte Tour starten
-</button>
-
-<div style="height:8px"></div>
-
-<button class="secondary" id="nextTaskBtn">
-  🧭 Nächste Aufgabe
-</button>
-
-<h3>Auftrag manuell erfassen</h3>
-
-<div class="category-grid">
-
-<button class="category-btn" data-category="abfall">
-  🗑️ <b>Abfallkübel</b>
-  <small>Entleerung</small>
-</button>
-
-<button class="category-btn" data-category="robidog">
-  🐕 <b>Robidog</b>
-  <small>Entleerung</small>
-</button>
-
-<button class="category-btn" data-category="schacht">
-  🕳️ <b>Schacht</b>
-  <small>Saugen / Kontrolle</small>
-</button>
-
-<button class="category-btn" data-category="vitaparcours">
-  🏃 <b>Vitaparcours</b>
-  <small>Kontrolle / Schaden</small>
-</button>
-
-<button class="category-btn" data-category="blumentopf">
-  🌺 <b>Blumentopf</b>
-  <small>Giessen</small>
-</button>
-
-<button class="category-btn" data-category="licht">
-  💡 <b>Beleuchtung</b>
-  <small>Störung</small>
-</button>
-
-<button class="category-btn" data-category="schaden">
-  🚧 <b>Strassenschaden</b>
-  <small>Strasse / Weg</small>
-</button>
-
-<button class="category-btn" data-category="signal">
-  🪧 <b>Signalisation</b>
-  <small>Schild / Pfosten</small>
-</button>
-
-<button class="category-btn" data-category="baum">
-  🌳 <b>Grünanlage</b>
-  <small>Pflege</small>
-</button>
-
-<button class="category-btn" data-category="neophyten">
-  🌿 <b>Neophyten</b>
-  <small>Entfernen</small>
-</button>
-
-<button class="category-btn" data-category="brunnen">
-  💧 <b>Brunnen</b>
-  <small>Kontrolle</small>
-</button>
-
-<button class="category-btn" data-category="bach">
-  🌊 <b>Bach / Gewässer</b>
-  <small>Unterhalt</small>
-</button>
-
-<button class="category-btn" data-category="spielplatz">
-  🛝 <b>Spielplatz</b>
-  <small>Kontrolle</small>
-</button>
-
-<button class="category-btn" data-category="bank">
-  🪑 <b>Sitzbank</b>
-  <small>Unterhalt</small>
-</button>
-
-<button class="category-btn" data-category="reinigung">
-  🧹 <b>Reinigung</b>
-  <small>Öffentliche Anlage</small>
-</button>
-
-<button class="category-btn" data-category="winter">
-  ❄️ <b>Winterdienst</b>
-  <small>Kontrolle</small>
-</button>
-
-<button class="category-btn" data-category="sonstiges">
-  📍 <b>Sonstiger Auftrag</b>
-  <small>Werkdienst</small>
-</button>
-
-</div>
-
-<h3>GPS-Spur</h3>
-
-<div class="track-info">
-
-<div class="track-row">
-<span>Status</span>
-<b id="trackStatus">Nicht aktiv</b>
-</div>
-
-<div class="track-row">
-<span>Zeit</span>
-<b id="trackTime">00:00:00</b>
-</div>
-
-<div class="track-row">
-<span>Distanz</span>
-<b id="trackDistance">0.00 km</b>
-</div>
-
-<div class="track-row">
-<span>Geschwindigkeit</span>
-<b id="trackSpeed">0.0 km/h</b>
-</div>
-
-</div>
-
-<br>
-
-<button class="secondary" id="trackBtn">
-▶️ GPS-Spur starten
-</button>
-
-<div style="height:8px"></div>
-
-<button class="secondary" id="pauseBtn">
-⏸️ Pause
-</button>
-
+  <button class="secondary" onclick="openPanel('pointsPanel')">
+    📋 Alle Punkte anzeigen
+  </button>
 </section>
 
-<!-- AUFGABE -->
+<!-- PUNKT FORMULAR -->
 
-<section id="workPointPanel" class="panel">
+<section id="pointPanel" class="panel">
+  <button class="close" onclick="closePanels()">✕</button>
 
-<button class="close" id="closeWorkPoint">✕</button>
+  <h2 id="pointFormTitle">📍 Werkdienst-Punkt</h2>
 
-<h2>🚜 Auftrag erfassen</h2>
+  <label class="form-label">Kategorie</label>
 
-<label class="form-label">Kategorie</label>
+  <select id="pointCategory" class="form-select">
+    <option value="abfall">🗑️ Abfallkübel</option>
+    <option value="robidog">🐕 Robidog</option>
+    <option value="schacht">🕳️ Schacht zum Saugen</option>
+    <option value="vitaparcours">🏃 Vitaparcours</option>
+    <option value="blumentopf">🪴 Blumentopf</option>
+    <option value="schaden">🚧 Schaden</option>
+    <option value="beleuchtung">💡 Beleuchtung</option>
+    <option value="gruen">🌳 Grünanlage</option>
+    <option value="brunnen">💧 Brunnen</option>
+    <option value="sonstiges">📍 Sonstiges</option>
+  </select>
 
-<select id="pointCategory" class="form-select">
+  <label class="form-label">Name / Bezeichnung</label>
+  <input id="pointName"
+         class="form-input"
+         placeholder="z.B. Robidog Bahnhof Maur">
 
-<option value="abfall">🗑️ Abfallkübel</option>
-<option value="robidog">🐕 Robidog</option>
-<option value="schacht">🕳️ Schacht</option>
-<option value="vitaparcours">🏃 Vitaparcours</option>
-<option value="blumentopf">🌺 Blumentopf</option>
-<option value="licht">💡 Beleuchtung</option>
-<option value="schaden">🚧 Strassenschaden</option>
-<option value="signal">🪧 Signalisation</option>
-<option value="baum">🌳 Grünanlage</option>
-<option value="neophyten">🌿 Neophyten</option>
-<option value="brunnen">💧 Brunnen</option>
-<option value="bach">🌊 Bach / Gewässer</option>
-<option value="spielplatz">🛝 Spielplatz</option>
-<option value="bank">🪑 Sitzbank</option>
-<option value="reinigung">🧹 Reinigung</option>
-<option value="winter">❄️ Winterdienst</option>
-<option value="sonstiges">📍 Sonstiger Auftrag</option>
+  <div id="specialFields"></div>
 
-</select>
+  <label class="form-label">Bemerkung</label>
 
-<label class="form-label">Bezeichnung</label>
+  <textarea id="pointNote"
+            class="form-textarea"
+            placeholder="Was muss gemacht werden?"></textarea>
 
-<input
- id="pointName"
- class="form-input"
- placeholder="Bezeichnung">
+  <label class="form-label">📸 Foto</label>
 
-<label class="form-label">Priorität</label>
+  <input id="pointPhoto"
+         type="file"
+         accept="image/*"
+         capture="environment"
+         class="form-input">
 
-<div class="priority-grid">
+  <img id="photoPreview"
+       class="photo-preview">
 
-<button class="priority high" data-priority="high">
-🔴 Dringend
-</button>
+  <h3>📍 Position</h3>
 
-<button class="priority medium" data-priority="medium">
-🟠 Normal
-</button>
+  <button class="secondary" onclick="useCurrentPosition()">
+    📍 Aktuelle GPS-Position verwenden
+  </button>
 
-<button class="priority low" data-priority="low">
-🟢 Später
-</button>
+  <div style="height:7px"></div>
 
-</div>
+  <button class="secondary" onclick="activateMapPosition()">
+    🗺️ Position auf Karte wählen
+  </button>
 
-<div id="categoryExtra"></div>
+  <p id="selectedPosition" class="hint">
+    Noch keine Position ausgewählt.
+  </p>
 
-<label class="form-label">Bemerkung</label>
+  <div style="height:10px"></div>
 
-<textarea
- id="pointNote"
- class="form-textarea"
- placeholder="Bemerkung …"></textarea>
+  <button class="primary" onclick="savePoint()">
+    💾 Punkt speichern und auf Karte anzeigen
+  </button>
+</section>
 
-<label class="form-label">Foto</label>
+<!-- ALLE PUNKTE -->
 
-<input
- type="file"
- id="beforePhoto"
- accept="image/*"
- capture="environment"
- class="form-input">
+<section id="pointsPanel" class="panel">
+  <button class="close" onclick="closePanels()">✕</button>
 
-<img
- id="beforePreview"
- class="photo-preview">
+  <h2>📋 Alle Werkdienst-Punkte</h2>
 
-<br>
+  <div class="dashboard">
+    <div class="stat">
+      <span>Alle</span>
+      <strong id="listTotal">0</strong>
+    </div>
 
-<button class="primary" id="saveWorkPointBtn">
-💾 Auftrag speichern
-</button>
+    <div class="stat">
+      <span>Offen</span>
+      <strong id="listOpen">0</strong>
+    </div>
 
+    <div class="stat">
+      <span>Erledigt</span>
+      <strong id="listDone">0</strong>
+    </div>
+
+    <div class="stat">
+      <span>Kategorien</span>
+      <strong id="listCategories">0</strong>
+    </div>
+  </div>
+
+  <div style="height:10px"></div>
+
+  <button class="primary" onclick="showAllPoints()">
+    🗺️ Alle Punkte auf Karte anzeigen
+  </button>
+
+  <div id="pointsList"></div>
 </section>
 
 <!-- TOUR -->
 
 <section id="tourPanel" class="panel">
+  <button class="close" onclick="closePanels()">✕</button>
 
-<button class="close" id="closeTour">✕</button>
+  <h2>🧭 Tourplanung</h2>
 
-<h2>🗺️ Tour planen</h2>
+  <p class="hint">
+    Hier kannst du Abfallkübel, Robidogs, Schächte, Vitaparcours,
+    Blumentöpfe und andere Punkte zu einer Tour zusammenstellen.
+  </p>
 
-<p class="hint">
-Touren können aus Foto, Datei oder manuell erstellt werden.
-Die App versucht Adressen und Koordinaten zu erkennen.
-</p>
+  <label class="form-label">Welche Punkte?</label>
 
-<h3>1. Tour importieren</h3>
+  <select id="tourFilter" class="form-select">
+    <option value="all">Alle offenen Punkte</option>
+    <option value="abfall">🗑️ Abfallkübel</option>
+    <option value="robidog">🐕 Robidog</option>
+    <option value="schacht">🕳️ Schächte</option>
+    <option value="vitaparcours">🏃 Vitaparcours</option>
+    <option value="blumentopf">🪴 Blumentöpfe</option>
+    <option value="schaden">🚧 Schäden</option>
+    <option value="beleuchtung">💡 Beleuchtung</option>
+    <option value="gruen">🌳 Grünanlagen</option>
+  </select>
 
-<label class="form-label">Foto / Screenshot / Datei</label>
+  <label class="form-label">Tourstart</label>
 
-<input
- type="file"
- id="tourFile"
- class="form-input"
- accept=".csv,.txt,.json,.geojson,.gpx,.xlsx,.xls,.kml,.kmz,image/*">
+  <select id="tourStart" class="form-select">
+    <option value="gps">📍 Aktueller GPS-Standort</option>
+    <option value="first">Ersten Punkt verwenden</option>
+  </select>
 
-<div style="height:8px"></div>
+  <div style="height:10px"></div>
 
-<button class="primary" id="importTourBtn">
-📥 Tour analysieren
-</button>
+  <button class="primary green" onclick="calculateTour()">
+    ⚡ Schnellste Tour berechnen
+  </button>
 
-<div id="importProgress"></div>
+  <div style="height:7px"></div>
 
-<h3>2. Auftrag manuell hinzufügen</h3>
+  <button class="secondary" onclick="clearTour()">
+    🗑️ Tour zurücksetzen
+  </button>
 
-<button class="secondary" id="manualTourPointBtn">
-＋ Punkt auf Karte / GPS hinzufügen
-</button>
+  <div id="routeSummary"></div>
 
-<h3>3. Vorhandene offene Aufgaben</h3>
+  <h3>📍 Reihenfolge</h3>
 
-<button class="secondary" id="loadOpenTasksBtn">
-📋 Alle offenen Aufgaben in Tour übernehmen
-</button>
+  <div id="tourStops"></div>
 
-<h3>Touroptionen</h3>
+  <h3>🚧 Baustellen / Sperrungen</h3>
 
-<label class="form-label">Start</label>
+  <button class="orange primary" onclick="startConstructionMode()">
+    🚧 Baustelle auf Karte markieren
+  </button>
 
-<select id="tourStartMode" class="form-select">
-<option value="gps">📍 Aktueller GPS-Standort</option>
-<option value="first">Erster Punkt</option>
-<option value="depot">🏢 Werkhof / Depot</option>
-</select>
+  <div style="height:7px"></div>
 
-<label class="form-label">Rückkehr zum Start</label>
-
-<select id="tourRoundtrip" class="form-select">
-<option value="false">Nein</option>
-<option value="true">Ja</option>
-</select>
-
-<div style="height:8px"></div>
-
-<button class="primary" id="optimizeTourBtn">
-⚡ Schnellste Tour berechnen
-</button>
-
-<div id="tourSummary"></div>
-
-<div id="tourStops"></div>
-
-<div style="height:8px"></div>
-
-<button class="green" id="startPlannedTourBtn">
-▶️ Geplante Tour starten
-</button>
-
-<div style="height:8px"></div>
-
-<button class="secondary" id="clearPlannedTourBtn">
-🗑️ Planung löschen
-</button>
-
+  <button class="secondary" onclick="openPanel('constructionPanel')">
+    📋 Baustellen verwalten
+  </button>
 </section>
 
-<!-- VITAPARCOURS SPEZIAL -->
+<!-- BAUSTELLE -->
 
-<section id="vitaPanel" class="panel">
+<section id="constructionPanel" class="panel">
+  <button class="close" onclick="closePanels()">✕</button>
 
-<button class="close" id="closeVita">✕</button>
+  <h2>🚧 Baustellen / Sperrungen</h2>
 
-<h2>🏃 Vitaparcours</h2>
+  <p class="hint">
+    Baustellen können direkt auf der Karte markiert werden.
+    Die App berücksichtigt sie bei der Prüfung von Alternativrouten.
+  </p>
 
-<p class="hint">
-Vitaparcours-Stationen können einzeln oder als kompletter Parcours erfasst werden.
-</p>
+  <button class="primary orange" onclick="startConstructionMode()">
+    ＋ Baustelle auf Karte setzen
+  </button>
 
-<button class="primary" id="newVitaBtn">
-＋ Station erfassen
-</button>
-
-<h3>Untergrund</h3>
-
-<div class="checkgrid">
-
-<label class="checkitem">
-<input type="checkbox" value="Holzschnitzel auffüllen" class="vitaTask">
-🪵 Holzschnitzel auffüllen
-</label>
-
-<label class="checkitem">
-<input type="checkbox" value="Kies auffüllen" class="vitaTask">
-🪨 Kies auffüllen
-</label>
-
-</div>
-
-<h3>Unterhalt</h3>
-
-<div class="checkgrid">
-
-<label class="checkitem">
-<input type="checkbox" value="Verschmutzung" class="vitaTask">
-🧹 Verschmutzung
-</label>
-
-<label class="checkitem">
-<input type="checkbox" value="Jäten / Unkraut entfernen" class="vitaTask">
-🌱 Jäten / Unkraut
-</label>
-
-<label class="checkitem">
-<input type="checkbox" value="Verschmutzung und Jäten" class="vitaTask">
-🧹🌱 Verschmutzung + Jäten
-</label>
-
-<label class="checkitem">
-<input type="checkbox" value="Laub / Grünabfall" class="vitaTask">
-🍂 Laub / Grünabfall
-</label>
-
-<label class="checkitem">
-<input type="checkbox" value="Zurückschneiden" class="vitaTask">
-✂️ Zurückschneiden
-</label>
-
-</div>
-
-<h3>Station / Schaden</h3>
-
-<div class="checkgrid">
-
-<label class="checkitem">
-<input type="checkbox" value="Holz beschädigt" class="vitaTask">
-🪵 Holz beschädigt
-</label>
-
-<label class="checkitem">
-<input type="checkbox" value="Befestigung / Schrauben" class="vitaTask">
-🔩 Befestigung
-</label>
-
-<label class="checkitem">
-<input type="checkbox" value="Tafel beschädigt" class="vitaTask">
-🪧 Tafel beschädigt
-</label>
-
-<label class="checkitem">
-<input type="checkbox" value="Station beschädigt" class="vitaTask">
-🏋️ Station beschädigt
-</label>
-
-<label class="checkitem">
-<input type="checkbox" value="Sonstiger Schaden" class="vitaTask">
-⚠️ Sonstiger Schaden
-</label>
-
-</div>
-
-<p class="hint">
-Die Auswahl wird beim nächsten Vitaparcours-Auftrag übernommen.
-</p>
-
+  <div id="constructionList"></div>
 </section>
 
-<!-- AUFGABEN -->
-
-<section id="pointsPanel" class="panel">
-
-<button class="close" id="closePoints">✕</button>
-
-<h2>📋 Aufgaben</h2>
-
-<div class="dashboard">
-
-<div class="stat">
-<span>Gesamt</span>
-<strong id="pointsTotal">0</strong>
-</div>
-
-<div class="stat">
-<span>Offen</span>
-<strong id="pointsOpen">0</strong>
-</div>
-
-<div class="stat">
-<span>Erledigt</span>
-<strong id="pointsDone">0</strong>
-</div>
-
-<div class="stat">
-<span>Dringend</span>
-<strong id="pointsUrgent">0</strong>
-</div>
-
-</div>
-
-<br>
-
-<button class="secondary" id="filterOpenBtn">
-🔴 Nur offene
-</button>
-
-<div style="height:8px"></div>
-
-<button class="secondary" id="filterAllBtn">
-📋 Alle
-</button>
-
-<div id="pointsList"></div>
-
-</section>
-
-<!-- SPERRUNGEN -->
-
-<section id="closurePanel" class="panel">
-
-<button class="close" id="closeClosure">✕</button>
-
-<h2>🚧 Baustellen / Sperrungen</h2>
-
-<p class="hint">
-Tippe auf die Karte, um eine Baustelle oder gesperrte Strasse zu markieren.
-Die Route prüft danach Alternativen, soweit der Routingdienst eine alternative Strecke liefert.
-</p>
-
-<button class="primary" id="addClosureBtn">
-🚧 Sperrung auf Karte setzen
-</button>
-
-<div id="closureList"></div>
-
-</section>
-
-<!-- SETTINGS -->
+<!-- EINSTELLUNGEN -->
 
 <section id="settingsPanel" class="panel">
+  <button class="close" onclick="closePanels()">✕</button>
 
-<button class="close" id="closeSettings">✕</button>
+  <h2>⚙️ Einstellungen</h2>
 
-<h2>⚙️ Einstellungen</h2>
+  <h3>Karte</h3>
 
-<h3>Kartenansicht</h3>
+  <div class="category-grid">
 
-<div class="priority-grid">
+    <button class="category-btn" onclick="setMapView('normal')">
+      🗺️
+      <b>Normal</b>
+    </button>
 
-<button data-view="normal">Normal</button>
-<button data-view="satellite">🛰️ Satellit</button>
-<button data-view="hybrid">Hybrid</button>
+    <button class="category-btn" onclick="setMapView('satellite')">
+      🛰️
+      <b>Satellit</b>
+    </button>
 
-</div>
+    <button class="category-btn" onclick="setMapView('hybrid')">
+      🌍
+      <b>Hybrid</b>
+    </button>
 
-<h3>GPS</h3>
+  </div>
 
-<button class="primary" id="locateBtn">
-📍 Meinen Standort
-</button>
+  <h3>GPS</h3>
 
-<h3>Daten</h3>
+  <button class="primary" onclick="locateMe()">
+    📍 Meinen Standort
+  </button>
 
-<button class="secondary" id="exportBtn">
-📤 Alle Daten exportieren
-</button>
+  <h3>Daten</h3>
 
-<div style="height:8px"></div>
+  <button class="secondary" onclick="exportData()">
+    📤 Alle Daten exportieren
+  </button>
 
-<button class="secondary" id="importDataBtn">
-📥 Daten importieren
-</button>
+  <div style="height:7px"></div>
 
-<input
- type="file"
- id="dataFile"
- accept=".json"
- style="display:none">
+  <button class="secondary"
+          onclick="document.getElementById('importDataFile').click()">
+    📥 Daten importieren
+  </button>
 
-<div style="height:8px"></div>
+  <input id="importDataFile"
+         type="file"
+         accept=".json"
+         style="display:none">
 
-<button class="secondary" id="openClosureBtn">
-🚧 Baustellen / Sperrungen
-</button>
+  <div style="height:7px"></div>
 
-<div style="height:8px"></div>
-
-<button class="secondary" id="clearDataBtn">
-🗑️ Alle Daten löschen
-</button>
-
+  <button class="secondary" onclick="clearAllData()">
+    🗑️ Alle Daten löschen
+  </button>
 </section>
 
 <nav class="bottom">
 
-<button id="dashboardTab" class="active">
-<span>🚜</span>
-Werkdienst
-</button>
+  <button id="tabWerk" class="active"
+          onclick="openPanel('dashboardPanel')">
+    <span>🚜</span>
+    Werkdienst
+  </button>
 
-<button id="tourTab">
-<span>🗺️</span>
-Tour
-</button>
+  <button onclick="openPanel('tourPanel')">
+    <span>🧭</span>
+    Tour
+  </button>
 
-<button id="navTab">
-<span>🧭</span>
-Navi
-</button>
+  <button onclick="locateMe()">
+    <span>📍</span>
+    GPS
+  </button>
 
-<button id="pointsTab">
-<span>📋</span>
-Aufträge
-</button>
+  <button onclick="openPanel('pointsPanel')">
+    <span>📋</span>
+    Punkte
+  </button>
 
-<button id="mapTab">
-<span>📍</span>
-Karte
-</button>
+  <button onclick="closePanels()">
+    <span>🗺️</span>
+    Karte
+  </button>
 
 </nav>
 
@@ -1293,15 +942,13 @@ Karte
 
 /* =========================================================
    MAUR STRASSENDIENST V19
-========================================================= */
+   ========================================================= */
 
 const CENTER=[47.337,8.667];
 
-const OSRM_BASE=
-'https://router.project-osrm.org';
+const OSRM='https://router.project-osrm.org';
 
-const NOMINATIM=
-'https://nominatim.openstreetmap.org/search';
+const NOMINATIM='https://nominatim.openstreetmap.org/search';
 
 const WFS_URL=
 'https://maps.zh.ch/wfs/OGDZHWFS'+
@@ -1312,4326 +959,3299 @@ const WFS_URL=
 '&outputFormat=application/json'+
 '&srsName=EPSG:4326';
 
-const DEPOT={
-  lat:47.337,
-  lng:8.667,
-  name:'Werkhof / Depot Maur'
-};
-
 const CATEGORY={
 
-  abfall:{
-    label:'Abfallkübel',
-    icon:'🗑️'
-  },
+ abfall:{
+  label:'Abfallkübel',
+  icon:'🗑️'
+ },
 
-  robidog:{
-    label:'Robidog',
-    icon:'🐕'
-  },
+ robidog:{
+  label:'Robidog',
+  icon:'🐕'
+ },
 
-  schacht:{
-    label:'Schacht / Saugen',
-    icon:'🕳️'
-  },
+ schacht:{
+  label:'Schacht zum Saugen',
+  icon:'🕳️'
+ },
 
-  vitaparcours:{
-    label:'Vitaparcours',
-    icon:'🏃'
-  },
+ vitaparcours:{
+  label:'Vitaparcours',
+  icon:'🏃'
+ },
 
-  blumentopf:{
-    label:'Blumentopf / Giessen',
-    icon:'🌺'
-  },
+ blumentopf:{
+  label:'Blumentopf',
+  icon:'🪴'
+ },
 
-  licht:{
-    label:'Beleuchtung',
-    icon:'💡'
-  },
+ schaden:{
+  label:'Schaden',
+  icon:'🚧'
+ },
 
-  schaden:{
-    label:'Strassenschaden',
-    icon:'🚧'
-  },
+ beleuchtung:{
+  label:'Beleuchtung',
+  icon:'💡'
+ },
 
-  signal:{
-    label:'Signalisation',
-    icon:'🪧'
-  },
+ gruen:{
+  label:'Grünanlage',
+  icon:'🌳'
+ },
 
-  baum:{
-    label:'Grünanlage',
-    icon:'🌳'
-  },
+ brunnen:{
+  label:'Brunnen',
+  icon:'💧'
+ },
 
-  neophyten:{
-    label:'Neophyten',
-    icon:'🌿'
-  },
-
-  brunnen:{
-    label:'Brunnen',
-    icon:'💧'
-  },
-
-  bach:{
-    label:'Bach / Gewässer',
-    icon:'🌊'
-  },
-
-  spielplatz:{
-    label:'Spielplatz',
-    icon:'🛝'
-  },
-
-  bank:{
-    label:'Sitzbank',
-    icon:'🪑'
-  },
-
-  reinigung:{
-    label:'Reinigung',
-    icon:'🧹'
-  },
-
-  winter:{
-    label:'Winterdienst',
-    icon:'❄️'
-  },
-
-  sonstiges:{
-    label:'Sonstiger Auftrag',
-    icon:'📍'
-  }
+ sonstiges:{
+  label:'Sonstiger Punkt',
+  icon:'📍'
+ }
 
 };
 
 let map;
 let osm;
-let sat;
-let streetNames;
-let houseNumbers;
+let satellite;
 
 let maurBoundary=null;
-let maurBounds=null;
-let maurMask=null;
-
-let userMarker=null;
-let destinationMarker=null;
-let routeLayer=null;
 
 let currentPosition=null;
+let userMarker=null;
 
 let workPoints=[];
 let workMarkers=[];
 
-let closures=[];
-let closureMarkers=[];
+let constructions=[];
+let constructionMarkers=[];
 
-let tours=[];
+let selectedPosition=null;
+let selectedPhoto='';
 
-let plannedTour=[];
-let plannedRouteLayer=null;
-let plannedStopMarkers=[];
+let selectingMapPosition=false;
+let constructionMode=false;
 
-let selectedPriority='medium';
-let beforePhoto='';
+let tourPoints=[];
+let tourLayer=null;
+let tourMarkers=[];
 
 let navigationActive=false;
-let followEnabled=false;
+let navigationIndex=0;
+
 let voiceEnabled=true;
 
-let trackActive=false;
-let trackPaused=false;
-let trackPoints=[];
-let trackDistance=0;
-let trackStartedAt=null;
-let pauseStartedAt=null;
-let pauseTotal=0;
-let trackTimer=null;
-let lastPosition=null;
-
-let currentTourMode=false;
-let currentTourIndex=-1;
-
-let filterOpen=false;
-let closureMode=false;
-
-let displayedTourLayer=null;
+let displayedRoute=null;
 
 
 /* =========================================================
    HILFSFUNKTIONEN
-========================================================= */
+   ========================================================= */
+
+function toast(text,time=2800){
+
+ const e=document.getElementById('toast');
+
+ e.textContent=text;
+ e.classList.add('show');
+
+ clearTimeout(toast.timer);
+
+ toast.timer=setTimeout(()=>{
+  e.classList.remove('show');
+ },time);
+}
+
+
+function esc(s){
+
+ return String(s??'')
+ .replace(/[&<>"']/g,c=>({
+  '&':'&amp;',
+  '<':'&lt;',
+  '>':'&gt;',
+  '"':'&quot;',
+  "'":'&#39;'
+ }[c]));
+
+}
+
 
 function uid(){
-  return Date.now()+'-'+Math.random().toString(36).slice(2,9);
+
+ return Date.now()+
+ '-'+
+ Math.random().toString(36).slice(2,9);
+
 }
 
-function esc(value){
-  return String(value??'')
-    .replace(/[&<>"']/g,c=>({
-      '&':'&amp;',
-      '<':'&lt;',
-      '>':'&gt;',
-      '"':'&quot;',
-      "'":'&#39;'
-    }[c]));
-}
-
-function toast(text,ms=3000){
-  const e=document.getElementById('toast');
-  e.textContent=text;
-  e.classList.add('show');
-  clearTimeout(toast.timer);
-  toast.timer=setTimeout(
-    ()=>e.classList.remove('show'),
-    ms
-  );
-}
-
-function status(text){
-  document.getElementById('status').textContent=text;
-}
 
 function formatDistance(m){
-  return m<1000
-    ?Math.round(m)+' m'
-    :(m/1000).toFixed(1)+' km';
+
+ if(m<1000)
+  return Math.round(m)+' m';
+
+ return (m/1000).toFixed(1)+' km';
+
 }
 
-function formatRouteTime(sec){
-  const m=Math.round(sec/60);
 
-  if(m<60)return m+' min';
+function formatTime(sec){
 
-  return Math.floor(m/60)+' h '+(m%60)+' min';
+ const min=Math.round(sec/60);
+
+ if(min<60)
+  return min+' min';
+
+ return Math.floor(min/60)+' h '+(min%60)+' min';
+
 }
 
-function formatDuration(s){
-  const h=Math.floor(s/3600);
-  const m=Math.floor((s%3600)/60);
-  const sec=s%60;
 
-  return String(h).padStart(2,'0')+':'+
-    String(m).padStart(2,'0')+':'+
-    String(sec).padStart(2,'0');
-}
+function distanceBetween(lat1,lon1,lat2,lon2){
 
-function shortTime(s){
-  const h=Math.floor(s/3600);
-  const m=Math.floor((s%3600)/60);
+ const R=6371000;
 
-  return String(h).padStart(2,'0')+':'+
-    String(m).padStart(2,'0');
-}
+ const p1=lat1*Math.PI/180;
+ const p2=lat2*Math.PI/180;
 
-function distanceBetween(
-  lat1,lon1,lat2,lon2
-){
-  const R=6371000;
+ const dp=(lat2-lat1)*Math.PI/180;
+ const dl=(lon2-lon1)*Math.PI/180;
 
-  const p1=lat1*Math.PI/180;
-  const p2=lat2*Math.PI/180;
+ const a=
+ Math.sin(dp/2)**2+
+ Math.cos(p1)*
+ Math.cos(p2)*
+ Math.sin(dl/2)**2;
 
-  const dp=(lat2-lat1)*Math.PI/180;
-  const dl=(lon2-lon1)*Math.PI/180;
+ return 2*R*
+ Math.atan2(
+  Math.sqrt(a),
+  Math.sqrt(1-a)
+ );
 
-  const a=
-    Math.sin(dp/2)**2+
-    Math.cos(p1)*
-    Math.cos(p2)*
-    Math.sin(dl/2)**2;
-
-  return 2*R*
-    Math.atan2(
-      Math.sqrt(a),
-      Math.sqrt(1-a)
-    );
-}
-
-function priorityText(p){
-  if(p==='high')return '🔴 Dringend';
-  if(p==='low')return '🟢 Später';
-  return '🟠 Normal';
-}
-
-function sleep(ms){
-  return new Promise(r=>setTimeout(r,ms));
 }
 
 
 /* =========================================================
    KARTE
-========================================================= */
+   ========================================================= */
 
 map=L.map('map',{
-  zoomControl:true,
-  preferCanvas:true,
-  minZoom:8,
-  maxZoom:19
+ zoomControl:true,
+ preferCanvas:true,
+ maxZoom:20
 }).setView(CENTER,13);
-
-map.createPane('maurMaskPane');
-map.getPane('maurMaskPane').style.zIndex=350;
-
-map.createPane('routePane');
-map.getPane('routePane').style.zIndex=450;
-
-map.createPane('labelPane');
-map.getPane('labelPane').style.zIndex=500;
-
-map.createPane('boundaryPane');
-map.getPane('boundaryPane').style.zIndex=700;
 
 map.createPane('workPane');
 map.getPane('workPane').style.zIndex=750;
 
-map.createPane('trackPane');
-map.getPane('trackPane').style.zIndex=760;
+map.createPane('tourPane');
+map.getPane('tourPane').style.zIndex=760;
 
-map.createPane('closurePane');
-map.getPane('closurePane').style.zIndex=770;
+map.createPane('constructionPane');
+map.getPane('constructionPane').style.zIndex=780;
 
 osm=L.tileLayer(
-  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-  {
-    maxZoom:19,
-    attribution:'© OpenStreetMap contributors'
-  }
+ 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+ {
+  maxZoom:19,
+  attribution:'© OpenStreetMap contributors'
+ }
 ).addTo(map);
 
-sat=L.tileLayer(
-  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-  {
-    maxZoom:19,
-    attribution:'© Esri World Imagery'
-  }
+satellite=L.tileLayer(
+ 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+ {
+  maxZoom:19,
+  attribution:'© Esri World Imagery'
+ }
 );
 
-streetNames=L.tileLayer.wms(
-  'https://wms.geo.admin.ch/',
-  {
-    layers:'ch.swisstopo.amtliches-strassenverzeichnis',
-    format:'image/png',
-    transparent:true,
-    version:'1.3.0',
-    pane:'labelPane',
-    minZoom:14,
-    maxZoom:20
-  }
-).addTo(map);
 
-houseNumbers=L.tileLayer.wms(
-  'https://wms.geo.admin.ch/',
-  {
-    layers:'ch.swisstopo.amtliches-gebaeudeadressverzeichnis',
-    format:'image/png',
-    transparent:true,
-    version:'1.3.0',
-    pane:'labelPane',
-    minZoom:16,
-    maxZoom:20
-  }
-).addTo(map);
+function setMapView(type){
 
+ if(type==='normal'){
 
-/* =========================================================
-   MAUR
-========================================================= */
+  if(!map.hasLayer(osm))
+   osm.addTo(map);
 
-async function loadMaur(){
+  if(map.hasLayer(satellite))
+   map.removeLayer(satellite);
 
-  try{
+ }
 
-    status('ONLINE • Lade Gemeinde Maur …');
+ if(type==='satellite'){
 
-    const r=await fetch(
-      WFS_URL,
-      {cache:'no-store'}
-    );
+  if(map.hasLayer(osm))
+   map.removeLayer(osm);
 
-    if(!r.ok)throw Error('WFS');
+  if(!map.hasLayer(satellite))
+   satellite.addTo(map);
 
-    const geo=await r.json();
+ }
 
-    const feature=(geo.features||[]).find(f=>{
-      const p=f.properties||{};
+ if(type==='hybrid'){
 
-      return Object.values(p).some(
-        v=>String(v??'')
-          .trim()
-          .toUpperCase()==='MAUR'
-      );
-    });
+  if(!map.hasLayer(satellite))
+   satellite.addTo(map);
 
-    if(!feature)
-      throw Error('Maur nicht gefunden');
+  if(!map.hasLayer(osm))
+   osm.addTo(map);
 
-    maurBoundary=L.geoJSON(
-      feature,
-      {
-        pane:'boundaryPane',
-        style:{
-          color:'#0057d9',
-          weight:6,
-          fill:false
-        },
-        interactive:false
-      }
-    ).addTo(map);
+  osm.setOpacity(.45);
 
-    maurBounds=maurBoundary.getBounds();
+ }
 
-    map.fitBounds(
-      maurBounds.pad(.05),
-      {animate:false}
-    );
+ localStorage.setItem('maurMapViewV19',type);
 
-    createMaurMask(feature.geometry);
-
-    status('ONLINE • NUR GEMEINDE MAUR');
-
-  }catch(e){
-
-    console.warn(e);
-    status('ONLINE • Karte aktiv');
-
-  }
+ toast('Kartenansicht: '+type);
 
 }
 
-function createMaurMask(geometry){
 
-  const world=[
-    [90,-180],
-    [90,180],
-    [-90,180],
-    [-90,-180],
-    [90,-180]
-  ];
+map.on('click',e=>{
 
-  const rings=[];
+ if(selectingMapPosition){
 
-  if(geometry?.type==='Polygon'){
-    geometry.coordinates.forEach(
-      ring=>rings.push(
-        ring.map(p=>[p[1],p[0]])
-      )
-    );
-  }
+  selectedPosition={
+   lat:e.latlng.lat,
+   lng:e.latlng.lng
+  };
 
-  if(geometry?.type==='MultiPolygon'){
-    geometry.coordinates.forEach(
-      poly=>poly.forEach(
-        ring=>rings.push(
-          ring.map(p=>[p[1],p[0]])
-        )
-      )
-    );
-  }
+  selectingMapPosition=false;
 
-  maurMask=L.polygon(
-    [world,...rings],
-    {
-      pane:'maurMaskPane',
-      stroke:false,
-      fillColor:'#fff',
-      fillOpacity:1,
-      fillRule:'evenodd',
-      interactive:false
-    }
+  document.getElementById('selectedPosition').textContent=
+   'Position: '+
+   e.latlng.lat.toFixed(6)+
+   ', '+
+   e.latlng.lng.toFixed(6);
+
+  toast('Position ausgewählt.');
+
+  return;
+ }
+
+ if(constructionMode){
+
+  constructionMode=false;
+
+  addConstruction(e.latlng.lat,e.latlng.lng);
+
+ }
+
+});
+
+
+/* =========================================================
+   GEMEINDE MAUR
+   ========================================================= */
+
+async function loadMaurBoundary(){
+
+ try{
+
+  const r=await fetch(WFS_URL,{cache:'no-store'});
+
+  if(!r.ok)
+   throw Error(r.status);
+
+  const geo=await r.json();
+
+  const feature=(geo.features||[]).find(f=>{
+
+   return Object.values(f.properties||{})
+   .some(v=>
+    String(v??'')
+    .toUpperCase()
+    .trim()==='MAUR'
+   );
+
+  });
+
+  if(!feature)
+   return;
+
+  maurBoundary=L.geoJSON(
+   feature,
+   {
+    style:{
+     color:'#0057d9',
+     weight:5,
+     fill:false
+    },
+    interactive:false
+   }
   ).addTo(map);
-}
 
-
-/* =========================================================
-   KARTENANSICHT
-========================================================= */
-
-function changeView(view){
-
-  localStorage.setItem(
-    'maurMapViewV19',
-    view
+  map.fitBounds(
+   maurBoundary.getBounds().pad(.06)
   );
 
-  if(view==='normal'){
+ }catch(e){
 
-    if(!map.hasLayer(osm))
-      osm.addTo(map);
+  console.warn(e);
 
-    osm.setOpacity(1);
-
-    if(map.hasLayer(sat))
-      map.removeLayer(sat);
-
-  }
-
-  if(view==='satellite'){
-
-    if(map.hasLayer(osm))
-      map.removeLayer(osm);
-
-    if(!map.hasLayer(sat))
-      sat.addTo(map);
-
-  }
-
-  if(view==='hybrid'){
-
-    if(!map.hasLayer(sat))
-      sat.addTo(map);
-
-    if(!map.hasLayer(osm))
-      osm.addTo(map);
-
-    osm.setOpacity(.45);
-
-  }
+ }
 
 }
 
 
 /* =========================================================
    GPS
-========================================================= */
+   ========================================================= */
 
 function startGPS(){
 
-  if(!navigator.geolocation){
+ if(!navigator.geolocation){
 
-    status('GPS nicht verfügbar');
-    return;
+  toast('GPS nicht verfügbar.');
+  return;
 
-  }
+ }
 
-  navigator.geolocation.watchPosition(
-    updateGPS,
-    ()=>{
-      status('ONLINE • GPS wartet');
-    },
-    {
-      enableHighAccuracy:true,
-      maximumAge:3000,
-      timeout:15000
-    }
-  );
+ navigator.geolocation.watchPosition(
 
-}
+  p=>{
 
-function updateGPS(position){
+   currentPosition={
+    lat:p.coords.latitude,
+    lng:p.coords.longitude,
+    accuracy:p.coords.accuracy
+   };
 
-  currentPosition={
-    lat:position.coords.latitude,
-    lng:position.coords.longitude,
-    accuracy:position.coords.accuracy,
-    altitude:position.coords.altitude,
-    speed:position.coords.speed
-  };
-
-  status(
+   document.getElementById('status').textContent=
     'ONLINE • GPS '+
-    Math.round(currentPosition.accuracy)+
-    ' m'
-  );
+    Math.round(p.coords.accuracy)+
+    ' m';
 
-  const ll=[
+   const ll=[
     currentPosition.lat,
     currentPosition.lng
-  ];
+   ];
 
-  if(!userMarker){
+   if(!userMarker){
 
     userMarker=L.marker(
-      ll,
-      {
-        icon:L.divIcon({
-          className:'',
-          html:'<div class="gps-icon"></div>',
-          iconSize:[18,18],
-          iconAnchor:[9,9]
-        }),
-        zIndexOffset:2000
-      }
+     ll,
+     {
+      icon:L.divIcon({
+       className:'',
+       html:'<div class="gps-icon"></div>',
+       iconSize:[18,18],
+       iconAnchor:[9,9]
+      }),
+      zIndexOffset:2000
+     }
     ).addTo(map);
 
-  }else{
+   }else{
 
     userMarker.setLatLng(ll);
 
+   }
+
+   if(navigationActive){
+
+    updateNavigationDistance();
+
+   }
+
+  },
+
+  e=>{
+   console.warn(e);
+  },
+
+  {
+   enableHighAccuracy:true,
+   maximumAge:4000,
+   timeout:15000
   }
 
-  if(trackActive&&!trackPaused){
-
-    addTrackPoint(
-      currentPosition.lat,
-      currentPosition.lng
-    );
-
-  }
-
-  if(followEnabled){
-
-    map.setView(
-      ll,
-      Math.max(map.getZoom(),16),
-      {animate:true}
-    );
-
-  }
-
-  if(navigationActive){
-
-    checkDestinationDistance();
-
-  }
+ );
 
 }
+
 
 function locateMe(){
 
-  if(!currentPosition){
+ if(!currentPosition){
 
-    toast('GPS wird noch gesucht.');
-    return;
+  toast('GPS wird noch gesucht.');
+  return;
 
-  }
+ }
 
-  map.setView(
-    [
-      currentPosition.lat,
-      currentPosition.lng
-    ],
-    17
-  );
+ map.setView(
+  [
+   currentPosition.lat,
+   currentPosition.lng
+  ],
+  17
+ );
+
+}
+
+
+function useCurrentPosition(){
+
+ if(!currentPosition){
+
+  toast('GPS wird noch gesucht.');
+  return;
+
+ }
+
+ selectedPosition={
+  lat:currentPosition.lat,
+  lng:currentPosition.lng
+ };
+
+ document.getElementById('selectedPosition').textContent=
+  'GPS: '+
+  currentPosition.lat.toFixed(6)+
+  ', '+
+  currentPosition.lng.toFixed(6);
 
 }
 
 
 /* =========================================================
-   SUCHE
-========================================================= */
+   PANEL
+   ========================================================= */
 
-const search=document.getElementById('search');
-const results=document.getElementById('results');
+function openPanel(id){
 
-let searchTimer;
+ document.querySelectorAll('.panel')
+ .forEach(p=>p.classList.remove('open'));
 
-search.addEventListener(
-  'input',
-  ()=>{
-    clearTimeout(searchTimer);
+ document.getElementById(id)
+ .classList.add('open');
 
-    const q=search.value.trim();
+ document.getElementById('searchWrap')
+ .style.display='none';
 
-    if(q.length<3){
-      results.innerHTML='';
-      return;
-    }
+}
 
-    searchTimer=setTimeout(
-      ()=>doSearch(q),
-      350
-    );
-  }
-);
 
-async function doSearch(q){
+function closePanels(){
 
-  results.innerHTML=
-    '<div class="result">Suche …</div>';
+ document.querySelectorAll('.panel')
+ .forEach(p=>p.classList.remove('open'));
 
-  try{
+ document.getElementById('searchWrap')
+ .style.display='block';
 
-    const url=
-      NOMINATIM+
-      '?format=jsonv2&limit=8&countrycodes=ch&q='+
-      encodeURIComponent(
-        q+', Maur, Zürich, Schweiz'
-      );
-
-    const r=await fetch(
-      url,
-      {
-        headers:{
-          Accept:'application/json'
-        }
-      }
-    );
-
-    const data=await r.json();
-
-    if(!data.length){
-
-      results.innerHTML=
-        '<div class="result">Nichts gefunden.</div>';
-
-      return;
-
-    }
-
-    results.innerHTML=data.map(
-      (x,i)=>`
-      <div class="result" data-i="${i}">
-        <b>${esc(
-          x.display_name
-            .split(',')
-            .slice(0,2)
-            .join(', ')
-        )}</b>
-        <small>${esc(x.display_name)}</small>
-      </div>
-      `
-    ).join('');
-
-    [...results.children].forEach(
-      (e,i)=>{
-        e.onclick=()=>{
-          results.innerHTML='';
-          search.value=
-            data[i].display_name
-              .split(',')
-              .slice(0,2)
-              .join(', ');
-
-          setDestination(
-            Number(data[i].lat),
-            Number(data[i].lon),
-            'Suchziel'
-          );
-        };
-      }
-    );
-
-  }catch(e){
-
-    results.innerHTML=
-      '<div class="result">Suche nicht verfügbar.</div>';
-
-  }
+ map.invalidateSize();
 
 }
 
 
 /* =========================================================
-   NAVIGATION
-========================================================= */
+   PUNKT FORMULAR
+   ========================================================= */
 
-function setDestination(lat,lng,title){
+function openPointForm(category){
 
-  if(destinationMarker)
-    map.removeLayer(destinationMarker);
+ selectedPosition=null;
+ selectedPhoto='';
 
-  destinationMarker=L.marker(
-    [lat,lng]
-  )
-  .addTo(map)
-  .bindPopup(esc(title));
+ document.getElementById('pointCategory').value=category;
 
-  routeTo(
-    [lng,lat],
-    true,
-    title
-  );
+ document.getElementById('pointName').value=
+  CATEGORY[category].label;
 
-}
+ document.getElementById('pointNote').value='';
 
-async function routeTo(
-  destination,
-  fit=true,
-  title='Ziel'
-){
+ document.getElementById('pointPhoto').value='';
 
-  if(!currentPosition){
+ document.getElementById('photoPreview').style.display='none';
 
-    toast('GPS wird noch gesucht.');
-    return;
+ renderSpecialFields(category);
 
-  }
+ document.getElementById('selectedPosition').textContent=
+  'Noch keine Position ausgewählt.';
 
-  const from=[
-    currentPosition.lng,
-    currentPosition.lat
-  ];
-
-  try{
-
-    const url=
-      OSRM_BASE+
-      '/route/v1/driving/'+
-      from.join(',')+
-      ';'+
-      destination.join(',')+
-      '?overview=full&geometries=geojson&steps=true&alternatives=2';
-
-    const r=await fetch(url);
-
-    if(!r.ok)throw Error('Route');
-
-    const data=await r.json();
-
-    if(!data.routes?.length)
-      throw Error('Keine Route');
-
-    let route=data.routes[0];
-
-    const alternative=
-      chooseRouteAvoidingClosures(
-        data.routes
-      );
-
-    if(alternative)
-      route=alternative;
-
-    if(routeLayer)
-      map.removeLayer(routeLayer);
-
-    routeLayer=L.geoJSON(
-      route.geometry,
-      {
-        pane:'routePane',
-        style:{
-          color:'#2563eb',
-          weight:7,
-          opacity:.9
-        }
-      }
-    ).addTo(map);
-
-    navigationActive=true;
-
-    document
-      .getElementById('navInfo')
-      .classList.add('show');
-
-    document
-      .getElementById('navMain')
-      .textContent=
-        '🧭 '+title+
-        ' • '+
-        formatDistance(route.distance)+
-        ' • '+
-        formatRouteTime(route.duration);
-
-    document
-      .getElementById('navSub')
-      .textContent=
-        'Schnellste verfügbare Route • Alternativen geprüft';
-
-    if(fit){
-
-      map.fitBounds(
-        routeLayer.getBounds(),
-        {
-          padding:[40,130],
-          maxZoom:16
-        }
-      );
-
-    }
-
-    speak(
-      'Route berechnet. '+
-      formatDistance(route.distance)+
-      '.'
-    );
-
-  }catch(e){
-
-    console.warn(e);
-
-    toast(
-      'Route konnte nicht berechnet werden.'
-    );
-
-  }
+ openPanel('pointPanel');
 
 }
 
-function chooseRouteAvoidingClosures(routes){
 
-  if(!closures.length)
-    return routes[0];
+document.getElementById('pointCategory')
+.addEventListener('change',e=>{
 
-  for(const route of routes){
+ renderSpecialFields(e.target.value);
 
-    if(!routeIntersectsClosures(route))
-      return route;
+});
 
-  }
 
-  return routes[0];
+function renderSpecialFields(category){
+
+ const e=document.getElementById('specialFields');
+
+ let html='';
+
+ if(category==='vitaparcours'){
+
+  html+=`
+   <label class="form-label">Vitaparcours-Mangel</label>
+
+   <select id="specialType" class="form-select">
+
+    <option value="schaden">🚧 Schaden</option>
+
+    <option value="untergrund">🟫 Untergrund</option>
+
+    <option value="erde">🌱 Erde auffüllen</option>
+
+    <option value="kies">🪨 Kies auffüllen</option>
+
+    <option value="wasser">💧 Wasser-/Entwässerungsproblem</option>
+
+    <option value="verschmutzung">🧹 Verschmutzung</option>
+
+    <option value="jaeten">🌿 Jäten</option>
+
+    <option value="sonstiges">📍 Sonstiges</option>
+
+   </select>
+  `;
+
+ }
+
+ if(category==='blumentopf'){
+
+  html+=`
+   <label class="form-label">Aufgabe</label>
+
+   <select id="specialType" class="form-select">
+
+    <option value="giessen">💧 Giessen</option>
+
+    <option value="kontrolle">🔎 Kontrolle</option>
+
+    <option value="pflanzen">🌱 Pflanzen kontrollieren</option>
+
+    <option value="schaedling">🐛 Schädlinge</option>
+
+    <option value="sonstiges">📍 Sonstiges</option>
+
+   </select>
+  `;
+
+ }
+
+ if(category==='schacht'){
+
+  html+=`
+   <label class="form-label">Schacht-Arbeit</label>
+
+   <select id="specialType" class="form-select">
+
+    <option value="saugen">🕳️ Saugen</option>
+
+    <option value="reinigen">🧹 Reinigen</option>
+
+    <option value="kontrolle">🔎 Kontrolle</option>
+
+    <option value="sonstiges">📍 Sonstiges</option>
+
+   </select>
+  `;
+
+ }
+
+ if(category==='robidog'){
+
+  html+=`
+   <label class="form-label">Robidog-Arbeit</label>
+
+   <select id="specialType" class="form-select">
+
+    <option value="leeren">🐕 Behälter leeren</option>
+
+    <option value="beutel">🛍️ Beutel nachfüllen</option>
+
+    <option value="reinigen">🧹 Reinigen</option>
+
+    <option value="kontrolle">🔎 Kontrolle</option>
+
+   </select>
+  `;
+
+ }
+
+ if(category==='abfall'){
+
+  html+=`
+   <label class="form-label">Abfallkübel-Arbeit</label>
+
+   <select id="specialType" class="form-select">
+
+    <option value="leeren">🗑️ Leeren</option>
+
+    <option value="reinigen">🧹 Reinigen</option>
+
+    <option value="kontrolle">🔎 Kontrolle</option>
+
+    <option value="defekt">🚧 Defekt</option>
+
+   </select>
+  `;
+
+ }
+
+ if(category==='schaden'){
+
+  html+=`
+   <label class="form-label">Schadenart</label>
+
+   <select id="specialType" class="form-select">
+
+    <option value="strasse">🛣️ Strasse</option>
+
+    <option value="weg">🚶 Weg</option>
+
+    <option value="belag">🟫 Belag</option>
+
+    <option value="einrichtung">🛠️ Einrichtung</option>
+
+    <option value="sonstiges">📍 Sonstiges</option>
+
+   </select>
+  `;
+
+ }
+
+ e.innerHTML=html;
+
 }
 
-function routeIntersectsClosures(route){
 
-  if(!route?.geometry?.coordinates)
-    return false;
+document.getElementById('pointPhoto')
+.addEventListener('change',e=>{
 
-  for(const coordinate of route.geometry.coordinates){
+ const file=e.target.files?.[0];
 
-    const lng=coordinate[0];
-    const lat=coordinate[1];
+ if(!file)
+  return;
 
-    for(const closure of closures){
+ const reader=new FileReader();
 
-      const d=distanceBetween(
-        lat,
-        lng,
-        closure.lat,
-        closure.lng
-      );
+ reader.onload=()=>{
 
-      if(d<=closure.radius)
-        return true;
+  selectedPhoto=reader.result;
 
-    }
+  const img=document.getElementById('photoPreview');
 
-  }
+  img.src=selectedPhoto;
+  img.style.display='block';
 
-  return false;
-}
+ };
 
-function checkDestinationDistance(){
+ reader.readAsDataURL(file);
 
-  if(!destinationMarker||!currentPosition)
-    return;
+});
 
-  const target=
-    destinationMarker.getLatLng();
 
-  const d=distanceBetween(
-    currentPosition.lat,
-    currentPosition.lng,
-    target.lat,
-    target.lng
-  );
+function activateMapPosition(){
 
-  if(d<25){
+ selectingMapPosition=true;
 
-    navigationActive=false;
+ closePanels();
 
-    speak('Ziel erreicht.');
-
-    toast('📍 Ziel erreicht.');
-
-    if(currentTourMode){
-
-      setTimeout(
-        finishTourStop,
-        1000
-      );
-
-    }
-
-  }
-
-}
-
-function stopNavigation(){
-
-  navigationActive=false;
-
-  if(routeLayer){
-    map.removeLayer(routeLayer);
-    routeLayer=null;
-  }
-
-  if(destinationMarker){
-    map.removeLayer(destinationMarker);
-    destinationMarker=null;
-  }
-
-  document
-    .getElementById('navInfo')
-    .classList.remove('show');
-
-  currentTourMode=false;
-
-  toast('Navigation beendet.');
-
-}
-
-function speak(text){
-
-  if(
-    !voiceEnabled||
-    !window.speechSynthesis
-  )return;
-
-  speechSynthesis.cancel();
-
-  const u=
-    new SpeechSynthesisUtterance(text);
-
-  u.lang='de-CH';
-
-  speechSynthesis.speak(u);
-
-}
-
-function toggleVoice(){
-
-  voiceEnabled=!voiceEnabled;
-
-  document.getElementById(
-    'voiceBtn'
-  ).textContent=
-    voiceEnabled
-    ?'🔊 Sprache an'
-    :'🔇 Sprache aus';
-
-}
-
-function toggleFollow(){
-
-  followEnabled=!followEnabled;
-
-  const b=
-    document.getElementById(
-      'followBtn'
-    );
-
-  b.textContent=
-    followEnabled
-    ?'📍 Folgen an'
-    :'📍 Folgen aus';
-
-  b.classList.toggle(
-    'off',
-    !followEnabled
-  );
-
-  if(followEnabled)
-    locateMe();
+ toast('Jetzt auf der Karte den Standort antippen.');
 
 }
 
 
 /* =========================================================
-   DATEN
-========================================================= */
+   PUNKT SPEICHERN
+   ========================================================= */
 
-function loadData(){
+function savePoint(){
 
-  try{
-    workPoints=JSON.parse(
-      localStorage.getItem(
-        'maurWorkPointsV19'
-      )||'[]'
-    );
-  }catch{
-    workPoints=[];
-  }
+ const category=
+  document.getElementById('pointCategory').value;
 
-  try{
-    tours=JSON.parse(
-      localStorage.getItem(
-        'maurToursV19'
-      )||'[]'
-    );
-  }catch{
-    tours=[];
-  }
+ const name=
+  document.getElementById('pointName').value.trim();
 
-  try{
-    closures=JSON.parse(
-      localStorage.getItem(
-        'maurClosuresV19'
-      )||'[]'
-    );
-  }catch{
-    closures=[];
-  }
+ const note=
+  document.getElementById('pointNote').value.trim();
 
-}
+ if(!selectedPosition){
 
-function saveData(){
-  localStorage.setItem(
-    'maurWorkPointsV19',
-    JSON.stringify(workPoints)
-  );
-}
+  toast('Bitte zuerst eine Position auswählen.');
+  return;
 
-function saveTours(){
-  localStorage.setItem(
-    'maurToursV19',
-    JSON.stringify(tours)
-  );
-}
+ }
 
-function saveClosures(){
-  localStorage.setItem(
-    'maurClosuresV19',
-    JSON.stringify(closures)
-  );
-}
+ if(!name){
 
+  toast('Bitte eine Bezeichnung eingeben.');
+  return;
 
-/* =========================================================
-   AUFGABE ERFASSEN
-========================================================= */
+ }
 
-function openNewPoint(category='sonstiges'){
+ const special=
+  document.getElementById('specialType')?.value||'';
 
-  if(!currentPosition){
+ const point={
 
-    toast('GPS wird noch gesucht.');
-    return;
+  id:uid(),
 
-  }
+  category,
 
-  document.getElementById(
-    'pointCategory'
-  ).value=category;
+  name,
 
-  document.getElementById(
-    'pointName'
-  ).value=CATEGORY[category].label;
+  note,
 
-  document.getElementById(
-    'pointNote'
-  ).value='';
+  special,
 
-  document.getElementById(
-    'beforePhoto'
-  ).value='';
+  lat:selectedPosition.lat,
 
-  document.getElementById(
-    'beforePreview'
-  ).style.display='none';
+  lng:selectedPosition.lng,
 
-  beforePhoto='';
+  photo:selectedPhoto,
 
-  selectedPriority='medium';
+  done:false,
 
-  updatePriorityButtons();
+  createdAt:new Date().toISOString(),
 
-  renderCategoryExtra(category);
+  doneAt:null
 
-  openPanel('workPointPanel');
+ };
 
-}
+ workPoints.push(point);
 
-function updatePriorityButtons(){
+ savePoints();
 
-  document
-    .querySelectorAll('[data-priority]')
-    .forEach(b=>{
-      b.classList.toggle(
-        'active',
-        b.dataset.priority===selectedPriority
-      );
-    });
+ renderPoints();
 
-}
+ updateDashboard();
 
-function renderCategoryExtra(category){
+ closePanels();
 
-  const box=
-    document.getElementById(
-      'categoryExtra'
-    );
+ map.setView(
+  [point.lat,point.lng],
+  17
+ );
 
-  let html='';
-
-  if(category==='schacht'){
-
-    html=`
-      <label class="form-label">
-        Schacht-Arbeit
-      </label>
-
-      <select id="extraType" class="form-select">
-        <option>Schacht saugen</option>
-        <option>Schacht kontrollieren</option>
-        <option>Schacht reinigen</option>
-        <option>Schacht beschädigt</option>
-      </select>
-    `;
-
-  }
-
-  if(category==='blumentopf'){
-
-    html=`
-      <label class="form-label">
-        Giess-/Pflanzenarbeit
-      </label>
-
-      <div class="checkgrid">
-
-        <label class="checkitem">
-          <input type="checkbox" id="waterNeeded" checked>
-          💧 Giessen
-        </label>
-
-        <label class="checkitem">
-          <input type="checkbox" id="plantProblem">
-          🪴 Pflanze problematisch
-        </label>
-
-        <label class="checkitem">
-          <input type="checkbox" id="potProblem">
-          🪴 Topf beschädigt
-        </label>
-
-      </div>
-
-      <label class="form-label">
-        Wassermenge
-      </label>
-
-      <select id="waterAmount" class="form-select">
-        <option>5 Liter</option>
-        <option selected>10 Liter</option>
-        <option>20 Liter</option>
-        <option>30 Liter</option>
-        <option>Andere</option>
-      </select>
-    `;
-
-  }
-
-  if(category==='vitaparcours'){
-
-    const selected=[
-      ...document.querySelectorAll(
-        '.vitaTask:checked'
-      )
-    ].map(
-      x=>x.value
-    );
-
-    html=`
-      <label class="form-label">
-        Vitaparcours-Arbeiten
-      </label>
-
-      <div class="checkgrid">
-
-        <label class="checkitem">
-          <input type="checkbox"
-            value="Holzschnitzel auffüllen"
-            class="extraVitaTask"
-            ${selected.includes('Holzschnitzel auffüllen')?'checked':''}>
-          🪵 Holzschnitzel
-        </label>
-
-        <label class="checkitem">
-          <input type="checkbox"
-            value="Kies auffüllen"
-            class="extraVitaTask"
-            ${selected.includes('Kies auffüllen')?'checked':''}>
-          🪨 Kies
-        </label>
-
-        <label class="checkitem">
-          <input type="checkbox"
-            value="Verschmutzung"
-            class="extraVitaTask"
-            ${selected.includes('Verschmutzung')?'checked':''}>
-          🧹 Verschmutzung
-        </label>
-
-        <label class="checkitem">
-          <input type="checkbox"
-            value="Jäten / Unkraut entfernen"
-            class="extraVitaTask"
-            ${selected.includes('Jäten / Unkraut entfernen')?'checked':''}>
-          🌱 Jäten
-        </label>
-
-        <label class="checkitem">
-          <input type="checkbox"
-            value="Laub / Grünabfall"
-            class="extraVitaTask"
-            ${selected.includes('Laub / Grünabfall')?'checked':''}>
-          🍂 Laub
-        </label>
-
-        <label class="checkitem">
-          <input type="checkbox"
-            value="Zurückschneiden"
-            class="extraVitaTask"
-            ${selected.includes('Zurückschneiden')?'checked':''}>
-          ✂️ Zurückschneiden
-        </label>
-
-        <label class="checkitem">
-          <input type="checkbox"
-            value="Holz beschädigt"
-            class="extraVitaTask"
-            ${selected.includes('Holz beschädigt')?'checked':''}>
-          🪵 Holz beschädigt
-        </label>
-
-        <label class="checkitem">
-          <input type="checkbox"
-            value="Befestigung / Schrauben"
-            class="extraVitaTask"
-            ${selected.includes('Befestigung / Schrauben')?'checked':''}>
-          🔩 Befestigung
-        </label>
-
-        <label class="checkitem">
-          <input type="checkbox"
-            value="Tafel beschädigt"
-            class="extraVitaTask"
-            ${selected.includes('Tafel beschädigt')?'checked':''}>
-          🪧 Tafel
-        </label>
-
-        <label class="checkitem">
-          <input type="checkbox"
-            value="Station beschädigt"
-            class="extraVitaTask"
-            ${selected.includes('Station beschädigt')?'checked':''}>
-          🏋️ Station beschädigt
-        </label>
-
-      </div>
-    `;
-
-  }
-
-  box.innerHTML=html;
+ toast(
+  CATEGORY[category].icon+
+  ' Punkt gespeichert und auf Karte angezeigt.'
+ );
 
 }
 
 
 /* =========================================================
-   FOTO
-========================================================= */
+   DATEN SPEICHERN
+   ========================================================= */
 
-document.getElementById(
-  'beforePhoto'
-).addEventListener(
-  'change',
-  e=>{
+function savePoints(){
 
-    const file=e.target.files?.[0];
+ localStorage.setItem(
+  'maurWorkPointsV19',
+  JSON.stringify(workPoints)
+ );
 
-    if(!file)return;
-
-    const reader=new FileReader();
-
-    reader.onload=()=>{
-
-      beforePhoto=reader.result;
-
-      const img=
-        document.getElementById(
-          'beforePreview'
-        );
-
-      img.src=beforePhoto;
-      img.style.display='block';
-
-    };
-
-    reader.readAsDataURL(file);
-
-  }
-);
+}
 
 
-/* =========================================================
-   AUFGABE SPEICHERN
-========================================================= */
+function loadPoints(){
 
-function saveWorkPoint(){
+ try{
 
-  if(!currentPosition){
+  workPoints=
+   JSON.parse(
+    localStorage.getItem('maurWorkPointsV19')||'[]'
+   );
 
-    toast('GPS wird noch gesucht.');
-    return;
+ }catch(e){
 
-  }
+  workPoints=[];
 
-  const category=
-    document.getElementById(
-      'pointCategory'
-    ).value;
+ }
 
-  const name=
-    document.getElementById(
-      'pointName'
-    ).value.trim();
+}
 
-  const note=
-    document.getElementById(
-      'pointNote'
-    ).value.trim();
 
-  if(!name){
+function saveConstructions(){
 
-    toast('Bitte Bezeichnung eingeben.');
-    return;
+ localStorage.setItem(
+  'maurConstructionV19',
+  JSON.stringify(constructions)
+ );
 
-  }
+}
 
-  const point={
-    id:uid(),
-    category,
-    name,
-    note,
-    priority:selectedPriority,
-    lat:currentPosition.lat,
-    lng:currentPosition.lng,
-    accuracy:currentPosition.accuracy,
-    beforePhoto:beforePhoto||'',
-    afterPhoto:'',
-    done:false,
-    createdAt:new Date().toISOString(),
-    doneAt:null,
-    extra:{}
-  };
 
-  if(category==='schacht'){
+function loadConstructions(){
 
-    point.extra.type=
-      document.getElementById(
-        'extraType'
-      )?.value||'Schacht saugen';
+ try{
 
-  }
+  constructions=
+   JSON.parse(
+    localStorage.getItem('maurConstructionV19')||'[]'
+   );
 
-  if(category==='blumentopf'){
+ }catch(e){
 
-    point.extra.water=
-      document.getElementById(
-        'waterNeeded'
-      )?.checked||false;
+  constructions=[];
 
-    point.extra.amount=
-      document.getElementById(
-        'waterAmount'
-      )?.value||'10 Liter';
-
-    point.extra.plantProblem=
-      document.getElementById(
-        'plantProblem'
-      )?.checked||false;
-
-    point.extra.potProblem=
-      document.getElementById(
-        'potProblem'
-      )?.checked||false;
-
-  }
-
-  if(category==='vitaparcours'){
-
-    point.extra.tasks=[
-      ...document.querySelectorAll(
-        '.extraVitaTask:checked'
-      )
-    ].map(
-      x=>x.value
-    );
-
-  }
-
-  workPoints.push(point);
-
-  saveData();
-  renderWorkPoints();
-  updateDashboard();
-
-  closePanels();
-
-  toast(
-    CATEGORY[category].icon+
-    ' Auftrag gespeichert.'
-  );
+ }
 
 }
 
 
 /* =========================================================
-   MARKER
-========================================================= */
+   PUNKT MARKER
+   ========================================================= */
 
-function createWorkMarker(point){
+function createPointMarker(p){
 
-  const cat=
-    CATEGORY[point.category]||
-    CATEGORY.sonstiges;
+ const cat=
+  CATEGORY[p.category]||
+  CATEGORY.sonstiges;
 
-  const icon=
-    L.divIcon({
-      className:'',
-      html:
-        '<div class="work-icon '+
-        point.priority+
-        (point.done?' done':'')+
-        '">'+
-        cat.icon+
-        '</div>',
-      iconSize:[36,36],
-      iconAnchor:[18,18]
-    });
+ const icon=L.divIcon({
 
-  const marker=
-    L.marker(
-      [point.lat,point.lng],
-      {
-        icon,
-        pane:'workPane'
-      }
-    );
+  className:'',
 
-  let extra='';
+  html:
+   '<div class="work-icon '+
+   (p.done?'done':'')+
+   '">'+
+   cat.icon+
+   '</div>',
 
-  if(point.category==='schacht'){
-    extra=
-      '<div style="margin-top:6px">'+
-      esc(point.extra?.type||'Schacht')+
-      '</div>';
+  iconSize:[34,34],
+
+  iconAnchor:[17,17]
+
+ });
+
+ const marker=L.marker(
+  [p.lat,p.lng],
+  {
+   icon,
+   pane:'workPane'
   }
+ );
 
-  if(point.category==='blumentopf'){
+ let specialText='';
 
-    extra=
-      '<div style="margin-top:6px">'+
-      (point.extra?.water?'💧 '+esc(point.extra.amount||'Giessen'):'')+
-      (point.extra?.plantProblem?' 🪴 Pflanze prüfen':'')+
-      (point.extra?.potProblem?' 🪴 Topf prüfen':'')+
-      '</div>';
+ if(p.special){
 
-  }
+  const names={
 
-  if(point.category==='vitaparcours'&&point.extra?.tasks?.length){
+   leeren:'Leeren',
 
-    extra=
-      '<div style="margin-top:6px">'+
-      point.extra.tasks
-        .map(esc)
-        .join('<br>')+
-      '</div>';
+   beutel:'Beutel nachfüllen',
 
-  }
+   reinigen:'Reinigen',
 
-  const photo=
-    point.beforePhoto
-    ?
-    '<img src="'+
-    point.beforePhoto+
-    '" style="width:100%;max-height:150px;object-fit:cover;border-radius:10px;margin-top:8px">'
-    :'';
+   kontrolle:'Kontrolle',
 
-  marker.bindPopup(`
-    <div style="min-width:230px">
+   saugen:'Saugen',
 
-      <b>
-        ${cat.icon}
-        ${esc(point.name)}
-      </b>
+   schaden:'Schaden',
 
-      <div class="hint">
-        ${esc(cat.label)}
-      </div>
+   untergrund:'Untergrund',
 
-      <div>
-        <span class="badge ${point.priority}">
-          ${priorityText(point.priority)}
-        </span>
+   erde:'Erde auffüllen',
 
-        <span class="badge ${point.done?'done':'open'}">
-          ${point.done?'ERLEDIGT':'OFFEN'}
-        </span>
-      </div>
+   kies:'Kies auffüllen',
 
-      ${extra}
+   wasser:'Wasser-/Entwässerungsproblem',
 
-      ${
-        point.note
-        ?'<div style="margin-top:8px">'+
-          esc(point.note)+
-          '</div>'
-        :''
-      }
+   verschmutzung:'Verschmutzung',
 
-      ${photo}
+   jaeten:'Jäten',
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px">
+   giessen:'Giessen',
 
-        <button
-          onclick="navigateToPoint('${point.id}')"
-          style="padding:8px;border-radius:8px;background:#2563eb;color:white">
-          🧭 Navi
-        </button>
+   pflanzen:'Pflanzen kontrollieren',
 
-        <button
-          onclick="completePoint('${point.id}')"
-          style="padding:8px;border-radius:8px;background:#16a34a;color:white">
-          ${point.done?'↩️ Offen':'✅ Erledigen'}
-        </button>
+   schaedling:'Schädlinge',
 
-      </div>
+   strasse:'Strassenschaden',
 
-    </div>
-  `);
+   weg:'Wegschaden',
 
-  return marker;
+   belag:'Belagsschaden',
 
-}
+   einrichtung:'Einrichtung beschädigt',
 
-function renderWorkPoints(){
-
-  workMarkers.forEach(
-    m=>{
-      if(map.hasLayer(m))
-        map.removeLayer(m);
-    }
-  );
-
-  workMarkers=[];
-
-  workPoints.forEach(
-    p=>{
-      const m=createWorkMarker(p);
-      m.addTo(map);
-      workMarkers.push(m);
-    }
-  );
-
-}
-
-
-/* =========================================================
-   AUFGABEN
-========================================================= */
-
-function toggleDone(id){
-
-  const p=
-    workPoints.find(
-      x=>x.id===id
-    );
-
-  if(!p)return;
-
-  p.done=!p.done;
-
-  p.doneAt=
-    p.done
-    ?new Date().toISOString()
-    :null;
-
-  saveData();
-  renderWorkPoints();
-  updateDashboard();
-  updatePointsList();
-
-  toast(
-    p.done
-    ?'✅ Aufgabe erledigt'
-    :'↩️ Aufgabe wieder offen'
-  );
-
-}
-
-function completePoint(id){
-
-  const p=
-    workPoints.find(
-      x=>x.id===id
-    );
-
-  if(!p)return;
-
-  const input=
-    document.createElement('input');
-
-  input.type='file';
-  input.accept='image/*';
-  input.capture='environment';
-
-  input.onchange=e=>{
-
-    const file=e.target.files?.[0];
-
-    if(!file){
-      toggleDone(id);
-      return;
-    }
-
-    const reader=new FileReader();
-
-    reader.onload=()=>{
-
-      p.afterPhoto=reader.result;
-      p.done=true;
-      p.doneAt=new Date().toISOString();
-
-      saveData();
-      renderWorkPoints();
-      updateDashboard();
-      updatePointsList();
-
-      toast(
-        '📸 Nachher-Foto gespeichert.'
-      );
-
-    };
-
-    reader.readAsDataURL(file);
+   defekt:'Defekt'
 
   };
 
-  input.click();
+  specialText=
+   names[p.special]||
+   p.special;
+
+ }
+
+ const photo=
+  p.photo?
+  `<img src="${p.photo}"
+        style="width:100%;max-height:170px;object-fit:cover;border-radius:10px;margin-top:8px">`
+  :'';
+
+ marker.bindPopup(`
+
+  <div style="min-width:230px">
+
+   <b>
+    ${cat.icon}
+    ${esc(p.name)}
+   </b>
+
+   <div style="color:#6b7280;font-size:12px;margin-top:4px">
+    ${esc(cat.label)}
+   </div>
+
+   ${specialText?
+    `<div style="margin-top:7px">
+      <b>Aufgabe:</b> ${esc(specialText)}
+    </div>`
+    :''
+   }
+
+   ${p.note?
+    `<div style="margin-top:7px">
+      ${esc(p.note)}
+    </div>`
+    :''
+   }
+
+   ${p.done?
+    `<div style="margin-top:8px;color:#166534;font-weight:700">
+      ✅ Erledigt
+    </div>`
+    :''
+   }
+
+   ${photo}
+
+   <div style="
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px;
+    margin-top:9px">
+
+    <button
+     onclick="navigateToPoint('${p.id}')"
+     style="
+      padding:8px;
+      border-radius:8px;
+      background:#2563eb;
+      color:white">
+     🧭 Navi
+    </button>
+
+    <button
+     onclick="toggleDone('${p.id}')"
+     style="
+      padding:8px;
+      border-radius:8px;
+      background:#16a34a;
+      color:white">
+     ${p.done?'↩️ Offen':'✅ Erledigt'}
+    </button>
+
+   </div>
+
+  </div>
+
+ `);
+
+ return marker;
 
 }
+
+
+function renderPoints(){
+
+ workMarkers.forEach(m=>{
+  if(map.hasLayer(m))
+   map.removeLayer(m);
+ });
+
+ workMarkers=[];
+
+ workPoints.forEach(p=>{
+
+  const marker=createPointMarker(p);
+
+  marker.addTo(map);
+
+  workMarkers.push(marker);
+
+ });
+
+}
+
+
+/* =========================================================
+   PUNKT LISTE
+   ========================================================= */
 
 function updatePointsList(){
 
-  const e=
-    document.getElementById(
-      'pointsList'
-    );
+ const list=
+  document.getElementById('pointsList');
 
-  let list=[...workPoints];
+ document.getElementById('listTotal')
+ .textContent=workPoints.length;
 
-  if(filterOpen)
-    list=list.filter(p=>!p.done);
+ document.getElementById('listOpen')
+ .textContent=
+  workPoints.filter(p=>!p.done).length;
 
-  const order={
-    high:0,
-    medium:1,
-    low:2
-  };
+ document.getElementById('listDone')
+ .textContent=
+  workPoints.filter(p=>p.done).length;
 
-  list.sort(
-    (a,b)=>{
+ document.getElementById('listCategories')
+ .textContent=
+  new Set(workPoints.map(p=>p.category)).size;
 
-      if(a.done!==b.done)
-        return a.done-b.done;
+ if(!workPoints.length){
 
-      return order[a.priority]-order[b.priority];
+  list.innerHTML=
+   '<p class="hint">Noch keine Punkte.</p>';
 
-    }
-  );
+  return;
 
-  if(!list.length){
+ }
 
-    e.innerHTML=
-      '<p class="hint">Keine Aufgaben.</p>';
+ list.innerHTML=
+  [...workPoints]
+  .sort((a,b)=>Number(a.done)-Number(b.done))
+  .map(p=>{
 
-    return;
+   const cat=
+    CATEGORY[p.category]||
+    CATEGORY.sonstiges;
 
-  }
+   return `
 
-  e.innerHTML=list.map(
-    p=>{
+    <div class="point-item">
 
-      const cat=
-        CATEGORY[p.category]||
-        CATEGORY.sonstiges;
+     <div class="point-head">
 
-      return `
-      <div class="point-item">
+      <div>
 
-        <div class="point-title">
+       <b>
+        ${cat.icon}
+        ${esc(p.name)}
+       </b>
 
-          <div>
-            <b>${cat.icon} ${esc(p.name)}</b>
-            <div class="hint">${esc(cat.label)}</div>
-          </div>
-
-          <div>
-            <span class="badge ${p.priority}">
-              ${priorityText(p.priority)}
-            </span>
-
-            <span class="badge ${p.done?'done':'open'}">
-              ${p.done?'OK':'OFFEN'}
-            </span>
-          </div>
-
-        </div>
-
-        ${
-          p.note
-          ?'<div class="hint" style="margin-top:6px">'+
-            esc(p.note)+
-            '</div>'
-          :''
-        }
-
-        ${
-          p.category==='schacht'
-          ?'<div class="hint">🕳️ '+
-            esc(p.extra?.type||'Schacht')+
-            '</div>'
-          :''
-        }
-
-        ${
-          p.category==='vitaparcours'&&p.extra?.tasks?.length
-          ?'<div class="hint">🏃 '+
-            p.extra.tasks.map(esc).join(' • ')+
-            '</div>'
-          :''
-        }
-
-        ${
-          p.category==='blumentopf'
-          ?'<div class="hint">🌺 '+
-            (p.extra?.water?'💧 '+esc(p.extra.amount||'Giessen'):'')+
-            '</div>'
-          :''
-        }
-
-        <div class="hint">
-          ${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}
-        </div>
-
-        <div class="point-actions">
-
-          <button class="smallbtn"
-            onclick="showPoint('${p.id}')">
-            📍 Karte
-          </button>
-
-          <button class="smallbtn"
-            onclick="navigateToPoint('${p.id}')">
-            🧭 Navi
-          </button>
-
-          <button class="smallbtn green"
-            onclick="completePoint('${p.id}')">
-            ${p.done?'↩️ Offen':'📸 Erledigen'}
-          </button>
-
-        </div>
-
-        <div class="point-actions">
-
-          ${
-            p.beforePhoto
-            ?'<button class="smallbtn" onclick="showPhoto(\''+
-              p.id+
-              '\',\'before\')">📸 Vorher</button>'
-            :'<span></span>'
-          }
-
-          ${
-            p.afterPhoto
-            ?'<button class="smallbtn" onclick="showPhoto(\''+
-              p.id+
-              '\',\'after\')">📸 Nachher</button>'
-            :'<span></span>'
-          }
-
-          <button class="smallbtn danger"
-            onclick="deletePoint('${p.id}')">
-            🗑️ Löschen
-          </button>
-
-        </div>
+       <div class="hint">
+        ${esc(cat.label)}
+       </div>
 
       </div>
-      `;
 
-    }
-  ).join('');
+      <span class="badge ${p.done?'done':''}">
+       ${p.done?'ERLEDIGT':'OFFEN'}
+      </span>
 
-}
+     </div>
 
-function showPoint(id){
+     ${p.special?
+      `<div class="hint">
+       Aufgabe: ${esc(p.special)}
+      </div>`
+      :''
+     }
 
-  const p=
-    workPoints.find(
-      x=>x.id===id
-    );
+     ${p.note?
+      `<div class="hint">
+       ${esc(p.note)}
+      </div>`
+      :''
+     }
 
-  if(!p)return;
+     <div class="actions">
 
-  closePanels();
+      <button class="smallbtn"
+       onclick="showPoint('${p.id}')">
+       📍 Karte
+      </button>
 
-  map.setView(
-    [p.lat,p.lng],
-    17
-  );
+      <button class="smallbtn"
+       onclick="navigateToPoint('${p.id}')">
+       🧭 Navi
+      </button>
 
-  const m=
-    workMarkers.find(
-      x=>{
-        const ll=x.getLatLng();
+      <button class="smallbtn"
+       onclick="toggleDone('${p.id}')">
+       ${p.done?'↩️ Offen':'✅ Erledigt'}
+      </button>
 
-        return Math.abs(ll.lat-p.lat)<0.000001&&
-          Math.abs(ll.lng-p.lng)<0.000001;
+     </div>
+
+     <div class="actions">
+
+      ${p.photo?
+       `<button class="smallbtn"
+        onclick="showPhoto('${p.id}')">
+        📸 Foto
+       </button>`
+       :
+       '<div></div>'
       }
-    );
 
-  if(m)m.openPopup();
+      <button class="smallbtn"
+       onclick="editPoint('${p.id}')">
+       ✏️ Bearbeiten
+      </button>
 
-}
+      <button class="smallbtn"
+       onclick="deletePoint('${p.id}')">
+       🗑️ Löschen
+      </button>
 
-function navigateToPoint(id){
-
-  const p=
-    workPoints.find(
-      x=>x.id===id
-    );
-
-  if(!p)return;
-
-  currentTourMode=false;
-
-  setDestination(
-    p.lat,
-    p.lng,
-    p.name
-  );
-
-  closePanels();
-
-}
-
-function deletePoint(id){
-
-  if(!confirm(
-    'Diese Aufgabe wirklich löschen?'
-  ))return;
-
-  workPoints=
-    workPoints.filter(
-      p=>p.id!==id
-    );
-
-  saveData();
-  renderWorkPoints();
-  updateDashboard();
-  updatePointsList();
-
-  toast('Aufgabe gelöscht.');
-
-}
-
-function showPhoto(id,type){
-
-  const p=
-    workPoints.find(
-      x=>x.id===id
-    );
-
-  if(!p)return;
-
-  const photo=
-    type==='after'
-    ?p.afterPhoto
-    :p.beforePhoto;
-
-  if(!photo)return;
-
-  const win=window.open();
-
-  if(!win)return;
-
-  win.document.write(
-    '<html><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh">'+
-    '<img src="'+photo+'" style="max-width:100%;max-height:100vh;object-fit:contain">'+
-    '</body></html>'
-  );
-
-}
-
-
-/* =========================================================
-   GPS-SPUR
-========================================================= */
-
-function startTrack(){
-
-  if(trackActive){
-
-    stopTrack();
-    return;
-
-  }
-
-  if(!currentPosition){
-
-    toast('GPS wird noch gesucht.');
-    return;
-
-  }
-
-  trackActive=true;
-  trackPaused=false;
-  trackPoints=[];
-  trackDistance=0;
-  trackStartedAt=Date.now();
-  pauseStartedAt=null;
-  pauseTotal=0;
-  lastPosition=null;
-
-  if(window.currentTrackLayer)
-    map.removeLayer(
-      window.currentTrackLayer
-    );
-
-  window.currentTrackLayer=
-    L.polyline(
-      [],
-      {
-        pane:'trackPane',
-        color:'#dc2626',
-        weight:6,
-        opacity:.9
-      }
-    ).addTo(map);
-
-  addTrackPoint(
-    currentPosition.lat,
-    currentPosition.lng
-  );
-
-  document.getElementById(
-    'trackBtn'
-  ).textContent=
-    '⏹️ GPS-Spur stoppen';
-
-  document.getElementById(
-    'trackStatus'
-  ).textContent='Aktiv';
-
-  trackTimer=setInterval(
-    updateTrackUI,
-    1000
-  );
-
-  toast('📍 GPS-Spur gestartet.');
-
-}
-
-function stopTrack(){
-
-  trackActive=false;
-  trackPaused=false;
-
-  clearInterval(trackTimer);
-  trackTimer=null;
-
-  document.getElementById(
-    'trackBtn'
-  ).textContent=
-    '▶️ GPS-Spur starten';
-
-  document.getElementById(
-    'trackStatus'
-  ).textContent=
-    'Nicht aktiv';
-
-  updateTrackUI();
-
-}
-
-function addTrackPoint(lat,lng){
-
-  if(!trackActive||trackPaused)
-    return;
-
-  if(lastPosition){
-
-    const d=
-      distanceBetween(
-        lastPosition.lat,
-        lastPosition.lng,
-        lat,
-        lng
-      );
-
-    if(d>0&&d<300)
-      trackDistance+=d;
-
-  }
-
-  lastPosition={lat,lng};
-
-  trackPoints.push([lat,lng]);
-
-  if(window.currentTrackLayer)
-    window.currentTrackLayer.setLatLngs(
-      trackPoints
-    );
-
-  updateTrackUI();
-
-}
-
-function togglePause(){
-
-  if(!trackActive){
-
-    toast('Keine laufende GPS-Tour.');
-    return;
-
-  }
-
-  if(!trackPaused){
-
-    trackPaused=true;
-    pauseStartedAt=Date.now();
-
-    document.getElementById(
-      'pauseBtn'
-    ).textContent=
-      '▶️ Pause beenden';
-
-    document.getElementById(
-      'trackStatus'
-    ).textContent='Pause';
-
-  }else{
-
-    if(pauseStartedAt)
-      pauseTotal+=
-        Date.now()-pauseStartedAt;
-
-    pauseStartedAt=null;
-    trackPaused=false;
-
-    document.getElementById(
-      'pauseBtn'
-    ).textContent='⏸️ Pause';
-
-    document.getElementById(
-      'trackStatus'
-    ).textContent='Aktiv';
-
-  }
-
-}
-
-function activeSeconds(){
-
-  if(!trackStartedAt)
-    return 0;
-
-  let paused=pauseTotal;
-
-  if(trackPaused&&pauseStartedAt)
-    paused+=Date.now()-pauseStartedAt;
-
-  return Math.max(
-    0,
-    Math.floor(
-      (Date.now()-trackStartedAt-paused)/1000
-    )
-  );
-
-}
-
-function updateTrackUI(){
-
-  const s=activeSeconds();
-
-  document.getElementById(
-    'trackTime'
-  ).textContent=
-    formatDuration(s);
-
-  document.getElementById(
-    'trackDistance'
-  ).textContent=
-    (trackDistance/1000).toFixed(2)+' km';
-
-  const speed=
-    s>60
-    ?trackDistance/1000/(s/3600)
-    :0;
-
-  document.getElementById(
-    'trackSpeed'
-  ).textContent=
-    speed.toFixed(1)+' km/h';
-
-  document.getElementById(
-    'dashKm'
-  ).textContent=
-    (trackDistance/1000).toFixed(1);
-
-  document.getElementById(
-    'dashTime'
-  ).textContent=
-    shortTime(s);
-
-}
-
-
-/* =========================================================
-   TOUR OPTIMIERUNG
-========================================================= */
-
-async function optimizeTour(){
-
-  if(!plannedTour.length){
-
-    toast(
-      'Noch keine Punkte in der Tour.'
-    );
-
-    return;
-
-  }
-
-  const startMode=
-    document.getElementById(
-      'tourStartMode'
-    ).value;
-
-  const roundtrip=
-    document.getElementById(
-      'tourRoundtrip'
-    ).value==='true';
-
-  let start;
-
-  if(startMode==='gps'){
-
-    if(!currentPosition){
-
-      toast('GPS wird noch gesucht.');
-      return;
-
-    }
-
-    start={
-      lat:currentPosition.lat,
-      lng:currentPosition.lng,
-      name:'Aktueller Standort'
-    };
-
-  }
-
-  if(startMode==='depot')
-    start=DEPOT;
-
-  if(startMode==='first')
-    start=plannedTour[0];
-
-  const points=[
-    start,
-    ...plannedTour
-  ];
-
-  const coords=
-    points.map(
-      p=>p.lng+','+p.lat
-    ).join(';');
-
-  document.getElementById(
-    'tourSummary'
-  ).innerHTML=
-    '<div class="loading">⚡ Berechne optimale Reihenfolge …</div>';
-
-  try{
-
-    const url=
-      OSRM_BASE+
-      '/trip/v1/driving/'+
-      coords+
-      '?roundtrip='+
-      roundtrip+
-      '&source=first'+
-      '&destination='+
-      (roundtrip?'first':'last')+
-      '&overview=full'+
-      '&geometries=geojson';
-
-    const r=await fetch(url);
-
-    if(!r.ok)
-      throw Error('Trip');
-
-    const data=await r.json();
-
-    if(!data.trips?.length)
-      throw Error('Keine Tour');
-
-    const trip=data.trips[0];
-
-    const order=
-      data.waypoints
-        .slice(1)
-        .sort(
-          (a,b)=>a.waypoint_index-b.waypoint_index
-        )
-        .map(
-          w=>points[w.waypoint_index]
-        );
-
-    plannedTour=order;
-
-    if(plannedRouteLayer)
-      map.removeLayer(
-        plannedRouteLayer
-      );
-
-    plannedRouteLayer=
-      L.geoJSON(
-        trip.geometry,
-        {
-          pane:'routePane',
-          style:{
-            color:'#16a34a',
-            weight:7,
-            opacity:.85
-          }
-        }
-      ).addTo(map);
-
-    renderPlannedTour(
-      trip.distance,
-      trip.duration,
-      start,
-      roundtrip
-    );
-
-    map.fitBounds(
-      plannedRouteLayer.getBounds(),
-      {
-        padding:[30,130],
-        maxZoom:16
-      }
-    );
-
-    toast(
-      '⚡ Tour optimiert.'
-    );
-
-  }catch(e){
-
-    console.warn(e);
-
-    document.getElementById(
-      'tourSummary'
-    ).innerHTML=
-      '<div class="route-summary">❌ Tour konnte nicht berechnet werden.</div>';
-
-    toast(
-      'Touroptimierung fehlgeschlagen.'
-    );
-
-  }
-
-}
-
-function renderPlannedTour(
-  distance,
-  duration,
-  start,
-  roundtrip
-){
-
-  const summary=
-    document.getElementById(
-      'tourSummary'
-    );
-
-  summary.innerHTML=`
-
-    <div class="route-summary">
-
-      <b>⚡ Optimierte Tour</b>
-
-      <div style="margin-top:6px">
-        ${formatDistance(distance)}
-        •
-        ${formatRouteTime(duration)}
-      </div>
-
-      <div class="hint">
-        Start: ${esc(start.name||'Start')}
-        •
-        ${roundtrip?'Rückkehr zum Start':'keine Rückkehr'}
-      </div>
+     </div>
 
     </div>
 
-  `;
+   `;
 
-  const e=
-    document.getElementById(
-      'tourStops'
+  }).join('');
+
+}
+
+
+function updateDashboard(){
+
+ const total=workPoints.length;
+
+ const done=
+  workPoints.filter(p=>p.done).length;
+
+ const open=total-done;
+
+ const progress=
+  total?
+  Math.round(done/total*100):
+  0;
+
+ document.getElementById('totalPoints')
+ .textContent=total;
+
+ document.getElementById('openPoints')
+ .textContent=open;
+
+ document.getElementById('donePoints')
+ .textContent=done;
+
+ document.getElementById('progressBar')
+ .style.width=progress+'%';
+
+ updatePointsList();
+
+}
+
+
+function toggleDone(id){
+
+ const p=
+  workPoints.find(x=>x.id===id);
+
+ if(!p)
+  return;
+
+ p.done=!p.done;
+
+ p.doneAt=
+  p.done?
+  new Date().toISOString():
+  null;
+
+ savePoints();
+
+ renderPoints();
+
+ updateDashboard();
+
+ toast(
+  p.done?
+  'Punkt erledigt.':
+  'Punkt wieder offen.'
+ );
+
+}
+
+
+function deletePoint(id){
+
+ if(!confirm(
+  'Diesen Punkt wirklich löschen?'
+ ))
+  return;
+
+ workPoints=
+  workPoints.filter(x=>x.id!==id);
+
+ savePoints();
+
+ renderPoints();
+
+ updateDashboard();
+
+ toast('Punkt gelöscht.');
+
+}
+
+
+function showPoint(id){
+
+ const p=
+  workPoints.find(x=>x.id===id);
+
+ if(!p)
+  return;
+
+ closePanels();
+
+ map.setView(
+  [p.lat,p.lng],
+  17
+ );
+
+ const marker=
+  workMarkers.find(m=>{
+   const ll=m.getLatLng();
+
+   return(
+    Math.abs(ll.lat-p.lat)<0.000001&&
+    Math.abs(ll.lng-p.lng)<0.000001
+   );
+
+  });
+
+ if(marker)
+  marker.openPopup();
+
+}
+
+
+function showAllPoints(){
+
+ closePanels();
+
+ if(!workPoints.length){
+
+  toast('Keine Punkte vorhanden.');
+  return;
+
+ }
+
+ const bounds=
+  L.latLngBounds(
+   workPoints.map(p=>[p.lat,p.lng])
+  );
+
+ map.fitBounds(
+  bounds.pad(.08)
+ );
+
+}
+
+
+function showPhoto(id){
+
+ const p=
+  workPoints.find(x=>x.id===id);
+
+ if(!p?.photo)
+  return;
+
+ const win=window.open();
+
+ if(win){
+
+  win.document.write(`
+   <title>${esc(p.name)}</title>
+
+   <body style="
+    margin:0;
+    background:#111;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:100vh">
+
+    <img
+     src="${p.photo}"
+     style="
+      max-width:100%;
+      max-height:100vh;
+      object-fit:contain">
+
+   </body>
+  `);
+
+ }
+
+}
+
+
+function editPoint(id){
+
+ const p=
+  workPoints.find(x=>x.id===id);
+
+ if(!p)
+  return;
+
+ openPointForm(p.category);
+
+ document.getElementById('pointName')
+ .value=p.name;
+
+ document.getElementById('pointNote')
+ .value=p.note||'';
+
+ selectedPosition={
+  lat:p.lat,
+  lng:p.lng
+ };
+
+ selectedPhoto=p.photo||'';
+
+ if(p.photo){
+
+  const img=
+   document.getElementById('photoPreview');
+
+  img.src=p.photo;
+  img.style.display='block';
+
+ }
+
+ workPoints=
+  workPoints.filter(x=>x.id!==id);
+
+ savePoints();
+
+ renderPoints();
+
+}
+
+
+/* =========================================================
+   NAVIGATION ZU EINEM PUNKT
+   ========================================================= */
+
+async function navigateToPoint(id){
+
+ const p=
+  workPoints.find(x=>x.id===id);
+
+ if(!p)
+  return;
+
+ if(!currentPosition){
+
+  toast('GPS wird noch gesucht.');
+  return;
+
+ }
+
+ tourPoints=[p];
+
+ navigationIndex=0;
+
+ await calculateSingleRoute(
+  currentPosition,
+  p
+ );
+
+ closePanels();
+
+}
+
+
+/* =========================================================
+   TOUR
+   ========================================================= */
+
+function getTourCandidates(){
+
+ const filter=
+  document.getElementById('tourFilter').value;
+
+ let arr=
+  workPoints.filter(p=>!p.done);
+
+ if(filter!=='all')
+  arr=
+   arr.filter(p=>p.category===filter);
+
+ return arr;
+
+}
+
+
+async function calculateTour(){
+
+ const candidates=
+  getTourCandidates();
+
+ if(!candidates.length){
+
+  toast('Keine offenen Punkte für diese Tour.');
+  return;
+
+ }
+
+ if(candidates.length>100){
+
+  toast(
+   'Zu viele Punkte. Bitte zuerst eine Kategorie auswählen.'
+  );
+
+  return;
+
+ }
+
+ let start;
+
+ if(
+  document.getElementById('tourStart').value===
+  'gps'
+ ){
+
+  if(!currentPosition){
+
+   toast('GPS wird noch gesucht.');
+   return;
+
+  }
+
+  start={
+   lat:currentPosition.lat,
+   lng:currentPosition.lng
+  };
+
+ }else{
+
+  start={
+   lat:candidates[0].lat,
+   lng:candidates[0].lng
+  };
+
+ }
+
+ toast('Schnellste Reihenfolge wird berechnet …',5000);
+
+ try{
+
+  const coords=[
+   [start.lng,start.lat],
+   ...candidates.map(p=>[p.lng,p.lat])
+  ];
+
+  const coordinateString=
+   coords
+   .map(x=>x.join(','))
+   .join(';');
+
+  const url=
+   OSRM+
+   '/trip/v1/driving/'+
+   coordinateString+
+   '?source=first'+
+   '&roundtrip=false'+
+   '&steps=true'+
+   '&geometries=geojson'+
+   '&overview=full';
+
+  const r=await fetch(url);
+
+  if(!r.ok)
+   throw Error(r.status);
+
+  const data=await r.json();
+
+  if(data.code!=='Ok'||!data.trips?.length)
+   throw Error('Keine Tour');
+
+  const trip=data.trips[0];
+
+  const ordered=[];
+
+  if(data.waypoints){
+
+   const sorted=
+    [...data.waypoints]
+    .sort((a,b)=>
+     a.waypoint_index-b.waypoint_index
     );
+
+   sorted.forEach(w=>{
+
+    if(w.input_index===0)
+     return;
+
+    const p=candidates[w.waypoint_index-1];
+
+    if(p)
+     ordered.push(p);
+
+   });
+
+  }
+
+  if(!ordered.length){
+
+   ordered.push(...candidates);
+
+  }
+
+  tourPoints=ordered;
+
+  drawOptimizedTour(
+   start,
+   ordered,
+   trip
+  );
+
+  renderTourStops();
+
+  document.getElementById('routeSummary')
+   .innerHTML=`
+
+    <div class="route-summary">
+
+     <b>⚡ Optimierte Tour</b>
+
+     <div style="margin-top:6px">
+
+      <strong>
+       ${formatDistance(trip.distance)}
+      </strong>
+
+      <br>
+
+      ca. ${formatTime(trip.duration)}
+
+     </div>
+
+     <div class="hint" style="margin-top:6px">
+      ${ordered.length} Stopps
+     </div>
+
+    </div>
+   `;
+
+  toast('Tour berechnet.');
+
+ }catch(e){
+
+  console.warn(e);
+
+  toast(
+   'Tour konnte nicht automatisch optimiert werden.'
+  );
+
+ }
+
+}
+
+
+function drawOptimizedTour(start,points,trip){
+
+ clearTourVisuals();
+
+ if(trip?.geometry){
+
+  displayedRoute=
+   L.geoJSON(
+    trip.geometry,
+    {
+     pane:'tourPane',
+     style:{
+      color:'#2563eb',
+      weight:7,
+      opacity:.9
+     }
+    }
+   ).addTo(map);
+
+ }
+
+ const all=[
+  start,
+  ...points
+ ];
+
+ all.forEach((p,i)=>{
+
+  const icon=L.divIcon({
+
+   className:'',
+
+   html:
+    '<div class="number-icon">'+
+    i+
+    '</div>',
+
+   iconSize:[31,31],
+   iconAnchor:[15,15]
+
+  });
+
+  const marker=L.marker(
+   [p.lat,p.lng],
+   {
+    icon,
+    pane:'tourPane'
+   }
+  );
+
+  marker.bindPopup(
+   i===0?
+   '🚜 Tourstart':
+   '<b>Stopp '+i+'</b><br>'+
+   esc(p.name)
+  );
+
+  marker.addTo(map);
+
+  tourMarkers.push(marker);
+
+ });
+
+ if(displayedRoute){
+
+  map.fitBounds(
+   displayedRoute.getBounds(),
+   {
+    padding:[30,120]
+   }
+  );
+
+ }
+
+}
+
+
+function renderTourStops(){
+
+ const e=
+  document.getElementById('tourStops');
+
+ if(!tourPoints.length){
 
   e.innerHTML=
-    plannedTour.map(
-      (p,i)=>`
+   '<p class="hint">Noch keine Tour.</p>';
 
-      <div class="stop-item">
+  return;
 
-        <span class="number">
-          ${i+1}
-        </span>
+ }
 
-        <b>
-          ${CATEGORY[p.category]?.icon||'📍'}
-          ${esc(p.name)}
-        </b>
+ e.innerHTML=
+  tourPoints.map((p,i)=>{
 
-        <div class="hint">
-          ${esc(
-            CATEGORY[p.category]?.label||
-            p.category||
-            'Auftrag'
-          )}
-        </div>
+   const cat=
+    CATEGORY[p.category]||
+    CATEGORY.sonstiges;
 
-        <div class="point-actions">
+   return `
 
-          <button class="smallbtn"
-            onclick="showPoint('${p.id}')">
-            📍 Karte
-          </button>
+    <div class="tour-stop">
 
-          <button class="smallbtn"
-            onclick="navigateToPoint('${p.id}')">
-            🧭 Einzel-Navi
-          </button>
+     <b>
+      ${i+1}.
+      ${cat.icon}
+      ${esc(p.name)}
+     </b>
 
-        </div>
+     <div class="hint">
+      ${esc(cat.label)}
+     </div>
 
-      </div>
+     ${p.special?
+      `<div class="hint">
+       Aufgabe: ${esc(p.special)}
+      </div>`
+      :''
+     }
 
-      `
-    ).join('');
+     <div class="actions">
 
-}
+      <button class="smallbtn"
+       onclick="navigateTourFrom(${i})">
+       🧭 Hin
+      </button>
 
+      <button class="smallbtn"
+       onclick="showPoint('${p.id}')">
+       📍 Karte
+      </button>
 
-/* =========================================================
-   TOUR AUS OFFENEN AUFGABEN
-========================================================= */
+      <button class="smallbtn"
+       onclick="markTourPointDone('${p.id}')">
+       ✅ Fertig
+      </button>
 
-function loadOpenTasksIntoTour(){
+     </div>
 
-  plannedTour=
-    workPoints.filter(
-      p=>!p.done
-    );
+    </div>
 
-  if(!plannedTour.length){
+   `;
 
-    toast('Keine offenen Aufgaben.');
-    return;
-
-  }
-
-  renderTourInputList();
-
-  toast(
-    plannedTour.length+
-    ' offene Aufgaben übernommen.'
-  );
-
-}
-
-function renderTourInputList(){
-
-  document.getElementById(
-    'tourStops'
-  ).innerHTML=
-    plannedTour.map(
-      (p,i)=>`
-
-      <div class="stop-item">
-
-        <span class="number">
-          ${i+1}
-        </span>
-
-        <b>
-          ${CATEGORY[p.category]?.icon||'📍'}
-          ${esc(p.name)}
-        </b>
-
-        <div class="hint">
-          ${p.lat.toFixed(5)},
-          ${p.lng.toFixed(5)}
-        </div>
-
-      </div>
-
-      `
-    ).join('');
+  }).join('');
 
 }
 
 
-/* =========================================================
-   TOUR STARTEN
-========================================================= */
+function markTourPointDone(id){
 
-function startPlannedTour(){
+ toggleDone(id);
 
-  if(!plannedTour.length){
+ tourPoints=
+  tourPoints.filter(p=>p.id!==id);
 
-    toast('Keine geplante Tour.');
-    return;
-
-  }
-
-  currentTourIndex=0;
-  currentTourMode=true;
-
-  if(!trackActive)
-    startTrack();
-
-  navigatePlannedStop();
+ renderTourStops();
 
 }
 
-function navigatePlannedStop(){
 
-  if(
-    currentTourIndex<0||
-    currentTourIndex>=plannedTour.length
-  ){
+function navigateTourFrom(index){
 
-    finishPlannedTour();
-    return;
+ if(!tourPoints[index])
+  return;
 
-  }
+ navigationIndex=index;
 
-  const p=
-    plannedTour[currentTourIndex];
+ const p=tourPoints[index];
 
-  setDestination(
-    p.lat,
-    p.lng,
-    p.name
-  );
-
-  currentTourMode=true;
-
-  toast(
-    'Stop '+(currentTourIndex+1)+
-    '/'+plannedTour.length+
-    ': '+p.name
-  );
+ navigateToTourPoint(p);
 
 }
 
-function finishTourStop(){
 
-  const p=
-    plannedTour[currentTourIndex];
+async function navigateToTourPoint(p){
 
-  if(p){
+ if(!currentPosition){
 
-    p.done=true;
-    p.doneAt=new Date().toISOString();
+  toast('GPS wird noch gesucht.');
+  return;
 
-    const original=
-      workPoints.find(
-        x=>x.id===p.id
-      );
+ }
 
-    if(original){
+ await calculateSingleRoute(
+  currentPosition,
+  p
+ );
 
-      original.done=true;
-      original.doneAt=p.doneAt;
+}
 
+
+async function calculateSingleRoute(from,to){
+
+ try{
+
+  const coords=
+   from.lng+','+from.lat+
+   ';'+
+   to.lng+','+to.lat;
+
+  const url=
+   OSRM+
+   '/route/v1/driving/'+
+   coords+
+   '?overview=full'+
+   '&geometries=geojson'+
+   '&steps=true'+
+   '&alternatives=true';
+
+  const r=await fetch(url);
+
+  if(!r.ok)
+   throw Error(r.status);
+
+  const data=await r.json();
+
+  if(data.code!=='Ok')
+   throw Error('NoRoute');
+
+  const route=data.routes[0];
+
+  if(displayedRoute)
+   map.removeLayer(displayedRoute);
+
+  displayedRoute=
+   L.geoJSON(
+    route.geometry,
+    {
+     style:{
+      color:'#2563eb',
+      weight:7,
+      opacity:.9
+     }
     }
+   ).addTo(map);
 
-    saveData();
-    renderWorkPoints();
-    updateDashboard();
+  navigationActive=true;
 
-  }
+  document.getElementById('navBox')
+   .classList.add('show');
 
-  currentTourIndex++;
+  document.getElementById('navTitle')
+   .textContent=
+    '➡️ '+to.name;
 
-  if(
-    currentTourIndex<
-    plannedTour.length
-  ){
+  document.getElementById('navSub')
+   .textContent=
+   formatDistance(route.distance)+
+   ' • '+
+   formatTime(route.duration);
 
-    setTimeout(
-      navigatePlannedStop,
-      700
-    );
-
-  }else{
-
-    finishPlannedTour();
-
-  }
-
-}
-
-function finishPlannedTour(){
-
-  currentTourMode=false;
-
-  toast(
-    '🎉 Tour abgeschlossen.'
+  map.fitBounds(
+   displayedRoute.getBounds(),
+   {
+    padding:[30,150]
+   }
   );
 
   speak(
-    'Tour abgeschlossen.'
+   'Navigation gestartet. '+
+   formatDistance(route.distance)+
+   ', etwa '+
+   formatTime(route.duration)+'.'
   );
 
-  updateDashboard();
+  checkConstructionOnRoute(
+   route.geometry
+  );
+
+ }catch(e){
+
+  console.warn(e);
+
+  toast(
+   'Keine Fahrroute gefunden.'
+  );
+
+ }
+
+}
+
+
+function nextTourStop(){
+
+ if(!tourPoints.length){
+
+  toast('Keine Tour aktiv.');
+  return;
+
+ }
+
+ if(navigationIndex>=tourPoints.length){
+
+  toast('Tour abgeschlossen.');
+  return;
+
+ }
+
+ const p=
+  tourPoints[navigationIndex];
+
+ navigateToTourPoint(p);
+
+}
+
+
+function updateNavigationDistance(){
+
+ if(!navigationActive)
+  return;
+
+ const p=
+  tourPoints[navigationIndex];
+
+ if(!p||!currentPosition)
+  return;
+
+ const d=
+  distanceBetween(
+   currentPosition.lat,
+   currentPosition.lng,
+   p.lat,
+   p.lng
+  );
+
+ if(d<40){
+
+  toast(
+   '📍 '+p.name+
+   ' erreicht.'
+  );
+
+  navigationIndex++;
+
+  if(navigationIndex<tourPoints.length){
+
+   setTimeout(
+    ()=>navigateToTourPoint(
+     tourPoints[navigationIndex]
+    ),
+    1000
+   );
+
+  }else{
+
+   toast(
+    '🎉 Tour abgeschlossen!'
+   );
+
+  }
+
+ }
+
+}
+
+
+function stopNavigation(){
+
+ navigationActive=false;
+
+ document.getElementById('navBox')
+ .classList.remove('show');
+
+ if(displayedRoute){
+
+  map.removeLayer(displayedRoute);
+
+  displayedRoute=null;
+
+ }
+
+}
+
+
+function toggleVoice(){
+
+ voiceEnabled=!voiceEnabled;
+
+ toast(
+  voiceEnabled?
+  '🔊 Sprache aktiviert':
+  '🔇 Sprache deaktiviert'
+ );
+
+}
+
+
+function speak(text){
+
+ if(
+  !voiceEnabled||
+  !window.speechSynthesis
+ )
+  return;
+
+ speechSynthesis.cancel();
+
+ const u=
+  new SpeechSynthesisUtterance(text);
+
+ u.lang='de-CH';
+
+ speechSynthesis.speak(u);
+
+}
+
+
+function clearTour(){
+
+ tourPoints=[];
+
+ tourMarkers.forEach(m=>{
+  if(map.hasLayer(m))
+   map.removeLayer(m);
+ });
+
+ tourMarkers=[];
+
+ if(displayedRoute){
+
+  map.removeLayer(displayedRoute);
+  displayedRoute=null;
+
+ }
+
+ document.getElementById('tourStops')
+ .innerHTML='';
+
+ document.getElementById('routeSummary')
+ .innerHTML='';
+
+ toast('Tour zurückgesetzt.');
 
 }
 
 
 /* =========================================================
-   SCHNELLSTE NÄCHSTE AUFGABE
-========================================================= */
+   BAUSTELLEN
+   ========================================================= */
 
-function goToNextTask(){
+function startConstructionMode(){
 
-  const open=
-    workPoints.filter(
-      p=>!p.done
-    );
+ closePanels();
 
-  if(!open.length){
+ constructionMode=true;
 
-    toast('🎉 Alle Aufgaben erledigt.');
-    return;
+ toast(
+  'Jetzt die Baustelle / Sperrung auf der Karte antippen.'
+ );
 
-  }
+}
 
-  let best=open[0];
 
-  if(currentPosition){
+function addConstruction(lat,lng){
 
-    let bestD=Infinity;
-
-    open.forEach(p=>{
-
-      const d=
-        distanceBetween(
-          currentPosition.lat,
-          currentPosition.lng,
-          p.lat,
-          p.lng
-        );
-
-      if(d<bestD){
-
-        bestD=d;
-        best=p;
-
-      }
-
-    });
-
-  }
-
-  currentTourMode=false;
-
-  setDestination(
-    best.lat,
-    best.lng,
-    best.name
+ const name=
+  prompt(
+   'Name der Baustelle / Sperrung:',
+   'Baustelle'
   );
+
+ if(name===null)
+  return;
+
+ const note=
+  prompt(
+   'Bemerkung:',
+   'Strasse gesperrt'
+  )||'';
+
+ const radius=
+  Number(
+   prompt(
+    'Radius der Sperrstelle in Metern:',
+    '40'
+   )||40
+  );
+
+ const c={
+
+  id:uid(),
+
+  name:name||'Baustelle',
+
+  note,
+
+  lat,
+
+  lng,
+
+  radius:isFinite(radius)?
+   Math.max(5,radius):
+   40,
+
+  createdAt:new Date().toISOString()
+
+ };
+
+ constructions.push(c);
+
+ saveConstructions();
+
+ renderConstructions();
+
+ toast('🚧 Baustelle gespeichert.');
+
+}
+
+
+function renderConstructions(){
+
+ constructionMarkers.forEach(m=>{
+
+  if(map.hasLayer(m))
+   map.removeLayer(m);
+
+ });
+
+ constructionMarkers=[];
+
+ constructions.forEach(c=>{
+
+  const icon=L.divIcon({
+
+   className:'',
+
+   html:
+    '<div class="construction-icon">🚧</div>',
+
+   iconSize:[38,38],
+   iconAnchor:[19,19]
+
+  });
+
+  const marker=L.marker(
+   [c.lat,c.lng],
+   {
+    icon,
+    pane:'constructionPane'
+   }
+  );
+
+  const circle=
+   L.circle(
+    [c.lat,c.lng],
+    {
+     radius:c.radius,
+     color:'#f97316',
+     fillColor:'#f97316',
+     fillOpacity:.12,
+     weight:2
+    }
+   );
+
+  marker.bindPopup(`
+
+   <b>🚧 ${esc(c.name)}</b>
+
+   <div style="margin-top:5px">
+    ${esc(c.note)}
+   </div>
+
+   <div style="margin-top:5px">
+    Radius: ${c.radius} m
+   </div>
+
+  `);
+
+  marker.addTo(map);
+  circle.addTo(map);
+
+  constructionMarkers.push(marker);
+  constructionMarkers.push(circle);
+
+ });
+
+ renderConstructionList();
+
+}
+
+
+function renderConstructionList(){
+
+ const e=
+  document.getElementById(
+   'constructionList'
+  );
+
+ if(!constructions.length){
+
+  e.innerHTML=
+   '<p class="hint">Keine Baustellen eingetragen.</p>';
+
+  return;
+
+ }
+
+ e.innerHTML=
+  constructions.map(c=>`
+
+   <div class="point-item">
+
+    <b>🚧 ${esc(c.name)}</b>
+
+    <div class="hint">
+     ${esc(c.note)}
+    </div>
+
+    <div class="hint">
+     Radius ${c.radius} m
+    </div>
+
+    <div class="actions">
+
+     <button class="smallbtn"
+      onclick="showConstruction('${c.id}')">
+      📍 Karte
+     </button>
+
+     <button class="smallbtn"
+      onclick="deleteConstruction('${c.id}')">
+      🗑️ Löschen
+     </button>
+
+    </div>
+
+   </div>
+
+  `).join('');
+
+}
+
+
+function showConstruction(id){
+
+ const c=
+  constructions.find(x=>x.id===id);
+
+ if(!c)
+  return;
+
+ closePanels();
+
+ map.setView(
+  [c.lat,c.lng],
+  17
+ );
+
+}
+
+
+function deleteConstruction(id){
+
+ if(!confirm(
+  'Baustelle wirklich löschen?'
+ ))
+  return;
+
+ constructions=
+  constructions.filter(x=>x.id!==id);
+
+ saveConstructions();
+
+ renderConstructions();
+
+ toast('Baustelle gelöscht.');
 
 }
 
 
 /* =========================================================
-   TOUR IMPORT
-========================================================= */
+   BAUSTELLEN AUF ROUTE PRÜFEN
+   ========================================================= */
 
-document.getElementById(
-  'importTourBtn'
-).onclick=
-  importTourFile;
+function checkConstructionOnRoute(geometry){
 
-async function importTourFile(){
+ if(!geometry?.coordinates)
+  return;
 
-  const file=
-    document.getElementById(
-      'tourFile'
-    ).files?.[0];
+ let hit=null;
 
-  if(!file){
+ for(const c of constructions){
 
-    toast('Bitte zuerst Foto oder Datei auswählen.');
-    return;
+  for(const xy of geometry.coordinates){
+
+   const d=
+    distanceBetween(
+     c.lat,
+     c.lng,
+     xy[1],
+     xy[0]
+    );
+
+   if(d<=c.radius){
+
+    hit=c;
+    break;
+
+   }
 
   }
 
-  const progress=
-    document.getElementById(
-      'importProgress'
-    );
+  if(hit)
+   break;
 
-  progress.innerHTML=
-    '<div class="loading">📥 Datei wird analysiert …</div>';
+ }
+
+ if(hit){
+
+  toast(
+   '🚧 Achtung: Route führt an '+
+   hit.name+
+   ' vorbei.'
+  ,5000);
+
+  speak(
+   'Achtung. Baustelle auf der Route.'
+  );
+
+ }
+
+}
+
+
+/* =========================================================
+   IMPORT
+   ========================================================= */
+
+document.getElementById('importTourFile')
+.addEventListener(
+ 'change',
+ async e=>{
+
+  const file=e.target.files?.[0];
+
+  if(!file)
+   return;
 
   try{
 
-    let points=[];
+   const name=
+    file.name.toLowerCase();
 
-    const name=file.name.toLowerCase();
+   if(
+    name.endsWith('.csv')||
+    name.endsWith('.txt')
+   ){
 
-    if(file.type.startsWith('image/')){
+    await importCSV(file);
 
-      points=
-        await parsePhotoOCR(file);
+   }else if(
+    name.endsWith('.json')
+   ){
 
-    }else if(name.endsWith('.csv')){
+    await importJSON(file);
 
-      const text=await file.text();
+   }else if(
+    name.endsWith('.gpx')
+   ){
 
-      points=
-        parseCSV(text);
+    await importGPX(file);
 
-    }else if(
-      name.endsWith('.xlsx')||
-      name.endsWith('.xls')
-    ){
+   }else if(
+    name.endsWith('.xlsx')||
+    name.endsWith('.xls')
+   ){
 
-      points=
-        await parseExcel(file);
+    await importXLSX(file);
 
-    }else if(name.endsWith('.gpx')){
+   }else if(
+    file.type.startsWith('image/')
+   ){
 
-      const text=await file.text();
+    await importPhoto(file);
 
-      points=
-        parseGPX(text);
+   }else{
 
-    }else if(
-      name.endsWith('.json')||
-      name.endsWith('.geojson')
-    ){
+    toast('Dateityp nicht unterstützt.');
 
-      const text=await file.text();
+   }
 
-      points=
-        parseJSONPoints(
-          JSON.parse(text)
-        );
+  }catch(err){
 
-    }else if(name.endsWith('.kml')){
+   console.error(err);
 
-      const text=await file.text();
-
-      points=
-        parseKML(text);
-
-    }else if(name.endsWith('.txt')){
-
-      const text=await file.text();
-
-      points=
-        parseTextList(text);
-
-    }else{
-
-      throw Error(
-        'Dateityp nicht unterstützt'
-      );
-
-    }
-
-    if(!points.length)
-      throw Error(
-        'Keine Punkte erkannt'
-      );
-
-    const geocoded=
-      await geocodeMissingPoints(points);
-
-    plannedTour=
-      geocoded;
-
-    renderTourInputList();
-
-    progress.innerHTML=
-      '<div class="route-summary">✅ '+
-      geocoded.length+
-      ' Punkte erkannt und übernommen.</div>';
-
-    toast(
-      geocoded.length+
-      ' Tourpunkte importiert.'
-    );
-
-  }catch(e){
-
-    console.warn(e);
-
-    progress.innerHTML=
-      '<div class="route-summary">❌ '+
-      esc(e.message||'Import fehlgeschlagen')+
-      '</div>';
-
-    toast(
-      'Tour konnte nicht importiert werden.'
-    );
+   toast(
+    'Datei konnte nicht verarbeitet werden.'
+   );
 
   }
 
-  document.getElementById(
-    'tourFile'
-  ).value='';
+  e.target.value='';
 
-}
+ });
 
 
 /* =========================================================
    CSV
-========================================================= */
+   ========================================================= */
 
-function parseCSV(text){
+async function importCSV(file){
 
-  const result=
-    Papa.parse(
-      text.trim(),
-      {
-        header:true,
-        skipEmptyLines:true
-      }
-    );
+ const text=await file.text();
 
-  return result.data
-    .map(normalizeImportedRow)
-    .filter(Boolean);
+ const result=
+  Papa.parse(
+   text,
+   {
+    header:true,
+    skipEmptyLines:true
+   }
+  );
+
+ const rows=result.data||[];
+
+ let count=0;
+
+ for(const row of rows){
+
+  const p=
+   normalizeImportedRow(row);
+
+  if(p){
+
+   workPoints.push(p);
+
+   count++;
+
+  }
+
+ }
+
+ savePoints();
+
+ renderPoints();
+
+ updateDashboard();
+
+ mapImportedPoints(count);
 
 }
 
 
-/* =========================================================
-   EXCEL
-========================================================= */
+function normalizeImportedRow(row){
 
-async function parseExcel(file){
+ const keys=
+  Object.keys(row);
 
-  const buffer=
-    await file.arrayBuffer();
+ function get(names){
 
-  const workbook=
-    XLSX.read(
-      buffer,
-      {type:'array'}
+  for(const wanted of names){
+
+   const key=
+    keys.find(k=>
+     k.toLowerCase()
+     .trim()
+     ===wanted
     );
 
-  const sheet=
-    workbook.Sheets[
-      workbook.SheetNames[0]
-    ];
+   if(key)
+    return row[key];
 
-  const rows=
-    XLSX.utils.sheet_to_json(
-      sheet
-    );
+  }
 
-  return rows
-    .map(normalizeImportedRow)
-    .filter(Boolean);
+  for(const key of keys){
+
+   const lower=
+    key.toLowerCase();
+
+   if(
+    names.some(n=>lower.includes(n))
+   )
+    return row[key];
+
+  }
+
+  return '';
+
+ }
+
+ let lat=
+  Number(
+   String(
+    get(['lat','latitude','y'])
+   ).replace(',','.')
+  );
+
+ let lng=
+  Number(
+   String(
+    get(['lng','lon','longitude','x'])
+   ).replace(',','.')
+  );
+
+ if(
+  !isFinite(lat)||
+  !isFinite(lng)
+ ){
+
+  return null;
+
+ }
+
+ const rawType=
+  String(
+   get([
+    'typ',
+    'type',
+    'kategorie',
+    'category'
+   ])
+  ).toLowerCase();
+
+ const category=
+  detectCategory(rawType);
+
+ return {
+
+  id:uid(),
+
+  category,
+
+  name:
+   String(
+    get([
+     'name',
+     'bezeichnung',
+     'adresse',
+     'ort'
+    ])
+   )||
+   CATEGORY[category].label,
+
+  note:
+   String(
+    get([
+     'notiz',
+     'note',
+     'bemerkung',
+     'beschreibung'
+    ])
+   ),
+
+  special:
+   String(
+    get([
+     'aufgabe',
+     'arbeit',
+     'special'
+    ])
+   ),
+
+  lat,
+
+  lng,
+
+  photo:'',
+
+  done:false,
+
+  createdAt:new Date().toISOString(),
+
+  doneAt:null
+
+ };
+
+}
+
+
+function detectCategory(text){
+
+ if(
+  text.includes('robidog')||
+  text.includes('hund')
+ )
+  return 'robidog';
+
+ if(
+  text.includes('abfall')||
+  text.includes('kübel')||
+  text.includes('kuebel')
+ )
+  return 'abfall';
+
+ if(
+  text.includes('schacht')
+ )
+  return 'schacht';
+
+ if(
+  text.includes('vita')
+ )
+  return 'vitaparcours';
+
+ if(
+  text.includes('blumen')||
+  text.includes('topf')
+ )
+  return 'blumentopf';
+
+ if(
+  text.includes('licht')||
+  text.includes('lampe')
+ )
+  return 'beleuchtung';
+
+ if(
+  text.includes('grün')||
+  text.includes('gruen')
+ )
+  return 'gruen';
+
+ if(
+  text.includes('brunnen')
+ )
+  return 'brunnen';
+
+ if(
+  text.includes('schaden')
+ )
+  return 'schaden';
+
+ return 'sonstiges';
+
+}
+
+
+function mapImportedPoints(count){
+
+ if(!count){
+
+  toast(
+   'Keine Koordinaten erkannt.'
+  );
+
+  return;
+
+ }
+
+ const last=
+  workPoints.slice(-count);
+
+ if(last.length){
+
+  map.fitBounds(
+   L.latLngBounds(
+    last.map(p=>[p.lat,p.lng])
+   ).pad(.08)
+  );
+
+ }
+
+ toast(
+  count+
+  ' Punkte importiert und auf Karte angezeigt.'
+ ,4500);
 
 }
 
 
 /* =========================================================
    JSON
-========================================================= */
+   ========================================================= */
 
-function parseJSONPoints(data){
+async function importJSON(file){
 
-  if(data.type==='FeatureCollection'){
+ const text=await file.text();
 
-    return data.features
-      .map(
-        feature=>{
+ const data=JSON.parse(text);
 
-          const c=
-            feature.geometry?.coordinates;
+ if(Array.isArray(data)){
 
-          const p=
-            feature.properties||{};
+  data.forEach(row=>{
 
-          if(
-            feature.geometry?.type==='Point'&&
-            c?.length>=2
-          ){
+   const p=
+    normalizeImportedRow(row);
 
-            return {
-              id:uid(),
-              category:guessCategory(
-                p.typ||p.type||p.kategorie
-              ),
-              name:
-                p.name||
-                p.bezeichnung||
-                p.adresse||
-                'Importpunkt',
-              lat:Number(c[1]),
-              lng:Number(c[0]),
-              note:p.notiz||p.note||'',
-              priority:'medium',
-              done:false,
-              extra:{}
-            };
+   if(p)
+    workPoints.push(p);
 
-          }
+  });
 
-          return null;
+ }else{
 
-        }
-      )
-      .filter(Boolean);
+  if(Array.isArray(data.workPoints))
+   workPoints.push(...data.workPoints);
 
-  }
+  if(Array.isArray(data.constructions))
+   constructions.push(...data.constructions);
 
-  const arr=
-    Array.isArray(data)
-    ?data
-    :data.points||data.workPoints||[];
+ }
 
-  return arr
-    .map(normalizeImportedRow)
-    .filter(Boolean);
+ savePoints();
+
+ saveConstructions();
+
+ renderPoints();
+
+ renderConstructions();
+
+ updateDashboard();
+
+ toast(
+  'JSON-Daten importiert und auf Karte angezeigt.'
+ );
 
 }
 
 
 /* =========================================================
    GPX
-========================================================= */
+   ========================================================= */
 
-function parseGPX(text){
+async function importGPX(file){
 
-  const xml=
-    new DOMParser()
-      .parseFromString(
-        text,
-        'application/xml'
-      );
+ const text=await file.text();
 
-  const points=[];
-
-  const wpts=
-    [...xml.querySelectorAll('wpt')];
-
-  wpts.forEach(
-    w=>{
-
-      const lat=
-        Number(w.getAttribute('lat'));
-
-      const lng=
-        Number(w.getAttribute('lon'));
-
-      const name=
-        w.querySelector('name')
-          ?.textContent||
-        'GPX Punkt';
-
-      if(
-        Number.isFinite(lat)&&
-        Number.isFinite(lng)
-      ){
-
-        points.push({
-          id:uid(),
-          category:'sonstiges',
-          name,
-          lat,
-          lng,
-          note:'',
-          priority:'medium',
-          done:false,
-          extra:{}
-        });
-
-      }
-
-    }
+ const xml=
+  new DOMParser()
+  .parseFromString(
+   text,
+   'application/xml'
   );
 
-  if(points.length)
-    return points;
+ const points=[
+  ...xml.querySelectorAll('wpt')
+ ];
 
-  const trkpts=
-    [...xml.querySelectorAll('trkpt')];
+ const tracks=[
+  ...xml.querySelectorAll('trkpt')
+ ];
 
-  trkpts.forEach(
-    (p,i)=>{
+ let count=0;
 
-      const lat=
-        Number(p.getAttribute('lat'));
+ points.forEach(pt=>{
 
-      const lng=
-        Number(p.getAttribute('lon'));
+  const lat=
+   Number(pt.getAttribute('lat'));
 
-      if(i%10===0&&
-        Number.isFinite(lat)&&
-        Number.isFinite(lng)
-      ){
+  const lng=
+   Number(pt.getAttribute('lon'));
 
-        points.push({
-          id:uid(),
-          category:'sonstiges',
-          name:'GPX Punkt '+(i+1),
-          lat,
-          lng,
-          note:'',
-          priority:'medium',
-          done:false,
-          extra:{}
-        });
+  if(
+   isFinite(lat)&&
+   isFinite(lng)
+  ){
 
-      }
+   const name=
+    pt.querySelector('name')?.textContent||
+    'GPX Punkt';
 
-    }
-  );
+   workPoints.push({
 
-  return points;
-
-}
-
-
-/* =========================================================
-   KML
-========================================================= */
-
-function parseKML(text){
-
-  const xml=
-    new DOMParser()
-      .parseFromString(
-        text,
-        'application/xml'
-      );
-
-  const points=[];
-
-  [...xml.querySelectorAll('Placemark')]
-    .forEach(
-      pm=>{
-
-        const name=
-          pm.querySelector('name')
-            ?.textContent||
-          'KML Punkt';
-
-        const coords=
-          pm.querySelector('Point coordinates')
-            ?.textContent
-            ?.trim()
-            ?.split(',');
-
-        if(
-          coords?.length>=2
-        ){
-
-          points.push({
-            id:uid(),
-            category:'sonstiges',
-            name,
-            lat:Number(coords[1]),
-            lng:Number(coords[0]),
-            note:'',
-            priority:'medium',
-            done:false,
-            extra:{}
-          });
-
-        }
-
-      }
-    );
-
-  return points;
-
-}
-
-
-/* =========================================================
-   TEXT
-========================================================= */
-
-function parseTextList(text){
-
-  return text
-    .split(/\r?\n/)
-    .map(x=>x.trim())
-    .filter(Boolean)
-    .map(
-      line=>({
-        id:uid(),
-        category:guessCategory(line),
-        name:line,
-        lat:null,
-        lng:null,
-        note:'',
-        priority:'medium',
-        done:false,
-        extra:{}
-      })
-    );
-
-}
-
-
-/* =========================================================
-   IMPORT-ZEILE NORMALISIEREN
-========================================================= */
-
-function normalizeImportedRow(row){
-
-  if(!row)return null;
-
-  const keys=
-    Object.keys(row);
-
-  const get=(...names)=>{
-
-    for(const name of names){
-
-      const key=
-        keys.find(
-          k=>
-            k.toLowerCase()
-             .replace(/[\s_-]/g,'')
-            ===name
-             .toLowerCase()
-             .replace(/[\s_-]/g,'')
-        );
-
-      if(key&&row[key]!==undefined)
-        return row[key];
-
-    }
-
-    return '';
-
-  };
-
-  let lat=Number(
-    get(
-      'lat',
-      'latitude',
-      'breitengrad'
-    )
-  );
-
-  let lng=Number(
-    get(
-      'lng',
-      'lon',
-      'longitude',
-      'laengengrad',
-      'längengrad'
-    )
-  );
-
-  if(!Number.isFinite(lat))
-    lat=null;
-
-  if(!Number.isFinite(lng))
-    lng=null;
-
-  const name=
-    get(
-      'name',
-      'bezeichnung',
-      'adresse',
-      'ort',
-      'punkt'
-    )||
-    'Importpunkt';
-
-  const category=
-    guessCategory(
-      get(
-        'typ',
-        'type',
-        'kategorie',
-        'category'
-      )
-    );
-
-  return {
     id:uid(),
-    category,
-    name:String(name),
-    lat,
-    lng,
-    note:String(
-      get(
-        'notiz',
-        'note',
-        'bemerkung'
-      )||''
-    ),
-    priority:'medium',
-    done:false,
-    extra:{}
-  };
 
-}
+    category:'sonstiges',
 
-function guessCategory(text){
-
-  const s=
-    String(text||'')
-      .toLowerCase();
-
-  if(
-    s.includes('robidog')||
-    s.includes('hund')
-  )return'robidog';
-
-  if(
-    s.includes('abfall')||
-    s.includes('kübel')||
-    s.includes('kuebel')||
-    s.includes('mülleimer')||
-    s.includes('muelleimer')
-  )return'abfall';
-
-  if(
-    s.includes('schacht')||
-    s.includes('saugen')||
-    s.includes('schlammsammler')
-  )return'schacht';
-
-  if(
-    s.includes('vita')||
-    s.includes('parcours')
-  )return'vitaparcours';
-
-  if(
-    s.includes('blumentopf')||
-    s.includes('pflanz')||
-    s.includes('giessen')||
-    s.includes('gießen')
-  )return'blumentopf';
-
-  if(
-    s.includes('lampe')||
-    s.includes('licht')||
-    s.includes('beleucht')
-  )return'licht';
-
-  if(
-    s.includes('signal')||
-    s.includes('schild')
-  )return'signal';
-
-  if(
-    s.includes('baum')||
-    s.includes('grün')||
-    s.includes('gruen')
-  )return'baum';
-
-  if(
-    s.includes('neophyt')
-  )return'neophyten';
-
-  if(
-    s.includes('brunnen')
-  )return'brunnen';
-
-  if(
-    s.includes('bach')||
-    s.includes('gewässer')||
-    s.includes('gewaesser')
-  )return'bach';
-
-  if(
-    s.includes('spielplatz')
-  )return'spielplatz';
-
-  if(
-    s.includes('bank')
-  )return'bank';
-
-  if(
-    s.includes('reinigung')||
-    s.includes('verschmutz')
-  )return'reinigung';
-
-  if(
-    s.includes('winter')
-  )return'winter';
-
-  if(
-    s.includes('schaden')||
-    s.includes('defekt')
-  )return'schaden';
-
-  return'sonstiges';
-
-}
-
-
-/* =========================================================
-   GEOCODING
-========================================================= */
-
-async function geocodeMissingPoints(points){
-
-  const output=[];
-
-  for(const point of points){
-
-    if(
-      Number.isFinite(point.lat)&&
-      Number.isFinite(point.lng)
-    ){
-
-      output.push(point);
-      continue;
-
-    }
-
-    const q=
-      point.name;
-
-    if(!q){
-
-      continue;
-
-    }
-
-    try{
-
-      const url=
-        NOMINATIM+
-        '?format=jsonv2&limit=1&countrycodes=ch&q='+
-        encodeURIComponent(
-          q+', Maur, Zürich, Schweiz'
-        );
-
-      const r=await fetch(
-        url,
-        {
-          headers:{
-            Accept:'application/json'
-          }
-        }
-      );
-
-      const data=await r.json();
-
-      if(data.length){
-
-        point.lat=
-          Number(data[0].lat);
-
-        point.lng=
-          Number(data[0].lon);
-
-        output.push(point);
-
-      }
-
-      await sleep(900);
-
-    }catch(e){
-
-      console.warn(
-        'Geocoding',
-        point.name,
-        e
-      );
-
-    }
-
-  }
-
-  return output;
-
-}
-
-
-/* =========================================================
-   FOTO OCR
-========================================================= */
-
-async function parsePhotoOCR(file){
-
-  if(!window.Tesseract)
-    throw Error(
-      'OCR-Bibliothek nicht verfügbar'
-    );
-
-  const progress=
-    document.getElementById(
-      'importProgress'
-    );
-
-  progress.innerHTML=
-    '<div class="loading">📷 Foto wird gelesen … 0%</div>';
-
-  const result=
-    await Tesseract.recognize(
-      file,
-      'deu+eng',
-      {
-        logger:m=>{
-
-          if(
-            m.status==='recognizing text'
-          ){
-
-            progress.innerHTML=
-              '<div class="loading">📷 OCR … '+
-              Math.round(
-                (m.progress||0)*100
-              )+
-              '%</div>';
-
-          }
-
-        }
-      }
-    );
-
-  const text=
-    result.data.text||'';
-
-  progress.innerHTML=
-    '<div class="loading">🔎 Text erkannt – Adressen werden gesucht …</div>';
-
-  return parseTextList(text);
-
-}
-
-
-/* =========================================================
-   BAUSTELLEN / SPERRUNGEN
-========================================================= */
-
-function renderClosures(){
-
-  closureMarkers.forEach(
-    m=>{
-      if(map.hasLayer(m))
-        map.removeLayer(m);
-    }
-  );
-
-  closureMarkers=[];
-
-  closures.forEach(
-    c=>{
-
-      const marker=
-        L.marker(
-          [c.lat,c.lng],
-          {
-            pane:'closurePane',
-            icon:L.divIcon({
-              className:'',
-              html:'<div class="closure-icon">🚧</div>',
-              iconSize:[38,38],
-              iconAnchor:[19,19]
-            })
-          }
-        ).addTo(map);
-
-      marker.bindPopup(`
-        <b>🚧 ${esc(c.name)}</b>
-        <div class="hint">
-          Radius ${c.radius} m
-        </div>
-
-        <button
-          onclick="deleteClosure('${c.id}')"
-          style="margin-top:8px;padding:8px;border-radius:8px;background:#fee2e2;color:#991b1b">
-          Sperrung löschen
-        </button>
-      `);
-
-      L.circle(
-        [c.lat,c.lng],
-        {
-          pane:'closurePane',
-          radius:c.radius,
-          color:'#dc2626',
-          fillColor:'#dc2626',
-          fillOpacity:.12
-        }
-      ).addTo(map);
-
-      closureMarkers.push(marker);
-
-    }
-  );
-
-  renderClosureList();
-
-}
-
-function renderClosureList(){
-
-  const e=
-    document.getElementById(
-      'closureList'
-    );
-
-  if(!closures.length){
-
-    e.innerHTML=
-      '<p class="hint">Keine Sperrungen gespeichert.</p>';
-
-    return;
-
-  }
-
-  e.innerHTML=
-    closures.map(
-      c=>`
-      <div class="closure-item">
-
-        <b>🚧 ${esc(c.name)}</b>
-
-        <div class="hint">
-          Radius ${c.radius} m
-        </div>
-
-        <button
-          class="smallbtn danger"
-          onclick="deleteClosure('${c.id}')">
-          🗑️ Löschen
-        </button>
-
-      </div>
-      `
-    ).join('');
-
-}
-
-function startClosureMode(){
-
-  closureMode=true;
-
-  closePanels();
-
-  toast(
-    '🚧 Tippe jetzt auf die gesperrte Stelle.'
-  );
-
-}
-
-map.on(
-  'click',
-  e=>{
-
-    if(!closureMode)
-      return;
-
-    closureMode=false;
-
-    const name=
-      prompt(
-        'Name der Baustelle / Sperrung:',
-        'Baustelle'
-      );
-
-    if(!name)
-      return;
-
-    const radius=
-      Number(
-        prompt(
-          'Radius in Metern:',
-          '40'
-        )
-      )||40;
-
-    closures.push({
-      id:uid(),
-      name,
-      lat:e.latlng.lat,
-      lng:e.latlng.lng,
-      radius,
-      createdAt:new Date().toISOString()
-    });
-
-    saveClosures();
-    renderClosures();
-
-    toast(
-      '🚧 Sperrung gespeichert.'
-    );
-
-  }
-);
-
-function deleteClosure(id){
-
-  if(!confirm(
-    'Sperrung wirklich löschen?'
-  ))return;
-
-  closures=
-    closures.filter(
-      c=>c.id!==id
-    );
-
-  saveClosures();
-  renderClosures();
-
-}
-
-
-/* =========================================================
-   TOUR DATEIEN / MANUELL
-========================================================= */
-
-document.getElementById(
-  'manualTourPointBtn'
-).onclick=()=>{
-  openNewPoint('sonstiges');
-  toast(
-    'Punkt wird gleichzeitig als Auftrag gespeichert.'
-  );
-};
-
-document.getElementById(
-  'loadOpenTasksBtn'
-).onclick=
-  loadOpenTasksIntoTour;
-
-document.getElementById(
-  'optimizeTourBtn'
-).onclick=
-  optimizeTour;
-
-document.getElementById(
-  'startPlannedTourBtn'
-).onclick=
-  startPlannedTour;
-
-document.getElementById(
-  'clearPlannedTourBtn'
-).onclick=()=>{
-
-  plannedTour=[];
-
-  if(plannedRouteLayer){
-
-    map.removeLayer(
-      plannedRouteLayer
-    );
-
-    plannedRouteLayer=null;
-
-  }
-
-  document.getElementById(
-    'tourSummary'
-  ).innerHTML='';
-
-  document.getElementById(
-    'tourStops'
-  ).innerHTML='';
-
-  toast(
-    'Tourplanung gelöscht.'
-  );
-
-};
-
-
-/* =========================================================
-   VITAPARCOURS
-========================================================= */
-
-document.getElementById(
-  'newVitaBtn'
-).onclick=()=>{
-  openNewPoint('vitaparcours');
-};
-
-document
-  .querySelectorAll('.vitaTask')
-  .forEach(
-    checkbox=>{
-      checkbox.addEventListener(
-        'change',
-        ()=>{
-          renderCategoryExtra(
-            'vitaparcours'
-          );
-        }
-      );
-    }
-  );
-
-
-/* =========================================================
-   TOUREN SPEICHERN
-========================================================= */
-
-function saveCurrentTour(){
-
-  if(trackPoints.length<2){
-
-    toast(
-      'Noch keine GPS-Spur vorhanden.'
-    );
-
-    return;
-
-  }
-
-  const name=
-    prompt(
-      'Name der Tour:',
-      'Werkdienst '+
-      new Date()
-        .toLocaleDateString('de-CH')
-    );
-
-  if(!name)return;
-
-  tours.unshift({
-    id:uid(),
     name,
+
+    note:'Import aus GPX',
+
+    special:'',
+
+    lat,
+
+    lng,
+
+    photo:'',
+
+    done:false,
+
     createdAt:new Date().toISOString(),
-    distanceMeters:trackDistance,
-    durationSeconds:activeSeconds(),
-    points:[...trackPoints]
-  });
 
-  saveTours();
-  renderTours();
+    doneAt:null
 
-  toast('💾 Tour gespeichert.');
+   });
 
-}
+   count++;
 
-function renderTours(){
+  }
 
-  const e=
-    document.getElementById(
-      'tourList'
-    );
+ });
 
-  if(!e)return;
+ if(tracks.length){
 
-}
+  const coords=[
+   ...xml.querySelectorAll('trkpt')
+  ].map(pt=>[
+   Number(pt.getAttribute('lat')),
+   Number(pt.getAttribute('lon'))
+  ]);
 
-function showSavedTour(id){
+  if(coords.length){
 
-  const t=
-    tours.find(
-      x=>x.id===id
-    );
-
-  if(!t)return;
-
-  if(displayedTourLayer)
-    map.removeLayer(displayedTourLayer);
-
-  displayedTourLayer=
+   const route=
     L.polyline(
-      t.points,
-      {
-        pane:'trackPane',
-        color:'#f97316',
-        weight:6
-      }
+     coords,
+     {
+      color:'#f97316',
+      weight:6
+     }
     ).addTo(map);
 
-  map.fitBounds(
-    displayedTourLayer.getBounds(),
-    {
-      padding:[30,120],
-      maxZoom:16
-    }
+   map.fitBounds(
+    route.getBounds().pad(.08)
+   );
+
+  }
+
+ }
+
+ savePoints();
+
+ renderPoints();
+
+ updateDashboard();
+
+ mapImportedPoints(count);
+
+}
+
+
+/* =========================================================
+   EXCEL
+   ========================================================= */
+
+async function importXLSX(file){
+
+ const buffer=
+  await file.arrayBuffer();
+
+ const wb=
+  XLSX.read(
+   buffer,
+   {
+    type:'array'
+   }
   );
 
-}
+ let count=0;
 
+ wb.SheetNames.forEach(sheetName=>{
 
-/* =========================================================
-   DASHBOARD
-========================================================= */
+  const ws=wb.Sheets[sheetName];
 
-function updateDashboard(){
+  const rows=
+   XLSX.utils.sheet_to_json(ws);
 
-  const total=workPoints.length;
+  rows.forEach(row=>{
 
-  const done=
-    workPoints.filter(
-      p=>p.done
-    ).length;
+   const p=
+    normalizeImportedRow(row);
 
-  const open=total-done;
+   if(p){
 
-  const urgent=
-    workPoints.filter(
-      p=>!p.done&&p.priority==='high'
-    ).length;
+    workPoints.push(p);
 
-  const progress=
-    total
-    ?Math.round(done/total*100)
-    :0;
+    count++;
 
-  document.getElementById(
-    'dashTotal'
-  ).textContent=total;
+   }
 
-  document.getElementById(
-    'dashDone'
-  ).textContent=done;
+  });
 
-  document.getElementById(
-    'dashOpen'
-  ).textContent=open;
+ });
 
-  document.getElementById(
-    'dashUrgent'
-  ).textContent=urgent;
+ savePoints();
 
-  document.getElementById(
-    'dashProgress'
-  ).style.width=
-    progress+'%';
+ renderPoints();
 
-  document.getElementById(
-    'dashProgressText'
-  ).textContent=
-    done+' / '+total+' erledigt';
+ updateDashboard();
 
-  document.getElementById(
-    'pointsTotal'
-  ).textContent=total;
-
-  document.getElementById(
-    'pointsOpen'
-  ).textContent=open;
-
-  document.getElementById(
-    'pointsDone'
-  ).textContent=done;
-
-  document.getElementById(
-    'pointsUrgent'
-  ).textContent=urgent;
-
-  updateTrackUI();
-  updatePointsList();
+ mapImportedPoints(count);
 
 }
 
 
 /* =========================================================
-   PANELS
-========================================================= */
+   FOTO
+   ========================================================= */
 
-function openPanel(id){
+async function importPhoto(file){
 
-  document
-    .querySelectorAll('.panel')
-    .forEach(
-      p=>p.classList.remove('open')
-    );
+ toast(
+  '📸 Foto erkannt. Für automatische Texterkennung kann später OCR ergänzt werden.',
+ 4500
+ );
 
-  document.getElementById(
-    id
-  ).classList.add('open');
+ /*
+   Hier wird die Foto-Datei momentan gespeichert,
+   damit wir später OCR einbauen können.
+ */
 
-  document.getElementById(
-    'searchWrap'
-  ).style.display='none';
+ const reader=new FileReader();
 
-  document
-    .querySelectorAll('.bottom button')
-    .forEach(
-      b=>b.classList.remove('active')
-    );
+ reader.onload=()=>{
 
-}
+  const p={
 
-function closePanels(){
+   id:uid(),
 
-  document
-    .querySelectorAll('.panel')
-    .forEach(
-      p=>p.classList.remove('open')
-    );
+   category:'sonstiges',
 
-  document.getElementById(
-    'searchWrap'
-  ).style.display='block';
+   name:'Import aus Foto',
 
-  setTimeout(
-    ()=>map.invalidateSize({pan:false}),
-    100
+   note:
+    'Foto hochgeladen. Position bitte manuell setzen.',
+
+   special:'',
+
+   lat:
+    currentPosition?
+    currentPosition.lat:
+    CENTER[0],
+
+   lng:
+    currentPosition?
+    currentPosition.lng:
+    CENTER[1],
+
+   photo:reader.result,
+
+   done:false,
+
+   createdAt:new Date().toISOString(),
+
+   doneAt:null
+
+  };
+
+  workPoints.push(p);
+
+  savePoints();
+
+  renderPoints();
+
+  updateDashboard();
+
+  map.setView(
+   [p.lat,p.lng],
+   17
   );
 
+  toast(
+   '📸 Foto als Punkt auf Karte gespeichert.'
+  );
+
+ };
+
+ reader.readAsDataURL(file);
+
 }
 
 
 /* =========================================================
-   EXPORT
-========================================================= */
+   DATEN EXPORT
+   ========================================================= */
 
 function exportData(){
 
-  const data={
-    app:'Maur Strassendienst',
-    version:'V19',
-    exportedAt:new Date().toISOString(),
-    workPoints,
-    tours,
-    closures
-  };
+ const data={
 
-  const blob=
-    new Blob(
-      [
-        JSON.stringify(
-          data,
-          null,
-          2
-        )
-      ],
-      {
-        type:'application/json'
-      }
-    );
+  app:'Maur Strassendienst',
 
-  const url=
-    URL.createObjectURL(blob);
+  version:'V19',
 
-  const a=
-    document.createElement('a');
+  exportedAt:
+   new Date().toISOString(),
 
-  a.href=url;
+  workPoints,
 
-  a.download=
-    'maur-strassendienst-V19-'+
-    new Date()
-      .toISOString()
-      .slice(0,10)+
-    '.json';
+  constructions
 
-  document.body.appendChild(a);
+ };
 
-  a.click();
+ const blob=
+  new Blob(
+   [
+    JSON.stringify(
+     data,
+     null,
+     2
+    )
+   ],
+   {
+    type:'application/json'
+   }
+  );
 
-  a.remove();
+ const url=
+  URL.createObjectURL(blob);
 
-  URL.revokeObjectURL(url);
+ const a=
+  document.createElement('a');
 
-  toast('📤 Daten exportiert.');
+ a.href=url;
+
+ a.download=
+  'maur-strassendienst-v19-'+
+  new Date()
+  .toISOString()
+  .slice(0,10)+
+  '.json';
+
+ document.body.appendChild(a);
+
+ a.click();
+
+ a.remove();
+
+ URL.revokeObjectURL(url);
+
+ toast('Daten exportiert.');
 
 }
 
 
 /* =========================================================
-   IMPORT DATEN
-========================================================= */
+   DATEN IMPORT
+   ========================================================= */
 
-document.getElementById(
-  'importDataBtn'
-).onclick=()=>{
-  document.getElementById(
-    'dataFile'
-  ).click();
-};
+document.getElementById('importDataFile')
+.addEventListener(
+ 'change',
+ async e=>{
 
-document.getElementById(
-  'dataFile'
-).addEventListener(
-  'change',
-  async e=>{
+  const file=e.target.files?.[0];
 
-    const file=e.target.files?.[0];
+  if(!file)
+   return;
 
-    if(!file)return;
+  try{
 
-    try{
+   await importJSON(file);
 
-      const data=
-        JSON.parse(
-          await file.text()
-        );
+  }catch(err){
 
-      if(Array.isArray(data.workPoints))
-        workPoints=data.workPoints;
+   console.warn(err);
 
-      if(Array.isArray(data.tours))
-        tours=data.tours;
-
-      if(Array.isArray(data.closures))
-        closures=data.closures;
-
-      saveData();
-      saveTours();
-      saveClosures();
-
-      renderWorkPoints();
-      renderClosures();
-      updateDashboard();
-
-      toast(
-        '📥 Daten erfolgreich importiert.'
-      );
-
-    }catch(err){
-
-      console.warn(err);
-
-      toast(
-        'Import fehlgeschlagen.'
-      );
-
-    }
-
-    e.target.value='';
+   toast(
+    'Import fehlgeschlagen.'
+   );
 
   }
-);
+
+  e.target.value='';
+
+ });
 
 
 /* =========================================================
-   ALLES LÖSCHEN
-========================================================= */
+   ALLE DATEN LÖSCHEN
+   ========================================================= */
 
-document.getElementById(
-  'clearDataBtn'
-).onclick=()=>{
+function clearAllData(){
 
-  if(!confirm(
-    'Wirklich ALLE Werkdienst-Daten löschen?'
-  ))return;
+ if(!confirm(
+  'Wirklich ALLE Werkdienst-Punkte und Baustellen löschen?'
+ ))
+  return;
 
-  workPoints=[];
-  tours=[];
-  closures=[];
+ workPoints=[];
+ constructions=[];
 
-  localStorage.removeItem(
-    'maurWorkPointsV19'
-  );
+ savePoints();
+ saveConstructions();
 
-  localStorage.removeItem(
-    'maurToursV19'
-  );
+ renderPoints();
+ renderConstructions();
+ updateDashboard();
 
-  localStorage.removeItem(
-    'maurClosuresV19'
-  );
+ toast('Alle Daten gelöscht.');
 
-  renderWorkPoints();
-  renderClosures();
-  updateDashboard();
-
-  toast(
-    '🗑️ Alle Daten gelöscht.'
-  );
-
-};
+}
 
 
 /* =========================================================
-   PRIORITÄT
-========================================================= */
+   SUCHE
+   ========================================================= */
 
-document
-  .querySelectorAll('[data-priority]')
+const search=
+ document.getElementById('search');
+
+const results=
+ document.getElementById('results');
+
+let searchTimer;
+
+search.addEventListener(
+ 'input',
+ ()=>{
+
+  clearTimeout(searchTimer);
+
+  const q=
+   search.value.trim();
+
+  if(q.length<3){
+
+   results.innerHTML='';
+
+   return;
+
+  }
+
+  searchTimer=
+   setTimeout(
+    ()=>searchAddress(q),
+    400
+   );
+
+ });
+
+
+async function searchAddress(q){
+
+ results.innerHTML=
+  '<div class="result">Suche …</div>';
+
+ try{
+
+  const url=
+   NOMINATIM+
+   '?format=jsonv2'+
+   '&limit=8'+
+   '&countrycodes=ch'+
+   '&q='+
+   encodeURIComponent(
+    q+', Maur, Zürich, Schweiz'
+   );
+
+  const r=
+   await fetch(
+    url,
+    {
+     headers:{
+      Accept:'application/json'
+     }
+    }
+   );
+
+  const data=
+   await r.json();
+
+  if(!data.length){
+
+   results.innerHTML=
+    '<div class="result">Nichts gefunden.</div>';
+
+   return;
+
+  }
+
+  results.innerHTML=
+   data.map(
+    (x,i)=>`
+
+     <div class="result"
+          data-index="${i}">
+
+      <b>
+       ${esc(
+        x.display_name
+        .split(',')
+        .slice(0,2)
+        .join(', ')
+       )}
+      </b>
+
+      <small>
+       ${esc(x.display_name)}
+      </small>
+
+     </div>
+
+    `
+   ).join('');
+
+  [...results.children]
   .forEach(
-    b=>{
-      b.onclick=()=>{
-        selectedPriority=
-          b.dataset.priority;
+   (el,i)=>{
+    el.onclick=()=>{
 
-        updatePriorityButtons();
-      };
-    }
+     const x=data[i];
+
+     const lat=Number(x.lat);
+     const lng=Number(x.lon);
+
+     map.setView(
+      [lat,lng],
+      17
+     );
+
+     L.marker(
+      [lat,lng]
+     ).addTo(map)
+      .bindPopup(
+       esc(x.display_name)
+      )
+      .openPopup();
+
+     results.innerHTML='';
+
+     search.value=
+      x.display_name;
+
+    };
+   }
   );
 
+ }catch(e){
+
+  console.warn(e);
+
+  results.innerHTML=
+   '<div class="result">Suche nicht verfügbar.</div>';
+
+ }
+
+}
+
 
 /* =========================================================
-   KATEGORIE
-========================================================= */
+   INIT
+   ========================================================= */
 
-document
-  .getElementById('pointCategory')
-  .addEventListener(
-    'change',
-    e=>{
-      renderCategoryExtra(
-        e.target.value
-      );
-    }
+async function init(){
+
+ loadPoints();
+
+ loadConstructions();
+
+ renderPoints();
+
+ renderConstructions();
+
+ updateDashboard();
+
+ startGPS();
+
+ await loadMaurBoundary();
+
+ const saved=
+  localStorage.getItem(
+   'maurMapViewV19'
   );
 
+ if(saved)
+  setMapView(saved);
 
-document
-  .querySelectorAll('[data-category]')
-  .forEach(
-    b=>{
-      b.onclick=()=>{
-        openNewPoint(
-          b.dataset.category
-        );
-      };
-    }
-  );
+ document.getElementById('status')
+ .textContent=
+  'ONLINE • V19 • WERKDIENST';
 
+ toast(
+  '🚜 Maur Strassendienst V19 geladen.'
+ );
 
-/* =========================================================
-   BUTTONS
-========================================================= */
+}
 
-document.getElementById(
-  'settingsBtn'
-).onclick=()=>{
-  openPanel('settingsPanel');
-};
-
-document.getElementById(
-  'closeSettings'
-).onclick=closePanels;
-
-document.getElementById(
-  'closeDashboard'
-).onclick=closePanels;
-
-document.getElementById(
-  'closeWorkPoint'
-).onclick=closePanels;
-
-document.getElementById(
-  'closePoints'
-).onclick=closePanels;
-
-document.getElementById(
-  'closeTour'
-).onclick=closePanels;
-
-document.getElementById(
-  'closeVita'
-).onclick=closePanels;
-
-document.getElementById(
-  'closeClosure'
-).onclick=closePanels;
-
-document.getElementById(
-  'openTourBtn'
-).onclick=()=>{
-  openPanel('tourPanel');
-};
-
-document.getElementById(
-  'startTourBtn'
-).onclick=()=>{
-  if(plannedTour.length)
-    startPlannedTour();
-  else
-    loadOpenTasksIntoTour();
-};
-
-document.getElementById(
-  'nextTaskBtn'
-).onclick=
-  goToNextTask;
-
-document.getElementById(
-  'saveWorkPointBtn'
-).onclick=
-  saveWorkPoint;
-
-document.getElementById(
-  'trackBtn'
-).onclick=
-  startTrack;
-
-document.getElementById(
-  'pauseBtn'
-).onclick=
-  togglePause;
-
-document.getElementById(
-  'voiceBtn'
-).onclick=
-  toggleVoice;
-
-document.getElementById(
-  'followBtn'
-).onclick=
-  toggleFollow;
-
-document.getElementById(
-  'stopNavBtn'
-).onclick=
-  stopNavigation;
-
-document.getElementById(
-  'locateBtn'
-).onclick=
-  locateMe;
-
-document.getElementById(
-  'exportBtn'
-).onclick=
-  exportData;
-
-document.getElementById(
-  'addClosureBtn'
-).onclick=
-  startClosureMode;
-
-document.getElementById(
-  'openClosureBtn'
-).onclick=
-  ()=>openPanel('closurePanel');
-
-document.getElementById(
-  'filterOpenBtn'
-).onclick=()=>{
-  filterOpen=true;
-  updatePointsList();
-};
-
-document.getElementById(
-  'filterAllBtn'
-).onclick=()=>{
-  filterOpen=false;
-  updatePointsList();
-};
+init();
 
 
 /* =========================================================
-   KARTENANSICHT BUTTONS
-========================================================= */
+   SERVICE WORKER
+   ========================================================= */
 
-document
-  .querySelectorAll('[data-view]')
-  .forEach(
-    b=>{
-      b.onclick=()=>{
-        changeView(
-          b.dataset.view
-        );
-      };
-    }
-  );
+if('serviceWorker' in navigator){
 
-
-/* =========================================================
-   BOTTOM NAV
-========================================================= */
-
-document.getElementById(
-  'dashboardTab'
-).onclick=()=>{
-  openPanel('dashboardPanel');
-  updateDashboard();
-};
-
-document.getElementById(
-  'tourTab'
-).onclick=()=>{
-  openPanel('tourPanel');
-};
-
-document.getElementById(
-  'navTab'
-).onclick=()=>{
-  closePanels();
-  search.focus();
-};
-
-document.getElementById(
-  'pointsTab'
-).onclick=()=>{
-  openPanel('pointsPanel');
-  updatePointsList();
-};
-
-document.getElementById(
-  'mapTab'
-).onclick=()=>{
-  closePanels();
-  locateMe();
-};
-
-
-/* =========================================================
-   DRAG
-========================================================= */
-
-map.on(
-  'dragstart',
+ window.addEventListener(
+  'load',
   ()=>{
-    if(followEnabled)
-      toggleFollow();
+   navigator.serviceWorker
+   .register('./sw.js')
+   .catch(e=>
+    console.warn(
+     'ServiceWorker:',
+     e
+    )
+   );
   }
-);
+ );
 
-
-/* =========================================================
-   ONLINE/OFFLINE
-========================================================= */
-
-window.addEventListener(
-  'online',
-  ()=>{
-    status('ONLINE • V19');
-    toast('🌐 Wieder online');
-  }
-);
-
-window.addEventListener(
-  'offline',
-  ()=>{
-    status('OFFLINE • V19');
-    toast(
-      '📴 Offline – lokale Daten bleiben erhalten.'
-    );
-  }
-);
-
-
-/* =========================================================
-   START
-========================================================= */
-
-(async function init(){
-
-  loadData();
-
-  changeView(
-    localStorage.getItem(
-      'maurMapViewV19'
-    )||'normal'
-  );
-
-  renderWorkPoints();
-  renderClosures();
-  updateDashboard();
-
-  startGPS();
-
-  await loadMaur();
-
-  renderWorkPoints();
-  renderClosures();
-  updateDashboard();
-
-  toast(
-    '🚜 Maur Strassendienst V19 geladen.'
-  );
-
-})();
+}
 
 </script>
 
