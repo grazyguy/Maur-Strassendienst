@@ -1,313 +1,1542 @@
 <!DOCTYPE html>
-<html lang="de">
-
+<html lang="de-CH">
 <head>
-
     <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width,
-                   initial-scale=1,
-                   maximum-scale=1,
-                   user-scalable=no">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    >
 
-    <meta name="theme-color"
-          content="#111827">
+    <meta name="theme-color" content="#111827">
 
     <title>Maur Strassendienst</title>
 
-
-    <!-- LEAFLET CSS -->
+    <!-- Leaflet -->
     <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     >
 
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-    <!-- DEIN CSS -->
-    <link
-        rel="stylesheet"
-        href="style.css"
-    >
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                Roboto, Helvetica, Arial, sans-serif;
+            background: #111827;
+        }
 
+        body {
+            color: #111827;
+        }
+
+        /* =========================
+           TOPBAR
+        ========================= */
+
+        .topbar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            z-index: 1000;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0 12px;
+
+            background: #111827;
+            color: white;
+
+            box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+
+            background: white;
+            color: #111827;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-weight: 800;
+            font-size: 14px;
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.05;
+        }
+
+        .brand-title {
+            font-size: 17px;
+            font-weight: 800;
+        }
+
+        .brand-subtitle {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 3px;
+        }
+
+        #gpsButton {
+            width: 42px;
+            height: 42px;
+
+            border: none;
+            border-radius: 12px;
+
+            background: #2563eb;
+            color: white;
+
+            font-size: 20px;
+
+            cursor: pointer;
+        }
+
+        #gpsButton:active {
+            transform: scale(0.94);
+        }
+
+        /* =========================
+           MAP
+        ========================= */
+
+        #map {
+            position: absolute;
+            top: 64px;
+            left: 0;
+            right: 0;
+            bottom: 76px;
+
+            z-index: 1;
+        }
+
+        /* =========================
+           SEARCH
+        ========================= */
+
+        .search-container {
+            position: absolute;
+            top: 74px;
+            left: 10px;
+            right: 10px;
+
+            z-index: 900;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 7px;
+
+            background: white;
+            padding: 7px;
+
+            border-radius: 14px;
+
+            box-shadow: 0 3px 14px rgba(0,0,0,0.25);
+        }
+
+        #searchInput {
+            flex: 1;
+
+            min-width: 0;
+
+            border: none;
+            outline: none;
+
+            font-size: 16px;
+
+            padding: 10px;
+        }
+
+        #searchButton {
+            border: none;
+            border-radius: 10px;
+
+            background: #2563eb;
+            color: white;
+
+            padding: 0 15px;
+
+            font-weight: 700;
+            font-size: 14px;
+
+            cursor: pointer;
+        }
+
+        #searchButton:active {
+            transform: scale(0.96);
+        }
+
+        #searchResults {
+            display: none;
+
+            margin-top: 6px;
+
+            background: white;
+            border-radius: 12px;
+
+            box-shadow: 0 3px 15px rgba(0,0,0,0.25);
+
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .search-result {
+            padding: 13px;
+
+            border-bottom: 1px solid #e5e7eb;
+
+            font-size: 14px;
+
+            cursor: pointer;
+        }
+
+        .search-result:last-child {
+            border-bottom: none;
+        }
+
+        .search-result:active {
+            background: #f3f4f6;
+        }
+
+        /* =========================
+           BOTTOM BAR
+        ========================= */
+
+        .bottom-bar {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+
+            height: 76px;
+
+            z-index: 1000;
+
+            background: white;
+
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+
+            padding: 8px 7px;
+
+            box-shadow: 0 -3px 14px rgba(0,0,0,0.18);
+        }
+
+        .bottom-button {
+            border: none;
+            background: transparent;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            gap: 3px;
+
+            color: #374151;
+
+            font-size: 11px;
+            font-weight: 700;
+
+            cursor: pointer;
+
+            border-radius: 12px;
+        }
+
+        .bottom-button span:first-child {
+            font-size: 22px;
+        }
+
+        .bottom-button:active {
+            background: #f3f4f6;
+        }
+
+        /* =========================
+           PANELS
+        ========================= */
+
+        .panel {
+            position: absolute;
+
+            left: 10px;
+            right: 10px;
+
+            bottom: 88px;
+
+            z-index: 1100;
+
+            background: white;
+
+            border-radius: 16px;
+
+            box-shadow: 0 5px 25px rgba(0,0,0,0.28);
+
+            padding: 16px;
+
+            display: none;
+        }
+
+        .panel h2 {
+            margin: 0 0 12px 0;
+
+            font-size: 18px;
+        }
+
+        .panel-close {
+            position: absolute;
+
+            top: 10px;
+            right: 10px;
+
+            width: 34px;
+            height: 34px;
+
+            border: none;
+            border-radius: 10px;
+
+            background: #f3f4f6;
+
+            font-size: 20px;
+
+            cursor: pointer;
+        }
+
+        /* =========================
+           LAYERS
+        ========================= */
+
+        .layer-row {
+            display: flex;
+            align-items: center;
+
+            padding: 11px 4px;
+
+            border-bottom: 1px solid #e5e7eb;
+
+            font-size: 15px;
+        }
+
+        .layer-row:last-child {
+            border-bottom: none;
+        }
+
+        .layer-row input {
+            width: 20px;
+            height: 20px;
+
+            margin-right: 12px;
+        }
+
+        /* =========================
+           INFO
+        ========================= */
+
+        #infoPanel {
+            max-height: 65vh;
+            overflow-y: auto;
+        }
+
+        #infoTitle {
+            padding-right: 40px;
+        }
+
+        #infoText {
+            color: #4b5563;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .main-button {
+            width: 100%;
+
+            border: none;
+            border-radius: 12px;
+
+            padding: 13px;
+
+            background: #2563eb;
+            color: white;
+
+            font-size: 15px;
+            font-weight: 700;
+
+            cursor: pointer;
+        }
+
+        .main-button:active {
+            transform: scale(0.98);
+        }
+
+        /* =========================
+           STATUS
+        ========================= */
+
+        #status {
+            position: absolute;
+
+            left: 50%;
+            bottom: 88px;
+
+            transform: translateX(-50%);
+
+            z-index: 1200;
+
+            background: #111827;
+            color: white;
+
+            padding: 8px 13px;
+
+            border-radius: 20px;
+
+            font-size: 12px;
+            font-weight: 600;
+
+            display: none;
+
+            box-shadow: 0 3px 12px rgba(0,0,0,0.25);
+
+            white-space: nowrap;
+        }
+
+        /* =========================
+           GPS MARKER
+        ========================= */
+
+        .gps-marker {
+            width: 20px;
+            height: 20px;
+
+            border-radius: 50%;
+
+            background: #2563eb;
+
+            border: 4px solid white;
+
+            box-shadow:
+                0 0 0 4px rgba(37,99,235,0.25),
+                0 2px 8px rgba(0,0,0,0.35);
+        }
+
+        /* =========================
+           LEAFLET
+        ========================= */
+
+        .leaflet-control-zoom {
+            margin-top: 120px !important;
+        }
+
+        .leaflet-control-attribution {
+            font-size: 9px;
+        }
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
+
+        @media (min-width: 700px) {
+
+            .search-container {
+                width: 500px;
+                right: auto;
+            }
+
+            .panel {
+                left: auto;
+                right: 20px;
+                width: 390px;
+            }
+
+            .bottom-bar {
+                left: 50%;
+                transform: translateX(-50%);
+                width: 600px;
+                border-radius: 18px 18px 0 0;
+            }
+        }
+    </style>
 </head>
-
 
 <body>
 
+    <!-- =========================
+         TOPBAR
+    ========================== -->
 
-    <!-- ================================= -->
-    <!-- OBERER BEREICH -->
-    <!-- ================================= -->
+    <div class="topbar">
 
-    <header class="topbar">
+        <div class="brand">
 
-        <div class="title">
+            <div class="brand-logo">
+                MAUR
+            </div>
 
-            <strong>MAUR</strong>
+            <div class="brand-text">
 
-            <span>
-                Strassendienst
-            </span>
+                <div class="brand-title">
+                    Strassendienst
+                </div>
+
+                <div class="brand-subtitle">
+                    Gemeinde Maur
+                </div>
+
+            </div>
 
         </div>
 
-
-        <button
-            id="gpsButton"
-            class="iconButton">
-
+        <button id="gpsButton" title="Mein Standort">
             📍
-
-        </button>
-
-    </header>
-
-
-
-    <!-- ================================= -->
-    <!-- SUCHE -->
-    <!-- ================================= -->
-
-    <div class="searchBox">
-
-        <input
-            id="searchInput"
-            type="search"
-            placeholder="Strasse, Adresse oder Ort suchen..."
-            autocomplete="off"
-        >
-
-
-        <button
-            id="searchButton">
-
-            🔎
-
         </button>
 
     </div>
 
 
-    <div id="searchResults"></div>
+    <!-- =========================
+         SEARCH
+    ========================== -->
+
+    <div class="search-container">
+
+        <div class="search-box">
+
+            <input
+                id="searchInput"
+                type="search"
+                placeholder="Adresse, Strasse oder Ort suchen..."
+                autocomplete="off"
+            >
+
+            <button id="searchButton">
+                Suchen
+            </button>
+
+        </div>
+
+        <div id="searchResults"></div>
+
+    </div>
 
 
-
-    <!-- ================================= -->
-    <!-- KARTE -->
-    <!-- ================================= -->
+    <!-- =========================
+         MAP
+    ========================== -->
 
     <div id="map"></div>
 
 
+    <!-- =========================
+         STATUS
+    ========================== -->
 
-    <!-- ================================= -->
-    <!-- UNTERES MENÜ -->
-    <!-- ================================= -->
-
-    <div class="bottomPanel">
+    <div id="status"></div>
 
 
-        <button
-            onclick="showMyLocation()">
+    <!-- =========================
+         LAYER PANEL
+    ========================== -->
 
-            📍
+    <div id="layersPanel" class="panel">
 
-            <span>
-                Standort
-            </span>
-
+        <button class="panel-close" onclick="closePanels()">
+            ×
         </button>
 
+        <h2>Ebenen</h2>
 
-
-        <button
-            onclick="toggleLayers()">
-
-            🗂️
-
-            <span>
-                Ebenen
-            </span>
-
-        </button>
-
-
-
-        <button
-            onclick="startNavigation()">
-
-            🧭
-
-            <span>
-                Navi
-            </span>
-
-        </button>
-
-
-
-        <button
-            onclick="addPoint()">
-
-            ➕
-
-            <span>
-                Punkt
-            </span>
-
-        </button>
-
-
-    </div>
-
-
-
-    <!-- ================================= -->
-    <!-- EBENEN PANEL -->
-    <!-- ================================= -->
-
-    <div
-        id="layerPanel"
-        class="panel hidden">
-
-
-        <h3>
-            Kartenebenen
-        </h3>
-
-
-        <label>
-
+        <label class="layer-row">
             <input
                 type="checkbox"
+                id="roadsToggle"
                 checked
-                id="roadsLayer">
-
-            Strassen
-
+            >
+            <span>🛣️ Strassen</span>
         </label>
 
-
-
-        <label>
-
+        <label class="layer-row">
             <input
                 type="checkbox"
-                id="binsLayer">
-
-            Abfallkübel
-
+                id="binsToggle"
+            >
+            <span>🗑️ Abfallkübel</span>
         </label>
 
-
-
-        <label>
-
+        <label class="layer-row">
             <input
                 type="checkbox"
-                id="winterLayer">
-
-            Winterdienst
-
+                id="winterToggle"
+            >
+            <span>❄️ Winterdienst</span>
         </label>
 
-
-
-        <label>
-
+        <label class="layer-row">
             <input
                 type="checkbox"
-                id="specialLayer">
-
-            Sonderpunkte
-
+                id="specialToggle"
+            >
+            <span>📌 Sonderpunkte</span>
         </label>
 
-
-
-        <label>
-
+        <label class="layer-row">
             <input
                 type="checkbox"
-                id="propertiesLayer">
-
-            Gemeindeliegenschaften
-
+                id="propertiesToggle"
+            >
+            <span>🏢 Gemeindeliegenschaften</span>
         </label>
-
-
-
-        <button
-            onclick="toggleLayers()">
-
-            Schliessen
-
-        </button>
-
 
     </div>
 
 
+    <!-- =========================
+         INFO PANEL
+    ========================== -->
 
-    <!-- ================================= -->
-    <!-- INFO PANEL -->
-    <!-- ================================= -->
+    <div id="infoPanel" class="panel">
 
-    <div
-        id="infoPanel"
-        class="panel hidden">
-
-
-        <button
-            class="close"
-            onclick="closeInfo()">
-
-            ✕
-
+        <button class="panel-close" onclick="closePanels()">
+            ×
         </button>
 
-
-        <h2
-            id="infoTitle">
+        <h2 id="infoTitle">
+            Informationen
         </h2>
 
-
-        <div
-            id="infoContent">
+        <div id="infoText">
+            Punkt auf der Karte auswählen.
         </div>
-
 
         <button
             id="navigateButton"
-            class="mainButton">
-
-            🧭 Zum Ziel navigieren
-
+            class="main-button"
+            style="display:none;"
+        >
+            🧭 Navigation starten
         </button>
-
 
     </div>
 
 
+    <!-- =========================
+         BOTTOM BAR
+    ========================== -->
 
-    <!-- ================================= -->
-    <!-- LEAFLET JAVASCRIPT -->
-    <!-- ================================= -->
+    <div class="bottom-bar">
 
-    <script
-        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+        <button
+            class="bottom-button"
+            onclick="goToLocation()"
+        >
+            <span>📍</span>
+            <span>Standort</span>
+        </button>
+
+        <button
+            class="bottom-button"
+            onclick="toggleLayers()"
+        >
+            <span>🗂️</span>
+            <span>Ebenen</span>
+        </button>
+
+        <button
+            class="bottom-button"
+            onclick="startNavigation()"
+        >
+            <span>🧭</span>
+            <span>Navi</span>
+        </button>
+
+        <button
+            class="bottom-button"
+            onclick="addPoint()"
+        >
+            <span>📌</span>
+            <span>Punkt</span>
+        </button>
+
+    </div>
+
+
+    <!-- =========================
+         LEAFLET
+    ========================== -->
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+
+    <script>
+
+        /* =====================================================
+           GRUNDEINSTELLUNGEN
+        ===================================================== */
+
+        const MAUR_CENTER = [47.337, 8.667];
+
+        const MAUR_BOUNDS = [
+            [47.285, 8.595],
+            [47.375, 8.735]
+        ];
+
+
+        /* =====================================================
+           KARTE
+        ===================================================== */
+
+        const map = L.map("map", {
+            zoomControl: true,
+            minZoom: 11,
+            maxZoom: 19,
+            maxBounds: MAUR_BOUNDS,
+            maxBoundsViscosity: 0.8
+        }).setView(MAUR_CENTER, 13);
+
+
+        /* =====================================================
+           OPENSTREETMAP
+        ===================================================== */
+
+        const osmLayer = L.tileLayer(
+            "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+                maxZoom: 19,
+                attribution:
+                    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }
+        );
+
+        osmLayer.addTo(map);
+
+
+        /* =====================================================
+           LAYER
+        ===================================================== */
+
+        const roadsLayer = L.layerGroup();
+
+        const binsLayer = L.layerGroup();
+
+        const winterLayer = L.layerGroup();
+
+        const specialLayer = L.layerGroup();
+
+        const propertiesLayer = L.layerGroup();
+
+
+        /* =====================================================
+           DEMO-PUNKTE
+           Diese können später durch echte Gemeindedaten
+           ersetzt werden.
+        ===================================================== */
+
+        const bin1 = L.marker([47.3376, 8.6668])
+            .bindPopup(
+                "<b>Abfallkübel</b><br>" +
+                "Beispielpunkt<br><br>" +
+                "Status: Aktiv"
+            );
+
+        binsLayer.addLayer(bin1);
+
+
+        const winter1 = L.marker([47.3358, 8.6701])
+            .bindPopup(
+                "<b>Winterdienst</b><br>" +
+                "Beispielroute"
+            );
+
+        winterLayer.addLayer(winter1);
+
+
+        const special1 = L.marker([47.3390, 8.6640])
+            .bindPopup(
+                "<b>Sonderpunkt</b><br>" +
+                "Beispielpunkt"
+            );
+
+        specialLayer.addLayer(special1);
+
+
+        const property1 = L.marker([47.3364, 8.6690])
+            .bindPopup(
+                "<b>Gemeindeliegenschaft</b><br>" +
+                "Beispielobjekt"
+            );
+
+        propertiesLayer.addLayer(property1);
+
+
+        /* =====================================================
+           LAYER INITIAL
+        ===================================================== */
+
+        roadsLayer.addTo(map);
+
+
+        /* =====================================================
+           LAYER TOGGLE
+        ===================================================== */
+
+        document
+            .getElementById("roadsToggle")
+            .addEventListener("change", function() {
+
+                if (this.checked) {
+                    roadsLayer.addTo(map);
+                } else {
+                    map.removeLayer(roadsLayer);
+                }
+
+            });
+
+
+        document
+            .getElementById("binsToggle")
+            .addEventListener("change", function() {
+
+                if (this.checked) {
+                    binsLayer.addTo(map);
+                } else {
+                    map.removeLayer(binsLayer);
+                }
+
+            });
+
+
+        document
+            .getElementById("winterToggle")
+            .addEventListener("change", function() {
+
+                if (this.checked) {
+                    winterLayer.addTo(map);
+                } else {
+                    map.removeLayer(winterLayer);
+                }
+
+            });
+
+
+        document
+            .getElementById("specialToggle")
+            .addEventListener("change", function() {
+
+                if (this.checked) {
+                    specialLayer.addTo(map);
+                } else {
+                    map.removeLayer(specialLayer);
+                }
+
+            });
+
+
+        document
+            .getElementById("propertiesToggle")
+            .addEventListener("change", function() {
+
+                if (this.checked) {
+                    propertiesLayer.addTo(map);
+                } else {
+                    map.removeLayer(propertiesLayer);
+                }
+
+            });
+
+
+        /* =====================================================
+           GPS
+        ===================================================== */
+
+        let userLocationMarker = null;
+
+        let userLocationCircle = null;
+
+        let currentUserLocation = null;
+
+
+        function showStatus(message, duration = 2500) {
+
+            const status = document.getElementById("status");
+
+            status.textContent = message;
+
+            status.style.display = "block";
+
+            setTimeout(() => {
+                status.style.display = "none";
+            }, duration);
+        }
+
+
+        function goToLocation() {
+
+            if (!navigator.geolocation) {
+
+                showStatus(
+                    "GPS wird von diesem Gerät nicht unterstützt."
+                );
+
+                return;
+            }
+
+
+            showStatus("Standort wird gesucht...");
+
+
+            navigator.geolocation.getCurrentPosition(
+
+                function(position) {
+
+                    const lat = position.coords.latitude;
+
+                    const lng = position.coords.longitude;
+
+                    const accuracy = position.coords.accuracy;
+
+
+                    currentUserLocation = [
+                        lat,
+                        lng
+                    ];
+
+
+                    if (userLocationMarker) {
+                        map.removeLayer(userLocationMarker);
+                    }
+
+                    if (userLocationCircle) {
+                        map.removeLayer(userLocationCircle);
+                    }
+
+
+                    const gpsIcon = L.divIcon({
+                        className: "",
+                        html: '<div class="gps-marker"></div>',
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10]
+                    });
+
+
+                    userLocationMarker =
+                        L.marker(
+                            [lat, lng],
+                            {
+                                icon: gpsIcon
+                            }
+                        )
+                        .addTo(map)
+                        .bindPopup(
+                            "<b>Mein Standort</b><br>" +
+                            "Genauigkeit: ca. " +
+                            Math.round(accuracy) +
+                            " m"
+                        );
+
+
+                    userLocationCircle =
+                        L.circle(
+                            [lat, lng],
+                            {
+                                radius: accuracy,
+                                color: "#2563eb",
+                                fillColor: "#2563eb",
+                                fillOpacity: 0.12,
+                                weight: 1
+                            }
+                        )
+                        .addTo(map);
+
+
+                    map.setView(
+                        [lat, lng],
+                        17
+                    );
+
+
+                    showStatus("Standort gefunden.");
+
+                },
+
+                function(error) {
+
+                    let message =
+                        "GPS konnte nicht ermittelt werden.";
+
+                    if (error.code === 1) {
+                        message =
+                            "Standortzugriff wurde verweigert.";
+                    }
+
+                    if (error.code === 2) {
+                        message =
+                            "Standort ist momentan nicht verfügbar.";
+                    }
+
+                    if (error.code === 3) {
+                        message =
+                            "GPS-Zeitüberschreitung.";
+                    }
+
+                    showStatus(message, 4000);
+
+                },
+
+                {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 5000
+                }
+            );
+        }
+
+
+        document
+            .getElementById("gpsButton")
+            .addEventListener(
+                "click",
+                goToLocation
+            );
+
+
+        /* =====================================================
+           SUCHE
+        ===================================================== */
+
+        async function searchLocation() {
+
+            const input =
+                document.getElementById("searchInput");
+
+            const results =
+                document.getElementById("searchResults");
+
+
+            const query =
+                input.value.trim();
+
+
+            if (!query) {
+
+                showStatus(
+                    "Bitte Adresse oder Ort eingeben."
+                );
+
+                return;
+            }
+
+
+            results.innerHTML =
+                "<div class='search-result'>" +
+                "Suche läuft..." +
+                "</div>";
+
+            results.style.display = "block";
+
+
+            try {
+
+                const url =
+                    "https://nominatim.openstreetmap.org/search" +
+                    "?format=json" +
+                    "&limit=8" +
+                    "&countrycodes=ch" +
+                    "&q=" +
+                    encodeURIComponent(query);
+
+
+                const response =
+                    await fetch(url, {
+                        headers: {
+                            "Accept":
+                                "application/json"
+                        }
+                    });
+
+
+                if (!response.ok) {
+                    throw new Error(
+                        "Suchfehler"
+                    );
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                results.innerHTML = "";
+
+
+                if (!data.length) {
+
+                    results.innerHTML =
+                        "<div class='search-result'>" +
+                        "Keine Ergebnisse gefunden." +
+                        "</div>";
+
+                    return;
+                }
+
+
+                data.forEach(function(item) {
+
+                    const div =
+                        document.createElement("div");
+
+                    div.className =
+                        "search-result";
+
+                    div.textContent =
+                        item.display_name;
+
+
+                    div.addEventListener(
+                        "click",
+                        function() {
+
+                            const lat =
+                                parseFloat(item.lat);
+
+                            const lon =
+                                parseFloat(item.lon);
+
+
+                            map.setView(
+                                [lat, lon],
+                                17
+                            );
+
+
+                            L.marker(
+                                [lat, lon]
+                            )
+                            .addTo(map)
+                            .bindPopup(
+                                "<b>" +
+                                escapeHtml(
+                                    item.display_name
+                                ) +
+                                "</b>"
+                            )
+                            .openPopup();
+
+
+                            results.style.display =
+                                "none";
+
+                        }
+                    );
+
+
+                    results.appendChild(div);
+
+                });
+
+
+            } catch (error) {
+
+                results.innerHTML =
+                    "<div class='search-result'>" +
+                    "Suche momentan nicht verfügbar." +
+                    "</div>";
+
+            }
+        }
+
+
+        document
+            .getElementById("searchButton")
+            .addEventListener(
+                "click",
+                searchLocation
+            );
+
+
+        document
+            .getElementById("searchInput")
+            .addEventListener(
+                "keydown",
+                function(event) {
+
+                    if (event.key === "Enter") {
+                        searchLocation();
+                    }
+
+                }
+            );
+
+
+        /* =====================================================
+           HTML SICHERHEIT
+        ===================================================== */
+
+        function escapeHtml(text) {
+
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+
+        /* =====================================================
+           EBENEN PANEL
+        ===================================================== */
+
+        function toggleLayers() {
+
+            closePanels();
+
+            const panel =
+                document.getElementById(
+                    "layersPanel"
+                );
+
+            panel.style.display = "block";
+        }
+
+
+        function closePanels() {
+
+            document
+                .getElementById("layersPanel")
+                .style.display = "none";
+
+            document
+                .getElementById("infoPanel")
+                .style.display = "none";
+
+        }
+
+
+        /* =====================================================
+           NAVIGATION
+        ===================================================== */
+
+        let navigationTarget = null;
+
+
+        function startNavigation() {
+
+            if (!navigationTarget) {
+
+                showStatus(
+                    "Wähle zuerst einen Punkt auf der Karte."
+                );
+
+                return;
+            }
+
+
+            if (!currentUserLocation) {
+
+                showStatus(
+                    "Zuerst Standort bestimmen."
+                );
+
+                goToLocation();
+
+                return;
+            }
+
+
+            const startLat =
+                currentUserLocation[0];
+
+            const startLng =
+                currentUserLocation[1];
+
+            const targetLat =
+                navigationTarget[0];
+
+            const targetLng =
+                navigationTarget[1];
+
+
+            const googleMapsUrl =
+                "https://www.google.com/maps/dir/?api=1" +
+                "&origin=" +
+                startLat +
+                "," +
+                startLng +
+                "&destination=" +
+                targetLat +
+                "," +
+                targetLng;
+
+
+            window.open(
+                googleMapsUrl,
+                "_blank"
+            );
+        }
+
+
+        /* =====================================================
+           INFO PANEL
+        ===================================================== */
+
+        function showInfo(
+            title,
+            text,
+            lat,
+            lng
+        ) {
+
+            document
+                .getElementById("infoTitle")
+                .textContent = title;
+
+
+            document
+                .getElementById("infoText")
+                .innerHTML = text;
+
+
+            navigationTarget = [
+                lat,
+                lng
+            ];
+
+
+            const button =
+                document.getElementById(
+                    "navigateButton"
+                );
+
+
+            button.style.display =
+                "block";
+
+
+            button.onclick =
+                startNavigation;
+
+
+            closePanels();
+
+
+            document
+                .getElementById("infoPanel")
+                .style.display = "block";
+        }
+
+
+        /* =====================================================
+           KARTENKLICK
+        ===================================================== */
+
+        map.on(
+            "click",
+            function(event) {
+
+                navigationTarget = [
+                    event.latlng.lat,
+                    event.latlng.lng
+                ];
+
+
+                showInfo(
+                    "Kartenpunkt",
+                    "Koordinaten:<br>" +
+                    event.latlng.lat.toFixed(6) +
+                    "<br>" +
+                    event.latlng.lng.toFixed(6),
+                    event.latlng.lat,
+                    event.latlng.lng
+                );
+
+            }
+        );
+
+
+        /* =====================================================
+           EIGENEN PUNKT ERSTELLEN
+        ===================================================== */
+
+        function addPoint() {
+
+            showStatus(
+                "Tippe auf die Karte, um einen Punkt zu setzen.",
+                3500
+            );
+
+
+            const handler =
+                function(event) {
+
+                    map.off(
+                        "click",
+                        handler
+                    );
+
+
+                    const name =
+                        prompt(
+                            "Name des Punktes:"
+                        );
+
+
+                    if (!name) {
+                        return;
+                    }
+
+
+                    const description =
+                        prompt(
+                            "Beschreibung:"
+                        ) || "";
+
+
+                    const marker =
+                        L.marker(
+                            event.latlng
+                        )
+                        .addTo(map);
+
+
+                    marker.bindPopup(
+                        "<b>" +
+                        escapeHtml(name) +
+                        "</b><br><br>" +
+                        escapeHtml(description) +
+                        "<br><br>" +
+                        "<small>" +
+                        event.latlng.lat.toFixed(6) +
+                        ", " +
+                        event.latlng.lng.toFixed(6) +
+                        "</small>"
+                    );
+
+
+                    marker.openPopup();
+
+
+                    showStatus(
+                        "Punkt wurde erstellt."
+                    );
+
+                };
+
+
+            map.on(
+                "click",
+                handler
+            );
+        }
+
+
+        /* =====================================================
+           KLICK AUF DEM KARTENPUNKT
+        ===================================================== */
+
+        binsLayer.eachLayer(
+            function(marker) {
+
+                marker.on(
+                    "click",
+                    function() {
+
+                        const position =
+                            marker.getLatLng();
+
+                        showInfo(
+                            "Abfallkübel",
+                            "Beispiel-Abfallkübel.<br>" +
+                            "Später können hier echte " +
+                            "Gemeindedaten, Fotos, Status " +
+                            "und Wartungsinformationen stehen.",
+                            position.lat,
+                            position.lng
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+
+        /* =====================================================
+           ONLINE / OFFLINE STATUS
+        ===================================================== */
+
+        function updateConnectionStatus() {
+
+            if (navigator.onLine) {
+
+                showStatus(
+                    "Online",
+                    1500
+                );
+
+            } else {
+
+                showStatus(
+                    "Offline – Kartendaten benötigen momentan eine Verbindung.",
+                    5000
+                );
+
+            }
+
+        }
+
+
+        window.addEventListener(
+            "online",
+            function() {
+                showStatus("Wieder online.");
+            }
+        );
+
+
+        window.addEventListener(
+            "offline",
+            function() {
+                showStatus(
+                    "Keine Internetverbindung.",
+                    5000
+                );
+            }
+        );
+
+
+        /* =====================================================
+           START
+        ===================================================== */
+
+        console.log(
+            "Maur Strassendienst gestartet."
+        );
+
     </script>
 
-
-
-    <!-- ================================= -->
-    <!-- DEIN JS -->
-    <!-- ================================= -->
-
-    <script src="app.js"></script>
-
-
 </body>
-
 </html>
