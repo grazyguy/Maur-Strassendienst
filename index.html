@@ -2,578 +2,848 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#111827">
-<title>Maur Strassendienst V11</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Maur Strassendienst">
 
-<link rel="manifest" href="./manifest.json">
+<title>Maur Strassendienst V12</title>
 
 <link
   rel="stylesheet"
   href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  crossorigin=""
->
+/>
 
 <style>
-*{box-sizing:border-box}
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
 
 html,body{
   margin:0;
+  padding:0;
   width:100%;
   height:100%;
   overflow:hidden;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
-  background:#f3f4f6;
-  color:#111827;
-}
-
-button,input{
-  font:inherit;
-}
-
-button{
-  border:0;
-  cursor:pointer;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  background:#111827;
 }
 
 #map{
-  position:absolute;
-  left:0;
-  right:0;
-  top:64px;
-  bottom:72px;
+  position:fixed;
+  inset:0;
   z-index:1;
-  background:#dbeafe;
+  background:#e5e7eb;
+}
+
+.leaflet-control-attribution{
+  font-size:9px!important;
 }
 
 .topbar{
-  position:absolute;
-  top:0;
-  left:0;
-  right:0;
-  height:64px;
-  z-index:2000;
-  background:#111827;
+  position:fixed;
+  top:env(safe-area-inset-top,0);
+  left:10px;
+  right:10px;
+  z-index:1000;
+  height:56px;
+  margin-top:8px;
+  background:rgba(17,24,39,.94);
   color:white;
+  border-radius:16px;
   display:flex;
   align-items:center;
-  justify-content:space-between;
   padding:0 14px;
+  box-shadow:0 4px 20px rgba(0,0,0,.25);
 }
 
-.brand{
+.title{
+  font-size:18px;
   font-weight:800;
-  font-size:16px;
+  flex:1;
 }
 
 .status{
-  margin-top:3px;
-  font-size:10px;
-  color:#9ca3af;
+  font-size:11px;
+  color:#86efac;
+  font-weight:700;
 }
 
-.iconbtn{
+.topbutton{
   width:42px;
   height:42px;
+  border:0;
   border-radius:12px;
-  background:#1f2937;
+  background:#374151;
   color:white;
   font-size:20px;
+  margin-left:8px;
 }
 
-.searchwrap{
-  position:absolute;
-  left:12px;
-  right:12px;
+.searchbox{
+  position:fixed;
   top:76px;
-  z-index:1500;
+  left:10px;
+  right:10px;
+  z-index:1000;
+  display:flex;
+  gap:8px;
 }
 
-.search{
-  width:100%;
+.searchbox input{
+  flex:1;
   height:48px;
-  border:1px solid #d1d5db;
+  border:0;
   border-radius:14px;
   padding:0 15px;
+  font-size:16px;
   background:white;
-  box-shadow:0 3px 14px #0002;
+  box-shadow:0 4px 16px rgba(0,0,0,.18);
   outline:none;
 }
 
-.results{
-  background:white;
-  border-radius:0 0 14px 14px;
-  overflow:hidden;
-  box-shadow:0 5px 15px #0002;
-}
-
-.result{
-  padding:12px 14px;
-  border-top:1px solid #e5e7eb;
-}
-
-.result small{
-  display:block;
-  color:#6b7280;
-  margin-top:3px;
-}
-
-.panel{
-  position:absolute;
-  z-index:2500;
-  left:12px;
-  right:12px;
-  top:76px;
-  max-height:calc(100vh - 150px);
-  overflow:auto;
-  background:white;
-  border-radius:16px;
-  box-shadow:0 8px 25px #0003;
-  padding:16px;
-  display:none;
-}
-
-.panel.open{
-  display:block;
-}
-
-.panel h2{
-  margin:0 0 14px;
-  font-size:18px;
-}
-
-.panel h3{
-  margin:18px 0 8px;
-  font-size:14px;
-}
-
-.close{
-  float:right;
-  width:36px;
-  height:36px;
-  border-radius:10px;
-  background:#f3f4f6;
-}
-
-.seg{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:7px;
-}
-
-.seg button{
-  padding:10px 5px;
-  border-radius:10px;
-  background:#e5e7eb;
-}
-
-.seg button.active{
-  background:#2563eb;
-  color:white;
-}
-
-.setting-row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:12px 0;
-  border-bottom:1px solid #e5e7eb;
-}
-
-.setting-row input{
-  width:20px;
-  height:20px;
-}
-
-.primary{
-  width:100%;
-  background:#2563eb;
-  color:white;
-  padding:11px;
-  border-radius:10px;
-}
-
-.secondary{
-  width:100%;
-  background:#e5e7eb;
-  color:#111827;
-  padding:11px;
-  border-radius:10px;
-  margin-top:8px;
-}
-
-.hint{
-  color:#6b7280;
-  font-size:12px;
-  line-height:1.45;
-}
-
-.navinfo{
-  position:absolute;
-  left:12px;
-  right:12px;
-  bottom:84px;
-  z-index:1800;
-  background:white;
-  border-radius:16px;
-  padding:12px;
-  box-shadow:0 5px 18px #0003;
-  display:none;
-}
-
-.navinfo.show{
-  display:block;
-}
-
-.navmain{
-  font-weight:800;
-}
-
-.navsub{
-  margin-top:3px;
-  font-size:13px;
-  color:#6b7280;
-}
-
-.navbuttons{
-  display:flex;
-  gap:8px;
-  margin-top:10px;
-}
-
-.navbuttons button{
-  flex:1;
-  padding:10px;
-  border-radius:10px;
+.searchbox button{
+  width:50px;
+  height:48px;
+  border:0;
+  border-radius:14px;
   background:#111827;
   color:white;
+  font-size:20px;
+  box-shadow:0 4px 16px rgba(0,0,0,.18);
 }
 
-.navbuttons button.off{
-  background:#e5e7eb;
-  color:#111827;
+.gpsbutton{
+  position:fixed;
+  right:14px;
+  bottom:88px;
+  z-index:1000;
+  width:54px;
+  height:54px;
+  border:0;
+  border-radius:50%;
+  background:#111827;
+  color:white;
+  font-size:23px;
+  box-shadow:0 4px 18px rgba(0,0,0,.3);
 }
 
-.bottom{
-  position:absolute;
-  left:0;
-  right:0;
-  bottom:0;
-  height:72px;
-  z-index:2000;
-  background:white;
-  border-top:1px solid #d1d5db;
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  padding-bottom:env(safe-area-inset-bottom);
+.gpsbutton.active{
+  background:#16a34a;
 }
 
-.bottom button{
-  background:white;
-  color:#6b7280;
+.followbutton{
+  position:fixed;
+  right:14px;
+  bottom:152px;
+  z-index:1000;
+  border:0;
+  border-radius:14px;
+  padding:10px 13px;
+  background:#111827;
+  color:white;
+  font-size:13px;
+  font-weight:700;
+  box-shadow:0 4px 18px rgba(0,0,0,.25);
+}
+
+.followbutton.active{
+  background:#2563eb;
+}
+
+.bottomnav{
+  position:fixed;
+  left:10px;
+  right:10px;
+  bottom:calc(8px + env(safe-area-inset-bottom,0px));
+  height:62px;
+  z-index:1000;
+  background:rgba(17,24,39,.96);
+  border-radius:18px;
+  display:flex;
+  align-items:center;
+  justify-content:space-around;
+  box-shadow:0 4px 20px rgba(0,0,0,.3);
+}
+
+.bottomnav button{
+  border:0;
+  background:none;
+  color:#d1d5db;
   font-size:11px;
+  font-weight:700;
+  min-width:70px;
+  height:54px;
+  border-radius:13px;
 }
 
-.bottom button.active{
-  color:#2563eb;
-  font-weight:800;
-}
-
-.bottom span{
+.bottomnav button span{
   display:block;
   font-size:21px;
   margin-bottom:2px;
 }
 
-.toast{
+.bottomnav button.active{
+  color:white;
+  background:#374151;
+}
+
+.panel{
+  position:fixed;
+  left:10px;
+  right:10px;
+  bottom:calc(80px + env(safe-area-inset-bottom,0px));
+  max-height:72vh;
+  z-index:2000;
+  background:white;
+  border-radius:20px;
+  box-shadow:0 8px 35px rgba(0,0,0,.3);
+  overflow:auto;
+  display:none;
+}
+
+.panel.show{
+  display:block;
+}
+
+.panelheader{
+  position:sticky;
+  top:0;
+  background:white;
+  padding:18px;
+  border-bottom:1px solid #e5e7eb;
+  display:flex;
+  align-items:center;
+  z-index:2;
+}
+
+.panelheader strong{
+  flex:1;
+  font-size:20px;
+}
+
+.close{
+  border:0;
+  background:#f3f4f6;
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  font-size:20px;
+}
+
+.panelcontent{
+  padding:16px;
+}
+
+.section{
+  margin-bottom:20px;
+}
+
+.sectiontitle{
+  font-weight:800;
+  margin-bottom:10px;
+  font-size:14px;
+  color:#374151;
+}
+
+.option{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:13px 0;
+  border-bottom:1px solid #f0f0f0;
+}
+
+.option:last-child{
+  border-bottom:0;
+}
+
+.optiontext strong{
+  display:block;
+  font-size:15px;
+}
+
+.optiontext small{
+  color:#6b7280;
+  font-size:12px;
+}
+
+.switch{
+  width:48px;
+  height:28px;
+  position:relative;
+}
+
+.switch input{
+  display:none;
+}
+
+.slider{
   position:absolute;
-  z-index:5000;
+  inset:0;
+  background:#d1d5db;
+  border-radius:30px;
+  transition:.2s;
+}
+
+.slider:before{
+  content:"";
+  position:absolute;
+  width:22px;
+  height:22px;
+  left:3px;
+  top:3px;
+  background:white;
+  border-radius:50%;
+  transition:.2s;
+  box-shadow:0 1px 4px rgba(0,0,0,.25);
+}
+
+.switch input:checked + .slider{
+  background:#2563eb;
+}
+
+.switch input:checked + .slider:before{
+  transform:translateX(20px);
+}
+
+.viewbuttons{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+}
+
+.viewbuttons button{
+  border:0;
+  padding:12px 5px;
+  border-radius:12px;
+  background:#f3f4f6;
+  font-weight:700;
+}
+
+.viewbuttons button.active{
+  background:#2563eb;
+  color:white;
+}
+
+.routebutton{
+  width:100%;
+  border:0;
+  border-radius:13px;
+  padding:14px;
+  background:#2563eb;
+  color:white;
+  font-size:16px;
+  font-weight:800;
+  margin-top:10px;
+}
+
+.dangerbutton{
+  width:100%;
+  border:0;
+  border-radius:13px;
+  padding:13px;
+  background:#fee2e2;
+  color:#991b1b;
+  font-weight:800;
+  margin-top:8px;
+}
+
+#toast{
+  position:fixed;
   left:50%;
-  transform:translateX(-50%);
-  bottom:90px;
+  transform:translateX(-50%) translateY(20px);
+  bottom:150px;
+  z-index:4000;
   background:#111827;
   color:white;
   padding:11px 15px;
   border-radius:12px;
   font-size:13px;
+  opacity:0;
+  pointer-events:none;
+  transition:.25s;
   max-width:90%;
   text-align:center;
-  display:none;
 }
 
-.toast.show{
+#toast.show{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
+
+.routeinfo{
+  position:fixed;
+  left:10px;
+  right:10px;
+  top:134px;
+  z-index:1200;
+  display:none;
+  background:white;
+  border-radius:16px;
+  padding:12px 14px;
+  box-shadow:0 5px 22px rgba(0,0,0,.22);
+}
+
+.routeinfo.show{
   display:block;
 }
 
-.mapmsg{
-  position:absolute;
-  z-index:1900;
+.routeinstruction{
+  font-size:17px;
+  font-weight:800;
+}
+
+.routedistance{
+  color:#6b7280;
+  font-size:13px;
+  margin-top:4px;
+}
+
+.maneuverarrow{
+  float:left;
+  font-size:28px;
+  margin-right:10px;
+}
+
+.searchresults{
+  position:fixed;
+  left:10px;
+  right:10px;
   top:132px;
-  left:12px;
-  right:12px;
-  background:#fee2e2;
-  color:#991b1b;
-  padding:10px 12px;
-  border-radius:12px;
+  z-index:2500;
+  background:white;
+  border-radius:14px;
+  box-shadow:0 5px 25px rgba(0,0,0,.25);
+  overflow:hidden;
   display:none;
 }
 
-.point-item{
-  padding:10px 0;
-  border-bottom:1px solid #e5e7eb;
+.searchresults.show{
+  display:block;
 }
 
-.point-actions{
-  display:flex;
-  gap:7px;
-  margin-top:7px;
+.searchresult{
+  padding:13px 15px;
+  border-bottom:1px solid #eee;
+  font-size:14px;
 }
 
-.smallbtn{
-  padding:7px 9px;
-  border-radius:9px;
-  background:#e5e7eb;
+.searchresult:last-child{
+  border-bottom:0;
 }
 
-.danger{
-  background:#fee2e2;
-  color:#991b1b;
+.searchresult strong{
+  display:block;
 }
 
-.leaflet-container{
-  background:#dbeafe;
+.searchresult small{
+  color:#6b7280;
 }
 
-.leaflet-control-attribution{
-  font-size:9px;
+.leaflet-control-zoom{
+  margin-top:145px!important;
 }
 
-.gps-dot{
-  width:18px;
-  height:18px;
+.my-location{
+  width:22px;
+  height:22px;
   border-radius:50%;
   background:#2563eb;
-  border:3px solid white;
-  box-shadow:0 0 0 4px #2563eb55;
-}
-
-.route-arrow{
-  background:#2563eb;
-  width:34px;
-  height:34px;
-  border-radius:50%;
   border:4px solid white;
-  box-shadow:0 2px 8px #0005;
-  color:white;
+  box-shadow:0 0 0 3px rgba(37,99,235,.25);
+}
+
+.destination-marker{
+  width:28px;
+  height:28px;
+  border-radius:50% 50% 50% 0;
+  background:#dc2626;
+  transform:rotate(-45deg);
+  border:3px solid white;
+}
+
+.destination-marker:after{
+  content:"";
+  position:absolute;
+  width:8px;
+  height:8px;
+  background:white;
+  border-radius:50%;
+  top:7px;
+  left:7px;
+}
+
+.own-marker{
+  width:30px;
+  height:30px;
+  border-radius:50%;
+  background:#f59e0b;
+  border:3px solid white;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:18px;
+  color:white;
+  font-weight:900;
+  box-shadow:0 2px 8px rgba(0,0,0,.3);
 }
 
-.layer-status{
-  font-size:11px;
-  color:#6b7280;
-  margin-top:8px;
+@media(min-width:700px){
+  .panel{
+    left:auto;
+    width:390px;
+    right:15px;
+  }
+
+  .searchbox{
+    left:15px;
+    right:auto;
+    width:450px;
+  }
+
+  .routeinfo{
+    left:15px;
+    right:auto;
+    width:450px;
+  }
 }
 </style>
 </head>
 
 <body>
 
-<header class="topbar">
-  <div>
-    <div class="brand">MAUR STRASSENDIENST</div>
-    <div class="status" id="status">ONLINE • V11</div>
-  </div>
-  <button class="iconbtn" id="settingsBtn">⚙️</button>
-</header>
-
-<div class="searchwrap" id="searchWrap">
-  <input
-    id="search"
-    class="search"
-    placeholder="Ort, Strasse oder Adresse suchen …"
-    autocomplete="off"
-  >
-  <div id="results" class="results"></div>
-</div>
-
-<div id="mapmsg" class="mapmsg"></div>
-
 <div id="map"></div>
 
-<section id="navInfo" class="navinfo">
-  <div id="navMain" class="navmain">
-    Keine Navigation aktiv
+<div class="topbar">
+  <div class="title">Maur Strassendienst</div>
+  <div class="status" id="status">START...</div>
+  <button class="topbutton" onclick="openPanel('settings')">⚙️</button>
+</div>
+
+<div class="searchbox">
+  <input
+    id="searchInput"
+    type="search"
+    placeholder="Adresse suchen..."
+    autocomplete="off"
+  >
+  <button onclick="searchAddress()">🔎</button>
+</div>
+
+<div id="searchResults" class="searchresults"></div>
+
+<div id="routeInfo" class="routeinfo">
+  <div id="maneuverArrow" class="maneuverarrow">➜</div>
+  <div id="routeInstruction" class="routeinstruction">
+    Navigation
+  </div>
+  <div id="routeDistance" class="routedistance"></div>
+</div>
+
+<button id="followButton" class="followbutton" onclick="toggleFollow()">
+  Folge GPS
+</button>
+
+<button id="gpsButton" class="gpsbutton" onclick="centerGPS()">
+  ◎
+</button>
+
+<div id="settingsPanel" class="panel">
+  <div class="panelheader">
+    <strong>Einstellungen</strong>
+    <button class="close" onclick="closePanels()">×</button>
   </div>
 
-  <div id="navSub" class="navsub"></div>
+  <div class="panelcontent">
 
-  <div class="navbuttons">
-    <button id="voiceBtn">🔊 Sprache an</button>
-    <button id="followBtn">📍 Folgen an</button>
-    <button id="stopNavBtn">✕ Stop</button>
+    <div class="section">
+      <div class="sectiontitle">Kartenansicht</div>
+
+      <div class="viewbuttons">
+        <button data-view="normal" onclick="changeView('normal')">
+          Karte
+        </button>
+
+        <button data-view="satellite" onclick="changeView('satellite')">
+          Satellit
+        </button>
+
+        <button data-view="hybrid" onclick="changeView('hybrid')">
+          Hybrid
+        </button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sectiontitle">Amtliche Schweizer Daten</div>
+
+      <div class="option">
+        <div class="optiontext">
+          <strong>Strassennamen</strong>
+          <small>Amtliches Strassenverzeichnis swisstopo</small>
+        </div>
+
+        <label class="switch">
+          <input
+            type="checkbox"
+            id="toggleStreetNames"
+            checked
+            onchange="toggleOfficialLayers()"
+          >
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="option">
+        <div class="optiontext">
+          <strong>Hausnummern</strong>
+          <small>Amtliches Gebäudeadressverzeichnis swisstopo</small>
+        </div>
+
+        <label class="switch">
+          <input
+            type="checkbox"
+            id="toggleHouseNumbers"
+            checked
+            onchange="toggleOfficialLayers()"
+          >
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sectiontitle">Weitere Karteninformationen</div>
+
+      <div class="option">
+        <div class="optiontext">
+          <strong>Gebäude</strong>
+          <small>Gebäudedarstellung</small>
+        </div>
+
+        <label class="switch">
+          <input
+            type="checkbox"
+            id="toggleBuildings"
+            checked
+            onchange="toggleBuildings()"
+          >
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="option">
+        <div class="optiontext">
+          <strong>Strassen</strong>
+          <small>Strassendarstellung</small>
+        </div>
+
+        <label class="switch">
+          <input
+            type="checkbox"
+            id="toggleRoads"
+            checked
+            onchange="toggleRoads()"
+          >
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="option">
+        <div class="optiontext">
+          <strong>Gemeindegrenze</strong>
+          <small>Gemeinde Maur</small>
+        </div>
+
+        <label class="switch">
+          <input
+            type="checkbox"
+            id="toggleBorders"
+            checked
+            onchange="toggleBorders()"
+          >
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sectiontitle">Navigation</div>
+
+      <div class="option">
+        <div class="optiontext">
+          <strong>GPS folgen</strong>
+          <small>Karte folgt automatisch dem Standort</small>
+        </div>
+
+        <label class="switch">
+          <input
+            type="checkbox"
+            id="toggleFollow"
+            checked
+            onchange="setFollow(this.checked)"
+          >
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="section">
+      <button class="routebutton" onclick="routeToCenter()">
+        Route nach Maur Zentrum
+      </button>
+
+      <button class="dangerbutton" onclick="clearRoute()">
+        Navigation löschen
+      </button>
+    </div>
+
   </div>
-</section>
+</div>
 
-<section id="settingsPanel" class="panel">
-
-  <button class="close" id="closeSettings">✕</button>
-
-  <h2>Einstellungen</h2>
-
-  <h3>Kartenansicht</h3>
-
-  <div class="seg">
-    <button data-view="normal">Normal</button>
-    <button data-view="satellite">Satellit</button>
-    <button data-view="hybrid">Hybrid</button>
+<div id="pointsPanel" class="panel">
+  <div class="panelheader">
+    <strong>Eigene Punkte</strong>
+    <button class="close" onclick="closePanels()">×</button>
   </div>
 
-  <h3>Schweizer Kartendaten</h3>
+  <div class="panelcontent">
 
-  <div class="setting-row">
-    <span>Strassennamen</span>
-    <input type="checkbox" id="toggleStreetNames" checked>
+    <p>
+      Tippe auf die Karte, um einen eigenen Punkt zu setzen.
+    </p>
+
+    <button class="routebutton" onclick="enablePointMode()">
+      + Punkt auf Karte setzen
+    </button>
+
+    <button class="dangerbutton" onclick="clearOwnPoints()">
+      Alle eigenen Punkte löschen
+    </button>
+
+    <div id="pointsList"></div>
+
+  </div>
+</div>
+
+<div id="navigationPanel" class="panel">
+  <div class="panelheader">
+    <strong>Navigation</strong>
+    <button class="close" onclick="closePanels()">×</button>
   </div>
 
-  <div class="setting-row">
-    <span>Hausnummern</span>
-    <input type="checkbox" id="toggleHouseNumbers" checked>
+  <div class="panelcontent">
+
+    <div class="section">
+      <strong>So funktioniert es</strong>
+      <p>
+        Suche zuerst eine Adresse. Danach kannst du die Adresse als Ziel
+        verwenden und die Route starten.
+      </p>
+    </div>
+
+    <button class="routebutton" onclick="useCurrentSearchAsDestination()">
+      Gesuchte Adresse als Ziel
+    </button>
+
+    <button class="dangerbutton" onclick="clearRoute()">
+      Navigation beenden
+    </button>
+
   </div>
+</div>
 
-  <div class="setting-row">
-    <span>Gebäude</span>
-    <input type="checkbox" id="toggleBuildings" checked>
-  </div>
+<div class="bottomnav">
 
-  <div class="setting-row">
-    <span>Strassen</span>
-    <input type="checkbox" id="toggleRoads" checked>
-  </div>
-
-  <div id="layerStatus" class="layer-status">
-    Schweizer Zusatzdaten werden geladen …
-  </div>
-
-  <h3>GPS</h3>
-
-  <button class="primary" id="locateBtn">
-    📍 Meinen Standort zeigen
-  </button>
-
-  <button class="secondary" id="centerMaurBtn">
-    🗺️ Karte auf Maur zentrieren
-  </button>
-
-  <p class="hint">
-    Strassennamen und Hausnummern stammen aus den offiziellen
-    Schweizer Geodaten von swisstopo / geo.admin.ch.
-  </p>
-
-</section>
-
-<section id="pointsPanel" class="panel">
-
-  <button class="close" id="closePoints">✕</button>
-
-  <h2>Eigene Punkte</h2>
-
-  <button class="primary" id="addPointBtn">
-    ＋ Punkt an aktueller Position speichern
-  </button>
-
-  <div id="pointsList"></div>
-
-</section>
-
-<nav class="bottom">
-
-  <button id="navTab" class="active">
-    <span>🧭</span>
-    Navi
-  </button>
-
-  <button id="gpsTab">
-    <span>📍</span>
-    GPS
-  </button>
-
-  <button id="pointsTab">
-    <span>⭐</span>
-    Punkte
-  </button>
-
-  <button id="mapTab">
+  <button class="active" onclick="closePanels()">
     <span>🗺️</span>
     Karte
   </button>
 
-</nav>
+  <button onclick="openPanel('navigation')">
+    <span>🧭</span>
+    Navigation
+  </button>
 
-<div id="toast" class="toast"></div>
+  <button onclick="openPanel('points')">
+    <span>📍</span>
+    Punkte
+  </button>
 
-<script
-  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-  crossorigin=""
-></script>
+  <button onclick="openPanel('settings')">
+    <span>⚙️</span>
+    Einstellungen
+  </button>
+
+</div>
+
+<div id="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-
-"use strict";
-
 /* =========================================================
-   GRUNDEINSTELLUNGEN
-========================================================= */
+   MAUR STRASSENDIENST V12
+   ========================================================= */
 
-const CENTER = [47.3370, 8.6670];
+const CENTER = [47.3357, 8.6663];
 
-const OSRM =
-  "https://router.project-osrm.org/route/v1/driving/";
-
+const GEOADMIN_WMS = "https://wms.geo.admin.ch/";
+const OSRM = "https://router.project-osrm.org/route/v1/driving/";
 const NOMINATIM =
   "https://nominatim.openstreetmap.org/search";
 
-/* =========================================================
-   VARIABLEN
-========================================================= */
+const WFS_URL =
+  "https://maps.zh.ch/wfs/OGDZHWFS" +
+  "?service=WFS" +
+  "&version=1.1.0" +
+  "&request=GetFeature" +
+  "&typeName=ms:OGDZHWFS_GEMEINDEGEBIET" +
+  "&outputFormat=application/json" +
+  "&srsName=EPSG:4326";
 
-let map = null;
+let map;
 
-let osm = null;
-let satellite = null;
+let osm;
+let satellite;
 
-let streetNames = null;
-let houseNumbers = null;
+let streetNames;
+let houseNumbers;
+
+let borderLayer = null;
 
 let userMarker = null;
 let destinationMarker = null;
-
-let routeLayer = null;
-let navigationArrow = null;
 
 let currentPosition = null;
 let destination = null;
 
 let navigationActive = false;
 let followEnabled = true;
-let voiceEnabled = true;
 
-let lastRouteTime = 0;
+let routeLayer = null;
+let currentRoute = null;
+let routeSteps = [];
 
 let ownPoints = [];
 let ownMarkers = [];
 
+let pointMode = false;
+let lastSearchResults = [];
+let selectedSearch = null;
+
+
 /* =========================================================
    HILFSFUNKTIONEN
-========================================================= */
+   ========================================================= */
 
-function toast(text, ms = 2800){
+function toast(message, duration = 2600){
 
   const el = document.getElementById("toast");
 
-  el.textContent = text;
+  el.textContent = message;
 
   el.classList.add("show");
 
@@ -581,36 +851,34 @@ function toast(text, ms = 2800){
 
   toast.timer = setTimeout(() => {
     el.classList.remove("show");
-  }, ms);
+  }, duration);
 }
 
 
-function status(text){
+function status(message){
 
-  document.getElementById("status").textContent = text;
-
+  document.getElementById("status").textContent = message;
 }
 
 
 function escapeHTML(value){
 
   return String(value ?? "")
-    .replace(/[&<>"']/g, char => ({
+    .replace(/[&<>"']/g, c => ({
       "&":"&amp;",
       "<":"&lt;",
       ">":"&gt;",
       '"':"&quot;",
       "'":"&#39;"
-    }[char]));
-
+    }[c]));
 }
 
 
 /* =========================================================
-   KARTE
-========================================================= */
+   KARTE STARTEN
+   ========================================================= */
 
-function createMap(){
+function initMap(){
 
   try{
 
@@ -618,7 +886,10 @@ function createMap(){
       zoomControl:true,
       preferCanvas:true,
       attributionControl:true
-    });
+    }).setView(CENTER, 14);
+
+
+    /* OSM */
 
     osm = L.tileLayer(
       "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -627,7 +898,10 @@ function createMap(){
         subdomains:["a","b","c"],
         attribution:"© OpenStreetMap contributors"
       }
-    );
+    ).addTo(map);
+
+
+    /* SATELLIT */
 
     satellite = L.tileLayer(
       "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
@@ -637,165 +911,217 @@ function createMap(){
       }
     );
 
-    osm.addTo(map);
 
-    map.setView(CENTER,13);
-
-    map.on("dragstart",function(){
-
-      if(navigationActive && followEnabled){
-        setFollow(false);
-      }
-
-    });
-
-    map.on("zoomend",function(){
-
-      if(map.getZoom() >= 14){
-        loadSwissLayers();
-      }
-
-    });
-
-    return true;
-
-  }catch(error){
-
-    console.error("MAP ERROR:",error);
-
-    showMapMessage(
-      "Die Karte konnte nicht gestartet werden. Bitte Seite neu laden."
-    );
-
-    return false;
-
-  }
-
-}
-
-
-/* =========================================================
-   SCHWEIZER OFFIZIELLE LAYER
-========================================================= */
-
-function createSwissLayers(){
-
-  try{
+    /* =====================================================
+       OFFIZIELLE STRASSENNAMEN
+       ===================================================== */
 
     streetNames = L.tileLayer.wms(
-      "https://wms.geo.admin.ch/",
+      GEOADMIN_WMS,
       {
         layers:"ch.swisstopo.amtliches-strassenverzeichnis",
-        styles:"default",
         format:"image/png",
         transparent:true,
+
         version:"1.3.0",
+
         opacity:1,
-        minZoom:13,
+
+        /*
+         * Wichtig:
+         * Die bisherige Version hatte minZoom 14.
+         * Dadurch waren die Namen bei normaler
+         * Kartenansicht teilweise unsichtbar.
+         */
+
+        minZoom:10,
         maxZoom:20,
+
+        updateWhenIdle:false,
+        keepBuffer:2,
+
         attribution:"© swisstopo / geo.admin.ch"
       }
-    );
+    ).addTo(map);
 
+
+    /* =====================================================
+       OFFIZIELLE HAUSNUMMERN
+       ===================================================== */
 
     houseNumbers = L.tileLayer.wms(
-      "https://wms.geo.admin.ch/",
+      GEOADMIN_WMS,
       {
         layers:"ch.swisstopo.amtliches-gebaeudeadressverzeichnis",
-        styles:"default",
+
         format:"image/png",
         transparent:true,
+
         version:"1.3.0",
+
         opacity:1,
-        minZoom:15,
+
+        /*
+         * Ab Zoom 14 sichtbar.
+         * Bei 16+ besonders gut lesbar.
+         */
+
+        minZoom:14,
         maxZoom:20,
+
+        updateWhenIdle:false,
+        keepBuffer:2,
+
         attribution:"© swisstopo / geo.admin.ch"
       }
+    ).addTo(map);
+
+
+    /* =====================================================
+       WMS FEHLER ABFANGEN
+       ===================================================== */
+
+    streetNames.on("tileerror", function(e){
+
+      console.warn(
+        "swisstopo Strassennamen WMS Fehler",
+        e
+      );
+
+    });
+
+
+    houseNumbers.on("tileerror", function(e){
+
+      console.warn(
+        "swisstopo Hausnummern WMS Fehler",
+        e
+      );
+
+    });
+
+
+    /* Kartenfehler */
+
+    map.on("tileerror", function(e){
+
+      console.warn(
+        "Kartentile konnten nicht geladen werden",
+        e
+      );
+
+    });
+
+
+    /* =====================================================
+       MAP EVENTS
+       ===================================================== */
+
+    map.on("dragstart", function(){
+
+      /*
+       * Wenn der Benutzer während Navigation
+       * die Karte verschiebt, Follow automatisch aus.
+       */
+
+      if(navigationActive && followEnabled){
+
+        setFollow(false);
+
+        toast(
+          "Follow automatisch ausgeschaltet – Karte frei bewegbar."
+        );
+      }
+
+    });
+
+
+    map.on("click", function(e){
+
+      if(pointMode){
+
+        addOwnPoint(
+          e.latlng.lat,
+          e.latlng.lng
+        );
+
+        pointMode = false;
+
+        toast("Punkt gespeichert.");
+
+        return;
+      }
+
+    });
+
+
+    map.on("zoomend", function(){
+
+      /*
+       * WMS-Layer neu anfordern,
+       * damit Strassennamen/Hausnummern
+       * zuverlässig erscheinen.
+       */
+
+      if(streetNames){
+
+        if(
+          document.getElementById(
+            "toggleStreetNames"
+          ).checked
+        ){
+
+          streetNames.redraw();
+
+        }
+
+      }
+
+
+      if(houseNumbers){
+
+        if(
+          document.getElementById(
+            "toggleHouseNumbers"
+          ).checked
+        ){
+
+          houseNumbers.redraw();
+
+        }
+
+      }
+
+    });
+
+
+    status("ONLINE • V12");
+
+    toast(
+      "Maur Strassendienst V12 geladen"
     );
 
 
-    /*
-      Die Layer werden absichtlich erst bei passendem Zoom
-      eingeblendet. Ein Fehler hier darf die Grundkarte
-      NICHT zerstören.
-    */
+    loadBorders();
 
-    updateSwissLayers();
+    startGPS();
 
-    document.getElementById("layerStatus").textContent =
-      "✓ Offizielle Schweizer Layer bereit";
+    restoreSettings();
+
+    loadOwnPoints();
+
+    renderOwnPoints();
+
 
   }catch(error){
 
-    console.warn("Swiss layer error:",error);
+    console.error(error);
 
-    document.getElementById("layerStatus").textContent =
-      "Grundkarte läuft • Schweizer Zusatzlayer momentan nicht erreichbar";
+    status("KARTENFEHLER");
 
-  }
-
-}
-
-
-function loadSwissLayers(){
-
-  if(!streetNames || !houseNumbers){
-    createSwissLayers();
-    return;
-  }
-
-  updateSwissLayers();
-
-}
-
-
-function updateSwissLayers(){
-
-  if(!map || !streetNames || !houseNumbers){
-    return;
-  }
-
-
-  const streets =
-    document.getElementById("toggleStreetNames").checked;
-
-  const houses =
-    document.getElementById("toggleHouseNumbers").checked;
-
-
-  const zoom = map.getZoom();
-
-
-  /* STRASSENNAMEN */
-
-  if(streets && zoom >= 13){
-
-    if(!map.hasLayer(streetNames)){
-      streetNames.addTo(map);
-    }
-
-  }else{
-
-    if(map.hasLayer(streetNames)){
-      map.removeLayer(streetNames);
-    }
-
-  }
-
-
-  /* HAUSNUMMERN */
-
-  if(houses && zoom >= 15){
-
-    if(!map.hasLayer(houseNumbers)){
-      houseNumbers.addTo(map);
-    }
-
-  }else{
-
-    if(map.hasLayer(houseNumbers)){
-      map.removeLayer(houseNumbers);
-    }
+    toast(
+      "Fehler beim Starten der Karte."
+    );
 
   }
 
@@ -804,11 +1130,15 @@ function updateSwissLayers(){
 
 /* =========================================================
    KARTENANSICHT
-========================================================= */
+   ========================================================= */
 
 function changeView(view){
 
-  localStorage.setItem("maurMapViewV11",view);
+  localStorage.setItem(
+    "maurMapViewV12",
+    view
+  );
+
 
   document
     .querySelectorAll("[data-view]")
@@ -837,7 +1167,7 @@ function changeView(view){
   }
 
 
-  if(view === "satellite"){
+  else if(view === "satellite"){
 
     if(map.hasLayer(osm)){
       map.removeLayer(osm);
@@ -850,7 +1180,7 @@ function changeView(view){
   }
 
 
-  if(view === "hybrid"){
+  else if(view === "hybrid"){
 
     if(!map.hasLayer(satellite)){
       satellite.addTo(map);
@@ -860,94 +1190,483 @@ function changeView(view){
       osm.addTo(map);
     }
 
-    osm.setOpacity(0.45);
+    osm.setOpacity(.48);
 
   }
 
 
-  setTimeout(updateSwissLayers,100);
+  /*
+   * Offizielle Schweizer Layer immer
+   * über der Hintergrundkarte halten.
+   */
+
+  bringOfficialLayersToFront();
+
+}
+
+
+function bringOfficialLayersToFront(){
+
+  if(streetNames){
+
+    streetNames.bringToFront();
+
+  }
+
+  if(houseNumbers){
+
+    houseNumbers.bringToFront();
+
+  }
+
+  if(borderLayer){
+
+    borderLayer.bringToFront();
+
+  }
 
 }
 
 
 /* =========================================================
-   EINSTELLUNGEN
-========================================================= */
+   STRASSENNAMEN + HAUSNUMMERN
+   ========================================================= */
 
-function restoreSettings(){
+function toggleOfficialLayers(){
 
-  const savedView =
-    localStorage.getItem("maurMapViewV11") || "normal";
+  const streets =
+    document.getElementById(
+      "toggleStreetNames"
+    ).checked;
 
-  changeView(savedView);
+  const numbers =
+    document.getElementById(
+      "toggleHouseNumbers"
+    ).checked;
 
 
-  [
-    "toggleStreetNames",
-    "toggleHouseNumbers",
-    "toggleBuildings",
-    "toggleRoads"
-  ].forEach(id => {
+  if(streets){
 
-    const saved = localStorage.getItem("v11_" + id);
-
-    if(saved !== null){
-
-      document.getElementById(id).checked =
-        saved === "true";
-
+    if(!map.hasLayer(streetNames)){
+      streetNames.addTo(map);
     }
 
-  });
+    streetNames.setOpacity(1);
+
+    streetNames.redraw();
+
+  }else{
+
+    if(map.hasLayer(streetNames)){
+      map.removeLayer(streetNames);
+    }
+
+  }
 
 
-  updateSwissLayers();
+  if(numbers){
+
+    if(!map.hasLayer(houseNumbers)){
+      houseNumbers.addTo(map);
+    }
+
+    houseNumbers.setOpacity(1);
+
+    houseNumbers.redraw();
+
+  }else{
+
+    if(map.hasLayer(houseNumbers)){
+      map.removeLayer(houseNumbers);
+    }
+
+  }
+
+
+  bringOfficialLayersToFront();
+
+
+  localStorage.setItem(
+    "v12_streetNames",
+    streets
+  );
+
+  localStorage.setItem(
+    "v12_houseNumbers",
+    numbers
+  );
 
 }
 
 
-function saveLayerSetting(id){
+/* =========================================================
+   GEBÄUDE
+   ========================================================= */
+
+function toggleBuildings(){
+
+  /*
+   * Die OSM-Karte enthält bereits Gebäude.
+   * Deshalb wird hier primär die Kartenansicht
+   * über die Hintergrundkarte gesteuert.
+   */
+
+  const value =
+    document.getElementById(
+      "toggleBuildings"
+    ).checked;
 
   localStorage.setItem(
-    "v11_" + id,
-    document.getElementById(id).checked
+    "v12_buildings",
+    value
   );
 
-  updateSwissLayers();
+  toast(
+    value
+      ? "Gebäude eingeblendet"
+      : "Gebäude ausgeblendet"
+  );
+
+}
+
+
+/* =========================================================
+   STRASSEN
+   ========================================================= */
+
+function toggleRoads(){
+
+  const value =
+    document.getElementById(
+      "toggleRoads"
+    ).checked;
+
+  localStorage.setItem(
+    "v12_roads",
+    value
+  );
+
+  toast(
+    value
+      ? "Strassen eingeblendet"
+      : "Strassen ausgeblendet"
+  );
+
+}
+
+
+/* =========================================================
+   GEMEINDEGRENZE
+   ========================================================= */
+
+async function loadBorders(){
+
+  try{
+
+    const response =
+      await fetch(
+        WFS_URL,
+        {
+          cache:"no-store"
+        }
+      );
+
+
+    if(!response.ok){
+
+      throw new Error(
+        "WFS HTTP " +
+        response.status
+      );
+
+    }
+
+
+    const geo =
+      await response.json();
+
+
+    const features =
+      geo.features || [];
+
+
+    if(!features.length){
+
+      return;
+    }
+
+
+    borderLayer =
+      L.geoJSON(
+        {
+          type:"FeatureCollection",
+          features
+        },
+        {
+          style:{
+            color:"#2563eb",
+            weight:3,
+            opacity:.9,
+            fill:false,
+            dashArray:"8 6"
+          }
+        }
+      ).addTo(map);
+
+
+    bringOfficialLayersToFront();
+
+
+    if(
+      !document.getElementById(
+        "toggleBorders"
+      ).checked
+    ){
+
+      map.removeLayer(
+        borderLayer
+      );
+
+    }
+
+
+  }catch(error){
+
+    console.warn(
+      "Gemeindegrenze konnte nicht geladen werden",
+      error
+    );
+
+  }
+
+}
+
+
+function toggleBorders(){
+
+  const value =
+    document.getElementById(
+      "toggleBorders"
+    ).checked;
+
+
+  localStorage.setItem(
+    "v12_borders",
+    value
+  );
+
+
+  if(!borderLayer){
+
+    return;
+  }
+
+
+  if(value){
+
+    borderLayer.addTo(map);
+
+    borderLayer.bringToFront();
+
+  }else{
+
+    map.removeLayer(
+      borderLayer
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   EINSTELLUNGEN LADEN
+   ========================================================= */
+
+function restoreSettings(){
+
+  const view =
+    localStorage.getItem(
+      "maurMapViewV12"
+    ) || "normal";
+
+
+  const street =
+    localStorage.getItem(
+      "v12_streetNames"
+    );
+
+  const numbers =
+    localStorage.getItem(
+      "v12_houseNumbers"
+    );
+
+  const buildings =
+    localStorage.getItem(
+      "v12_buildings"
+    );
+
+  const roads =
+    localStorage.getItem(
+      "v12_roads"
+    );
+
+  const borders =
+    localStorage.getItem(
+      "v12_borders"
+    );
+
+
+  if(street !== null){
+
+    document.getElementById(
+      "toggleStreetNames"
+    ).checked = street === "true";
+
+  }
+
+
+  if(numbers !== null){
+
+    document.getElementById(
+      "toggleHouseNumbers"
+    ).checked = numbers === "true";
+
+  }
+
+
+  if(buildings !== null){
+
+    document.getElementById(
+      "toggleBuildings"
+    ).checked = buildings === "true";
+
+  }
+
+
+  if(roads !== null){
+
+    document.getElementById(
+      "toggleRoads"
+    ).checked = roads === "true";
+
+  }
+
+
+  if(borders !== null){
+
+    document.getElementById(
+      "toggleBorders"
+    ).checked = borders === "true";
+
+  }
+
+
+  changeView(view);
+
+  toggleOfficialLayers();
+
+  toggleBuildings();
+
+  toggleRoads();
+
+  toggleBorders();
 
 }
 
 
 /* =========================================================
    GPS
-========================================================= */
+   ========================================================= */
 
 function startGPS(){
 
   if(!navigator.geolocation){
 
-    status("ONLINE • GPS nicht verfügbar");
+    toast(
+      "GPS wird von diesem Gerät nicht unterstützt."
+    );
 
     return;
-
   }
 
 
   navigator.geolocation.watchPosition(
 
-    updateGPS,
+    function(position){
+
+      const lat =
+        position.coords.latitude;
+
+      const lon =
+        position.coords.longitude;
+
+
+      currentPosition = [
+        lat,
+        lon
+      ];
+
+
+      updateUserMarker(
+        lat,
+        lon
+      );
+
+
+      if(
+        navigationActive &&
+        followEnabled
+      ){
+
+        map.setView(
+          [lat,lon],
+          Math.max(
+            map.getZoom(),
+            16
+          ),
+          {
+            animate:true
+          }
+        );
+
+      }
+
+
+      if(navigationActive){
+
+        updateNavigation();
+
+      }
+
+
+      document
+        .getElementById(
+          "gpsButton"
+        )
+        .classList.add("active");
+
+
+      status("GPS • ONLINE");
+
+    },
 
     function(error){
 
-      console.warn("GPS:",error);
+      console.warn(
+        "GPS Fehler",
+        error
+      );
 
-      status("ONLINE • GPS wartet");
+      status(
+        "GPS nicht verfügbar"
+      );
 
     },
 
     {
       enableHighAccuracy:true,
-      maximumAge:5000,
+      maximumAge:3000,
       timeout:15000
     }
 
@@ -956,428 +1675,710 @@ function startGPS(){
 }
 
 
-function updateGPS(position){
-
-  currentPosition = {
-
-    lat:position.coords.latitude,
-
-    lng:position.coords.longitude,
-
-    accuracy:position.coords.accuracy
-
-  };
-
-
-  status(
-    "ONLINE • GPS " +
-    Math.round(position.coords.accuracy) +
-    " m"
-  );
-
-
-  const latlng = [
-    currentPosition.lat,
-    currentPosition.lng
-  ];
-
+function updateUserMarker(
+  lat,
+  lon
+){
 
   if(!userMarker){
 
-    userMarker = L.marker(
-      latlng,
-      {
-        icon:L.divIcon({
-          className:"",
-          html:'<div class="gps-dot"></div>',
-          iconSize:[18,18],
-          iconAnchor:[9,9]
-        })
-      }
-    ).addTo(map);
+    const icon =
+      L.divIcon({
+        className:"",
+        html:
+          '<div class="my-location"></div>',
+        iconSize:[22,22],
+        iconAnchor:[11,11]
+      });
+
+
+    userMarker =
+      L.marker(
+        [lat,lon],
+        {
+          icon,
+          zIndexOffset:1000
+        }
+      ).addTo(map);
 
   }else{
 
-    userMarker.setLatLng(latlng);
-
-  }
-
-
-  if(followEnabled){
-
-    const bounds = map.getBounds();
-
-    if(!bounds.pad(-0.25).contains(latlng)){
-
-      map.setView(
-        latlng,
-        Math.max(map.getZoom(),16),
-        {
-          animate:true
-        }
-      );
-
-    }
-
-  }
-
-
-  if(
-    navigationActive &&
-    destination &&
-    Date.now() - lastRouteTime > 15000
-  ){
-
-    lastRouteTime = Date.now();
-
-    routeTo(destination,false);
+    userMarker.setLatLng(
+      [lat,lon]
+    );
 
   }
 
 }
 
 
-/* =========================================================
-   GPS BUTTON
-========================================================= */
-
-function goToLocation(){
+function centerGPS(){
 
   if(!currentPosition){
 
-    toast("GPS wird noch gesucht.");
+    toast(
+      "GPS-Position wird noch gesucht..."
+    );
 
     return;
-
   }
 
 
   setFollow(true);
 
+
   map.setView(
-    [
-      currentPosition.lat,
-      currentPosition.lng
-    ],
-    16
+    currentPosition,
+    Math.max(
+      map.getZoom(),
+      17
+    ),
+    {
+      animate:true
+    }
   );
 
-  toast("Standort angezeigt.");
-
 }
 
 
 /* =========================================================
-   SUCHE
-========================================================= */
+   FOLLOW
+   ========================================================= */
 
-const search =
-  document.getElementById("search");
+function setFollow(value){
 
-const results =
-  document.getElementById("results");
+  followEnabled =
+    Boolean(value);
 
-let searchTimer = null;
 
+  document.getElementById(
+    "toggleFollow"
+  ).checked =
+    followEnabled;
 
-search.addEventListener("input",function(){
 
-  clearTimeout(searchTimer);
-
-  const query =
-    search.value.trim();
-
-  if(query.length < 3){
-
-    results.innerHTML = "";
-
-    return;
-
-  }
-
-
-  searchTimer = setTimeout(
-    () => searchAddress(query),
-    350
-  );
-
-});
-
-
-async function searchAddress(query){
-
-  results.innerHTML =
-    '<div class="result">Suche …</div>';
-
-
-  try{
-
-    const url =
-      NOMINATIM +
-      "?format=jsonv2" +
-      "&limit=8" +
-      "&countrycodes=ch" +
-      "&q=" +
-      encodeURIComponent(
-        query + ", Schweiz"
-      );
-
-
-    const response =
-      await fetch(url,{
-        headers:{
-          "Accept":"application/json"
-        }
-      });
-
-
-    if(!response.ok){
-      throw new Error(response.status);
-    }
-
-
-    const data =
-      await response.json();
-
-
-    if(!data.length){
-
-      results.innerHTML =
-        '<div class="result">Nichts gefunden.</div>';
-
-      return;
-
-    }
-
-
-    results.innerHTML =
-      data.map((item,index) => {
-
-        const title =
-          item.display_name
-            .split(",")
-            .slice(0,2)
-            .join(", ");
-
-
-        return `
-          <div class="result" data-index="${index}">
-            <b>${escapeHTML(title)}</b>
-            <small>
-              ${escapeHTML(item.display_name)}
-            </small>
-          </div>
-        `;
-
-      }).join("");
-
-
-    Array
-      .from(results.children)
-      .forEach((element,index) => {
-
-        element.onclick =
-          () => selectSearchResult(data[index]);
-
-      });
-
-
-  }catch(error){
-
-    console.warn("Search:",error);
-
-    results.innerHTML =
-      '<div class="result">Suche momentan nicht verfügbar.</div>';
-
-  }
-
-}
-
-
-/* =========================================================
-   SUCHERGEBNIS
-========================================================= */
-
-function selectSearchResult(item){
-
-  const lat =
-    Number(item.lat);
-
-  const lon =
-    Number(item.lon);
-
-
-  if(!Number.isFinite(lat) || !Number.isFinite(lon)){
-    return;
-  }
-
-
-  setFollow(false);
-
-
-  destination = [
-    lon,
-    lat
-  ];
-
-
-  search.value =
-    item.display_name
-      .split(",")
-      .slice(0,2)
-      .join(", ");
-
-
-  results.innerHTML = "";
-
-
-  if(destinationMarker){
-    map.removeLayer(destinationMarker);
-  }
-
-
-  destinationMarker =
-    L.marker([lat,lon])
-      .addTo(map)
-      .bindPopup(
-        "<b>Ziel</b><br>" +
-        escapeHTML(
-          item.display_name
-        )
-      )
-      .openPopup();
-
-
-  routeTo(destination,true);
-
-}
-
-
-/* =========================================================
-   ROUTING
-========================================================= */
-
-async function routeTo(coords,announce){
-
-  if(!currentPosition){
-
-    toast("GPS-Position wird noch gesucht.");
-
-    return;
-
-  }
-
-
-  const from = [
-    currentPosition.lng,
-    currentPosition.lat
-  ];
-
-
-  try{
-
-    const url =
-      OSRM +
-      from.join(",") +
-      ";" +
-      coords.join(",") +
-      "?overview=full" +
-      "&geometries=geojson" +
-      "&steps=true";
-
-
-    const response =
-      await fetch(url);
-
-
-    if(!response.ok){
-      throw new Error(response.status);
-    }
-
-
-    const data =
-      await response.json();
-
-
-    if(!data.routes || !data.routes.length){
-      throw new Error("Keine Route");
-    }
-
-
-    const route =
-      data.routes[0];
-
-
-    if(routeLayer){
-      map.removeLayer(routeLayer);
-    }
-
-
-    routeLayer =
-      L.geoJSON(
-        route.geometry,
-        {
-          style:{
-            color:"#2563eb",
-            weight:7,
-            opacity:.9,
-            lineCap:"round",
-            lineJoin:"round"
-          }
-        }
-      ).addTo(map);
-
-
-    navigationActive = true;
-
-
-    /* ROUTE KOMPLETT SICHTBAR */
-
-    map.fitBounds(
-      routeLayer.getBounds(),
-      {
-        paddingTopLeft:[30,100],
-        paddingBottomRight:[30,170],
-        maxZoom:16
-      }
+  const button =
+    document.getElementById(
+      "followButton"
     );
 
 
-    document
-      .getElementById("navInfo")
-      .classList.add("show");
+  button.classList.toggle(
+    "active",
+    followEnabled
+  );
 
 
-    document
-      .getElementById("navMain")
-      .textContent =
-        "Route: " +
-        formatDistance(route.distance) +
-        " • " +
-        formatTime(route.duration);
+  button.textContent =
+    followEnabled
+      ? "✓ GPS folgt"
+      : "GPS Follow aus";
 
 
-    document
-      .getElementById("navSub")
-      .textContent =
-        "Ziel wird angefahren";
+  if(
+    navigationActive &&
+    followEnabled &&
+    currentPosition
+  ){
+
+    map.setView(
+      currentPosition,
+      Math.max(
+        map.getZoom(),
+        17
+      )
+    );
+
+  }
+
+}
 
 
-    if(announce){
+function toggleFollow(){
 
-      speak(
-        "Route berechnet. " +
-        formatDistance(route.distance) +
-        ". Fahrzeit ungefähr " +
-        formatTime(route.duration) +
-        "."
+  setFollow(
+    !followEnabled
+  );
+
+}
+
+
+/* =========================================================
+   ADRESSSUCHE
+   ========================================================= */
+
+document
+  .getElementById(
+    "searchInput"
+  )
+  .addEventListener(
+    "keydown",
+    function(event){
+
+      if(event.key === "Enter"){
+
+        searchAddress();
+
+      }
+
+    }
+  );
+
+
+async function searchAddress(){
+
+  const input =
+    document.getElementById(
+      "searchInput"
+    );
+
+
+  const query =
+    input.value.trim();
+
+
+  if(!query){
+
+    toast(
+      "Bitte zuerst eine Adresse eingeben."
+    );
+
+    return;
+  }
+
+
+  const resultsBox =
+    document.getElementById(
+      "searchResults"
+    );
+
+
+  resultsBox.innerHTML =
+    "<div class='searchresult'>Suche...</div>";
+
+  resultsBox.classList.add(
+    "show"
+  );
+
+
+  try{
+
+    /*
+     * Offizielle Schweizer Suche zuerst.
+     */
+
+    const officialURL =
+      "https://api3.geo.admin.ch/rest/services/ech/SearchServer" +
+      "?searchText=" +
+      encodeURIComponent(query) +
+      "&type=locations" +
+      "&origins=address" +
+      "&limit=8" +
+      "&sr=4326";
+
+
+    const response =
+      await fetch(
+        officialURL,
+        {
+          headers:{
+            "Accept":"application/json"
+          }
+        }
+      );
+
+
+    if(!response.ok){
+
+      throw new Error(
+        "Search HTTP " +
+        response.status
       );
 
     }
 
+
+    const data =
+      await response.json();
+
+
+    const results =
+      data.results || [];
+
+
+    lastSearchResults =
+      results;
+
+
+    if(!results.length){
+
+      resultsBox.innerHTML =
+        "<div class='searchresult'>" +
+        "Keine Adresse gefunden." +
+        "</div>";
+
+      return;
+    }
+
+
+    resultsBox.innerHTML =
+      results
+        .map(
+          (result,index) => {
+
+            const attrs =
+              result.attrs || {};
+
+
+            const label =
+              String(
+                attrs.label ||
+                attrs.detail ||
+                "Adresse"
+              )
+              .replace(
+                /<[^>]*>/g,
+                ""
+              );
+
+
+            return `
+              <div
+                class="searchresult"
+                onclick="selectSearchResult(${index})"
+              >
+                <strong>
+                  ${escapeHTML(label)}
+                </strong>
+
+                <small>
+                  Offizielle Schweizer Adresse
+                </small>
+              </div>
+            `;
+
+          }
+        )
+        .join("");
+
+
   }catch(error){
 
-    console.error("Routing:",error);
+    console.warn(
+      "GeoAdmin Suche fehlgeschlagen",
+      error
+    );
+
+
+    /*
+     * Fallback auf Nominatim.
+     */
+
+    try{
+
+      const url =
+        NOMINATIM +
+        "?format=jsonv2" +
+        "&limit=8" +
+        "&countrycodes=ch" +
+        "&q=" +
+        encodeURIComponent(query);
+
+
+      const response =
+        await fetch(
+          url,
+          {
+            headers:{
+              "Accept-Language":"de"
+            }
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      lastSearchResults =
+        data;
+
+
+      resultsBox.innerHTML =
+        data.length
+          ? data.map(
+              (r,index) => `
+                <div
+                  class="searchresult"
+                  onclick="selectNominatimResult(${index})"
+                >
+                  <strong>
+                    ${escapeHTML(r.display_name)}
+                  </strong>
+
+                  <small>
+                    OpenStreetMap
+                  </small>
+                </div>
+              `
+            ).join("")
+          : "<div class='searchresult'>Keine Adresse gefunden.</div>";
+
+
+    }catch(fallbackError){
+
+      console.error(
+        fallbackError
+      );
+
+
+      resultsBox.innerHTML =
+        "<div class='searchresult'>" +
+        "Adresssuche momentan nicht verfügbar." +
+        "</div>";
+
+    }
+
+  }
+
+}
+
+
+function selectSearchResult(index){
+
+  const result =
+    lastSearchResults[index];
+
+
+  if(!result){
+
+    return;
+  }
+
+
+  const attrs =
+    result.attrs || {};
+
+
+  const lat =
+    Number(attrs.lat);
+
+
+  const lon =
+    Number(attrs.lon);
+
+
+  if(
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lon)
+  ){
+
+    toast(
+      "Adresse hat keine gültige Position."
+    );
+
+    return;
+  }
+
+
+  selectedSearch = {
+    lat,
+    lon,
+    label:
+      String(
+        attrs.label ||
+        attrs.detail ||
+        "Adresse"
+      ).replace(
+        /<[^>]*>/g,
+        ""
+      )
+  };
+
+
+  setDestination(
+    lat,
+    lon,
+    selectedSearch.label
+  );
+
+
+  document
+    .getElementById(
+      "searchResults"
+    )
+    .classList.remove(
+      "show"
+    );
+
+
+  document
+    .getElementById(
+      "searchInput"
+    ).blur();
+
+
+  toast(
+    "Ziel gesetzt: " +
+    selectedSearch.label
+  );
+
+}
+
+
+function selectNominatimResult(index){
+
+  const result =
+    lastSearchResults[index];
+
+
+  if(!result){
+
+    return;
+  }
+
+
+  const lat =
+    Number(result.lat);
+
+
+  const lon =
+    Number(result.lon);
+
+
+  selectedSearch = {
+    lat,
+    lon,
+    label:
+      result.display_name
+  };
+
+
+  setDestination(
+    lat,
+    lon,
+    result.display_name
+  );
+
+
+  document
+    .getElementById(
+      "searchResults"
+    )
+    .classList.remove(
+      "show"
+    );
+
+}
+
+
+/* =========================================================
+   ZIEL SETZEN
+   ========================================================= */
+
+function setDestination(
+  lat,
+  lon,
+  label
+){
+
+  destination = [
+    lat,
+    lon
+  ];
+
+
+  if(destinationMarker){
+
+    destinationMarker.setLatLng(
+      destination
+    );
+
+  }else{
+
+    const icon =
+      L.divIcon({
+        className:"",
+        html:
+          '<div class="destination-marker"></div>',
+        iconSize:[28,28],
+        iconAnchor:[14,28]
+      });
+
+
+    destinationMarker =
+      L.marker(
+        destination,
+        {
+          icon,
+          zIndexOffset:900
+        }
+      ).addTo(map);
+
+  }
+
+
+  destinationMarker.bindPopup(
+    "<strong>Ziel</strong><br>" +
+    escapeHTML(label || "Ziel")
+  );
+
+
+  map.setView(
+    destination,
+    17,
+    {
+      animate:true
+    }
+  );
+
+
+  startRoute();
+
+}
+
+
+/* =========================================================
+   ROUTE
+   ========================================================= */
+
+async function startRoute(){
+
+  if(!currentPosition){
+
+    toast(
+      "GPS wird noch benötigt."
+    );
+
+    return;
+  }
+
+
+  if(!destination){
+
+    toast(
+      "Bitte zuerst ein Ziel auswählen."
+    );
+
+    return;
+  }
+
+
+  const start =
+    currentPosition;
+
+
+  const end =
+    destination;
+
+
+  const url =
+    OSRM +
+    start[1] +
+    "," +
+    start[0] +
+    ";" +
+    end[1] +
+    "," +
+    end[0] +
+    "?overview=full" +
+    "&geometries=geojson" +
+    "&steps=true";
+
+
+  try{
+
+    toast(
+      "Route wird berechnet..."
+    );
+
+
+    const response =
+      await fetch(
+        url,
+        {
+          cache:"no-store"
+        }
+      );
+
+
+    if(!response.ok){
+
+      throw new Error(
+        "OSRM HTTP " +
+        response.status
+      );
+
+    }
+
+
+    const data =
+      await response.json();
+
+
+    if(
+      data.code !== "Ok" ||
+      !data.routes ||
+      !data.routes.length
+    ){
+
+      throw new Error(
+        "Keine Route"
+      );
+
+    }
+
+
+    currentRoute =
+      data.routes[0];
+
+
+    routeSteps =
+      currentRoute.legs
+        .flatMap(
+          leg =>
+            leg.steps || []
+        );
+
+
+    drawRoute(
+      currentRoute.geometry
+    );
+
+
+    navigationActive =
+      true;
+
+
+    setFollow(true);
+
+
+    document
+      .getElementById(
+        "routeInfo"
+      )
+      .classList.add(
+        "show"
+      );
+
+
+    showRouteOverview();
+
+
+    fitRoute();
+
+
+    toast(
+      "Navigation gestartet"
+    );
+
+
+  }catch(error){
+
+    console.error(
+      error
+    );
+
 
     toast(
       "Route konnte nicht berechnet werden."
@@ -1388,84 +2389,69 @@ async function routeTo(coords,announce){
 }
 
 
-/* =========================================================
-   ENTFERNUNG / ZEIT
-========================================================= */
+function drawRoute(
+  geometry
+){
 
-function formatDistance(meters){
+  if(routeLayer){
 
-  if(meters < 1000){
-
-    return Math.round(meters) + " m";
-
-  }
-
-  return (
-    meters / 1000
-  ).toFixed(1) + " km";
-
-}
-
-
-function formatTime(seconds){
-
-  const minutes =
-    Math.round(seconds / 60);
-
-
-  if(minutes < 60){
-
-    return minutes + " min";
+    map.removeLayer(
+      routeLayer
+    );
 
   }
 
 
-  return (
-    Math.floor(minutes / 60) +
-    " h " +
-    (minutes % 60) +
-    " min"
-  );
+  routeLayer =
+    L.geoJSON(
+      geometry,
+      {
+        style:{
+          color:"#2563eb",
+          weight:7,
+          opacity:.9,
+          lineCap:"round",
+          lineJoin:"round"
+        }
+      }
+    ).addTo(map);
+
+
+  routeLayer.bringToFront();
+
+
+  bringOfficialLayersToFront();
 
 }
 
 
-/* =========================================================
-   FOLGEN
-========================================================= */
+function fitRoute(){
 
-function setFollow(enabled){
+  if(!routeLayer){
 
-  followEnabled = !!enabled;
-
-
-  const button =
-    document.getElementById("followBtn");
+    return;
+  }
 
 
-  button.textContent =
-    followEnabled
-      ? "📍 Folgen an"
-      : "📍 Folgen aus";
+  const bounds =
+    routeLayer.getBounds();
 
 
-  button.classList.toggle(
-    "off",
-    !followEnabled
-  );
+  if(bounds.isValid()){
 
-
-  if(
-    followEnabled &&
-    currentPosition
-  ){
-
-    map.setView(
-      [
-        currentPosition.lat,
-        currentPosition.lng
-      ],
-      16
+    map.fitBounds(
+      bounds,
+      {
+        paddingTopLeft:[
+          30,
+          180
+        ],
+        paddingBottomRight:[
+          30,
+          180
+        ],
+        maxZoom:17
+      }
     );
 
   }
@@ -1473,110 +2459,472 @@ function setFollow(enabled){
 }
 
 
-function toggleFollow(){
+/* =========================================================
+   ROUTENINFORMATION
+   ========================================================= */
 
-  setFollow(!followEnabled);
+function showRouteOverview(){
+
+  if(!currentRoute){
+
+    return;
+  }
+
+
+  const km =
+    (
+      currentRoute.distance /
+      1000
+    ).toFixed(1);
+
+
+  const min =
+    Math.round(
+      currentRoute.duration /
+      60
+    );
+
+
+  document
+    .getElementById(
+      "maneuverArrow"
+    ).textContent =
+      "🧭";
+
+
+  document
+    .getElementById(
+      "routeInstruction"
+    ).textContent =
+      "Route gestartet";
+
+
+  document
+    .getElementById(
+      "routeDistance"
+    ).textContent =
+      km +
+      " km • ca. " +
+      min +
+      " Min.";
 
 }
 
 
 /* =========================================================
-   SPRACHE
-========================================================= */
+   TURN BY TURN
+   ========================================================= */
 
-function speak(text){
+function updateNavigation(){
 
   if(
-    !voiceEnabled ||
-    !("speechSynthesis" in window)
+    !navigationActive ||
+    !currentPosition ||
+    !routeSteps.length
   ){
 
     return;
+  }
+
+
+  let nearestStep = null;
+
+  let nearestDistance =
+    Infinity;
+
+
+  for(
+    const step of routeSteps
+  ){
+
+    if(
+      !step.maneuver ||
+      !step.maneuver.location
+    ){
+
+      continue;
+    }
+
+
+    const lon =
+      step.maneuver.location[0];
+
+
+    const lat =
+      step.maneuver.location[1];
+
+
+    const distance =
+      distanceMeters(
+        currentPosition[0],
+        currentPosition[1],
+        lat,
+        lon
+      );
+
+
+    if(
+      distance < nearestDistance
+    ){
+
+      nearestDistance =
+        distance;
+
+      nearestStep =
+        step;
+
+    }
 
   }
 
 
-  speechSynthesis.cancel();
+  if(!nearestStep){
+
+    return;
+  }
 
 
-  const utterance =
-    new SpeechSynthesisUtterance(text);
+  const instruction =
+    buildInstruction(
+      nearestStep
+    );
 
 
-  utterance.lang = "de-CH";
+  const arrow =
+    maneuverArrow(
+      nearestStep
+    );
 
-  speechSynthesis.speak(
-    utterance
+
+  document
+    .getElementById(
+      "maneuverArrow"
+    ).textContent =
+      arrow;
+
+
+  document
+    .getElementById(
+      "routeInstruction"
+    ).textContent =
+      instruction;
+
+
+  document
+    .getElementById(
+      "routeDistance"
+    ).textContent =
+      formatDistance(
+        nearestDistance
+      );
+
+}
+
+
+function buildInstruction(step){
+
+  const type =
+    step.maneuver.type;
+
+
+  const modifier =
+    step.maneuver.modifier;
+
+
+  const road =
+    step.name ||
+    "die nächste Strasse";
+
+
+  if(type === "arrive"){
+
+    return "Du hast dein Ziel erreicht";
+
+  }
+
+
+  if(type === "depart"){
+
+    return "Starte auf " + road;
+
+  }
+
+
+  if(
+    modifier === "right"
+  ){
+
+    return "Rechts in " + road;
+
+  }
+
+
+  if(
+    modifier === "left"
+  ){
+
+    return "Links in " + road;
+
+  }
+
+
+  if(
+    modifier === "slight right"
+  ){
+
+    return "Leicht rechts auf " + road;
+
+  }
+
+
+  if(
+    modifier === "slight left"
+  ){
+
+    return "Leicht links auf " + road;
+
+  }
+
+
+  if(
+    modifier === "sharp right"
+  ){
+
+    return "Scharf rechts auf " + road;
+
+  }
+
+
+  if(
+    modifier === "sharp left"
+  ){
+
+    return "Scharf links auf " + road;
+
+  }
+
+
+  if(
+    type === "roundabout"
+  ){
+
+    return "In den Kreisverkehr";
+
+  }
+
+
+  return (
+    "Weiter auf " +
+    road
   );
 
 }
 
 
-function toggleVoice(){
+function maneuverArrow(step){
 
-  voiceEnabled =
-    !voiceEnabled;
-
-
-  const button =
-    document.getElementById("voiceBtn");
+  const modifier =
+    step.maneuver?.modifier;
 
 
-  button.textContent =
-    voiceEnabled
-      ? "🔊 Sprache an"
-      : "🔇 Sprache aus";
+  if(modifier === "right"){
+    return "➡️";
+  }
+
+  if(modifier === "left"){
+    return "⬅️";
+  }
+
+  if(modifier === "slight right"){
+    return "↗️";
+  }
+
+  if(modifier === "slight left"){
+    return "↖️";
+  }
+
+  if(modifier === "sharp right"){
+    return "↘️";
+  }
+
+  if(modifier === "sharp left"){
+    return "↙️";
+  }
+
+  return "⬆️";
+
+}
 
 
-  button.classList.toggle(
-    "off",
-    !voiceEnabled
+/* =========================================================
+   DISTANZ
+   ========================================================= */
+
+function distanceMeters(
+  lat1,
+  lon1,
+  lat2,
+  lon2
+){
+
+  const R =
+    6371000;
+
+  const dLat =
+    (lat2-lat1) *
+    Math.PI / 180;
+
+
+  const dLon =
+    (lon2-lon1) *
+    Math.PI / 180;
+
+
+  const a =
+    Math.sin(dLat/2) *
+    Math.sin(dLat/2) +
+    Math.cos(lat1*Math.PI/180) *
+    Math.cos(lat2*Math.PI/180) *
+    Math.sin(dLon/2) *
+    Math.sin(dLon/2);
+
+
+  return (
+    R *
+    2 *
+    Math.atan2(
+      Math.sqrt(a),
+      Math.sqrt(1-a)
+    )
+  );
+
+}
+
+
+function formatDistance(meters){
+
+  if(meters < 1000){
+
+    return (
+      Math.round(meters) +
+      " m"
+    );
+
+  }
+
+
+  return (
+    (meters/1000)
+      .toFixed(1) +
+    " km"
   );
 
 }
 
 
 /* =========================================================
-   NAVIGATION STOPPEN
-========================================================= */
+   MAUR ZENTRUM ROUTE
+   ========================================================= */
 
-function stopNavigation(){
+function routeToCenter(){
 
-  navigationActive = false;
+  const lat =
+    CENTER[0];
 
-  destination = null;
+  const lon =
+    CENTER[1];
+
+
+  setDestination(
+    lat,
+    lon,
+    "Maur Zentrum"
+  );
+
+}
+
+
+/* =========================================================
+   AKTUELLE SUCHE ALS ZIEL
+   ========================================================= */
+
+function useCurrentSearchAsDestination(){
+
+  if(!selectedSearch){
+
+    toast(
+      "Bitte zuerst eine Adresse suchen."
+    );
+
+    return;
+  }
+
+
+  setDestination(
+    selectedSearch.lat,
+    selectedSearch.lon,
+    selectedSearch.label
+  );
+
+
+  closePanels();
+
+}
+
+
+/* =========================================================
+   NAVIGATION LÖSCHEN
+   ========================================================= */
+
+function clearRoute(){
+
+  navigationActive =
+    false;
+
+
+  destination =
+    null;
+
+
+  currentRoute =
+    null;
+
+
+  routeSteps =
+    [];
 
 
   if(routeLayer){
 
-    map.removeLayer(routeLayer);
+    map.removeLayer(
+      routeLayer
+    );
 
-    routeLayer = null;
+    routeLayer =
+      null;
 
   }
 
 
   if(destinationMarker){
 
-    map.removeLayer(destinationMarker);
+    map.removeLayer(
+      destinationMarker
+    );
 
-    destinationMarker = null;
-
-  }
-
-
-  if(navigationArrow){
-
-    map.removeLayer(navigationArrow);
-
-    navigationArrow = null;
+    destinationMarker =
+      null;
 
   }
 
 
   document
-    .getElementById("navInfo")
-    .classList.remove("show");
+    .getElementById(
+      "routeInfo"
+    )
+    .classList.remove(
+      "show"
+    );
 
 
   toast(
@@ -1588,18 +2936,23 @@ function stopNavigation(){
 
 /* =========================================================
    EIGENE PUNKTE
-========================================================= */
+   ========================================================= */
 
-function loadPoints(){
+function loadOwnPoints(){
 
   try{
 
-    ownPoints =
-      JSON.parse(
-        localStorage.getItem(
-          "maurOwnPointsV11"
-        ) || "[]"
+    const raw =
+      localStorage.getItem(
+        "maurOwnPointsV12"
       );
+
+
+    ownPoints =
+      raw
+        ? JSON.parse(raw)
+        : [];
+
 
   }catch(error){
 
@@ -1610,97 +2963,132 @@ function loadPoints(){
 }
 
 
-function savePoints(){
+function saveOwnPoints(){
 
   localStorage.setItem(
-    "maurOwnPointsV11",
-    JSON.stringify(ownPoints)
+    "maurOwnPointsV12",
+    JSON.stringify(
+      ownPoints
+    )
   );
 
 }
 
 
-function addPoint(){
+function enablePointMode(){
 
-  if(!currentPosition){
+  pointMode = true;
 
-    toast("GPS wird noch gesucht.");
+  closePanels();
 
-    return;
-
-  }
-
-
-  const name =
-    prompt(
-      "Name für den Punkt:",
-      "Punkt " +
-      (ownPoints.length + 1)
-    );
-
-
-  if(!name){
-    return;
-  }
-
-
-  ownPoints.push({
-
-    id:Date.now(),
-
-    name:name,
-
-    lat:currentPosition.lat,
-
-    lng:currentPosition.lng
-
-  });
-
-
-  savePoints();
-
-  renderPoints();
-
-  updatePointsList();
-
-  toast("Punkt gespeichert.");
+  toast(
+    "Tippe jetzt auf die Karte, um einen Punkt zu setzen."
+  );
 
 }
 
 
-function renderPoints(){
+function addOwnPoint(
+  lat,
+  lon
+){
+
+  const point = {
+
+    id:
+      Date.now(),
+
+    lat,
+    lon,
+
+    name:
+      "Eigener Punkt"
+
+  };
+
+
+  ownPoints.push(
+    point
+  );
+
+
+  saveOwnPoints();
+
+  renderOwnPoints();
+
+}
+
+
+function renderOwnPoints(){
 
   ownMarkers.forEach(
-    marker => map.removeLayer(marker)
+    marker => {
+
+      map.removeLayer(
+        marker
+      );
+
+    }
   );
 
 
   ownMarkers = [];
 
 
-  ownPoints.forEach(point => {
+  ownPoints.forEach(
+    point => {
 
-    const marker =
-      L.marker([
-        point.lat,
-        point.lng
-      ])
-      .addTo(map)
-      .bindTooltip(
-        escapeHTML(point.name)
+      const icon =
+        L.divIcon({
+          className:"",
+          html:
+            '<div class="own-marker">P</div>',
+          iconSize:[30,30],
+          iconAnchor:[15,15]
+        });
+
+
+      const marker =
+        L.marker(
+          [
+            point.lat,
+            point.lon
+          ],
+          {
+            icon,
+            zIndexOffset:500
+          }
+        ).addTo(map);
+
+
+      marker.bindPopup(
+        "<strong>" +
+        escapeHTML(
+          point.name
+        ) +
+        "</strong><br>" +
+        point.lat.toFixed(6) +
+        ", " +
+        point.lon.toFixed(6)
       );
 
 
-    ownMarkers.push(marker);
+      ownMarkers.push(
+        marker
+      );
 
-  });
+    }
+  );
+
+
+  renderPointsList();
 
 }
 
 
-function updatePointsList(){
+function renderPointsList(){
 
-  const container =
+  const list =
     document.getElementById(
       "pointsList"
     );
@@ -1708,129 +3096,116 @@ function updatePointsList(){
 
   if(!ownPoints.length){
 
-    container.innerHTML =
-      '<p class="hint">Noch keine eigenen Punkte gespeichert.</p>';
+    list.innerHTML =
+      "<p>Noch keine eigenen Punkte.</p>";
 
     return;
-
   }
 
 
-  container.innerHTML =
-    ownPoints.map(point => {
+  list.innerHTML =
+    ownPoints
+      .map(
+        point => `
 
-      return `
-        <div class="point-item">
+          <div
+            style="
+              padding:12px 0;
+              border-bottom:1px solid #eee;
+            "
+          >
 
-          <b>${escapeHTML(point.name)}</b>
+            <strong>
+              ${escapeHTML(point.name)}
+            </strong>
 
-          <div class="hint">
-            ${point.lat.toFixed(5)},
-            ${point.lng.toFixed(5)}
-          </div>
+            <br>
 
-          <div class="point-actions">
-
-            <button
-              class="smallbtn primary"
-              onclick="showPoint(${point.id})"
-            >
-              Anzeigen
-            </button>
-
-            <button
-              class="smallbtn danger"
-              onclick="deletePoint(${point.id})"
-            >
-              Löschen
-            </button>
+            <small>
+              ${point.lat.toFixed(6)},
+              ${point.lon.toFixed(6)}
+            </small>
 
           </div>
 
-        </div>
-      `;
-
-    }).join("");
+        `
+      )
+      .join("");
 
 }
 
 
-function showPoint(id){
+function clearOwnPoints(){
 
-  const point =
-    ownPoints.find(
-      item => item.id === id
-    );
+  if(
+    !confirm(
+      "Alle eigenen Punkte löschen?"
+    )
+  ){
 
-
-  if(!point){
     return;
   }
 
 
-  closePanels();
+  ownPoints = [];
 
+  saveOwnPoints();
 
-  map.setView(
-    [
-      point.lat,
-      point.lng
-    ],
-    16
-  );
-
+  renderOwnPoints();
 
   toast(
-    point.name
+    "Eigene Punkte gelöscht."
   );
-
-}
-
-
-function deletePoint(id){
-
-  ownPoints =
-    ownPoints.filter(
-      point => point.id !== id
-    );
-
-
-  savePoints();
-
-  renderPoints();
-
-  updatePointsList();
 
 }
 
 
 /* =========================================================
    PANELS
-========================================================= */
+   ========================================================= */
 
-function openPanel(id){
+function openPanel(name){
 
-  document
-    .querySelectorAll(".panel")
-    .forEach(panel =>
-      panel.classList.remove("open")
-    );
+  closePanels();
 
 
-  document
-    .getElementById(id)
-    .classList.add("open");
+  if(name === "settings"){
+
+    document
+      .getElementById(
+        "settingsPanel"
+      )
+      .classList.add(
+        "show"
+      );
+
+  }
 
 
-  document
-    .getElementById("searchWrap")
-    .style.display = "none";
+  if(name === "points"){
+
+    document
+      .getElementById(
+        "pointsPanel"
+      )
+      .classList.add(
+        "show"
+      );
+
+  }
 
 
-  setTimeout(
-    () => map.invalidateSize(),
-    100
-  );
+  if(name === "navigation"){
+
+    document
+      .getElementById(
+        "navigationPanel"
+      )
+      .classList.add(
+        "show"
+      );
+
+  }
 
 }
 
@@ -1838,292 +3213,28 @@ function openPanel(id){
 function closePanels(){
 
   document
-    .querySelectorAll(".panel")
-    .forEach(panel =>
-      panel.classList.remove("open")
+    .querySelectorAll(
+      ".panel"
+    )
+    .forEach(
+      panel =>
+        panel.classList.remove(
+          "show"
+        )
     );
 
-
-  document
-    .getElementById("searchWrap")
-    .style.display = "block";
-
-
-  setTimeout(
-    () => map.invalidateSize(),
-    100
-  );
-
 }
-
-
-/* =========================================================
-   KARTE AUF MAUR
-========================================================= */
-
-function centerMaur(){
-
-  closePanels();
-
-  setFollow(false);
-
-  map.setView(
-    CENTER,
-    14
-  );
-
-  toast(
-    "Karte auf Maur zentriert."
-  );
-
-}
-
-
-/* =========================================================
-   FEHLERMELDUNG KARTE
-========================================================= */
-
-function showMapMessage(text){
-
-  const element =
-    document.getElementById(
-      "mapmsg"
-    );
-
-
-  element.textContent = text;
-
-  element.style.display = "block";
-
-
-  setTimeout(
-    () => {
-      element.style.display = "none";
-    },
-    7000
-  );
-
-}
-
-
-/* =========================================================
-   BUTTONS
-========================================================= */
-
-document
-  .getElementById("settingsBtn")
-  .onclick =
-    () => openPanel("settingsPanel");
-
-
-document
-  .getElementById("closeSettings")
-  .onclick =
-    closePanels;
-
-
-document
-  .getElementById("closePoints")
-  .onclick =
-    closePanels;
-
-
-document
-  .querySelectorAll("[data-view]")
-  .forEach(button => {
-
-    button.onclick =
-      () => changeView(
-        button.dataset.view
-      );
-
-  });
-
-
-[
-  "toggleStreetNames",
-  "toggleHouseNumbers",
-  "toggleBuildings",
-  "toggleRoads"
-].forEach(id => {
-
-  document
-    .getElementById(id)
-    .onchange =
-      () => saveLayerSetting(id);
-
-});
-
-
-document
-  .getElementById("locateBtn")
-  .onclick =
-    () => {
-
-      closePanels();
-
-      goToLocation();
-
-    };
-
-
-document
-  .getElementById("centerMaurBtn")
-  .onclick =
-    centerMaur;
-
-
-document
-  .getElementById("addPointBtn")
-  .onclick =
-    addPoint;
-
-
-document
-  .getElementById("voiceBtn")
-  .onclick =
-    toggleVoice;
-
-
-document
-  .getElementById("followBtn")
-  .onclick =
-    toggleFollow;
-
-
-document
-  .getElementById("stopNavBtn")
-  .onclick =
-    stopNavigation;
-
-
-document
-  .getElementById("navTab")
-  .onclick =
-    () => {
-
-      closePanels();
-
-      search.focus();
-
-    };
-
-
-document
-  .getElementById("gpsTab")
-  .onclick =
-    () => {
-
-      closePanels();
-
-      goToLocation();
-
-    };
-
-
-document
-  .getElementById("pointsTab")
-  .onclick =
-    () => {
-
-      openPanel("pointsPanel");
-
-      updatePointsList();
-
-    };
-
-
-document
-  .getElementById("mapTab")
-  .onclick =
-    () => {
-
-      closePanels();
-
-      map.invalidateSize();
-
-    };
-
-
-/* =========================================================
-   ONLINE / OFFLINE
-========================================================= */
-
-window.addEventListener(
-  "online",
-  () => status("ONLINE • V11")
-);
-
-
-window.addEventListener(
-  "offline",
-  () => status("OFFLINE • V11")
-);
-
-
-window.addEventListener(
-  "resize",
-  () => {
-
-    if(map){
-      map.invalidateSize();
-    }
-
-  }
-);
 
 
 /* =========================================================
    START
-========================================================= */
+   ========================================================= */
 
-window.addEventListener(
-  "load",
+document.addEventListener(
+  "DOMContentLoaded",
   function(){
 
-    /*
-      WICHTIG:
-      Erst die Leaflet-Karte starten.
-      Danach erst die Schweizer Zusatzdaten.
-    */
-
-    const mapOK =
-      createMap();
-
-
-    if(!mapOK){
-      return;
-    }
-
-
-    createSwissLayers();
-
-    restoreSettings();
-
-    loadPoints();
-
-    renderPoints();
-
-    startGPS();
-
-
-    status(
-      "ONLINE • V11 • Karte bereit"
-    );
-
-
-    setTimeout(
-      () => map.invalidateSize(),
-      300
-    );
-
-
-    setTimeout(
-      () => toast(
-        "Maur Strassendienst V11 geladen."
-      ),
-      700
-    );
+    initMap();
 
   }
 );
