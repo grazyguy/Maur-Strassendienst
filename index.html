@@ -4,11 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
-<title>Maur Strassendienst V14</title>
+<title>Maur Strassendienst V15</title>
 
 <link rel="manifest" href="./manifest.json">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
@@ -315,7 +314,7 @@ button{
 }
 
 .leaflet-container{
-  background:#dbeafe
+  background:#f3f4f6
 }
 
 #map{
@@ -327,24 +326,66 @@ button{
   z-index:1
 }
 
-/* Sehr gut sichtbare Grenzen */
+/* Sehr starke Gemeindegrenze */
 .maur-border-casing{
-  pointer-events:none
+  stroke:#ffffff;
+  stroke-width:12;
+  stroke-opacity:1
 }
 
 .maur-border{
-  pointer-events:none
+  stroke:#0057d9;
+  stroke-width:6;
+  stroke-opacity:1;
+  fill:none
+}
+
+/* Maskierung ausserhalb Maur */
+.maur-mask{
+  stroke:none;
+  fill:#ffffff;
+  fill-opacity:1
+}
+
+/* Ortsgrenzen innerhalb Maur */
+.ort-border-casing{
+  stroke:#ffffff;
+  stroke-width:8;
+  stroke-opacity:1
+}
+
+.ort-border{
+  stroke:#0066ff;
+  stroke-width:4;
+  stroke-dasharray:10 8;
+  stroke-opacity:1;
+  fill:#0066ff;
+  fill-opacity:.025
 }
 
 .maur-label{
-  background:white;
-  border:2px solid #1d4ed8;
-  color:#111827;
+  background:#0057d9;
+  border:2px solid white;
+  color:white;
   font-weight:800;
-  font-size:12px;
+  font-size:13px;
   padding:4px 8px;
   border-radius:8px;
-  box-shadow:0 2px 8px #0005
+  box-shadow:0 2px 7px #0005
+}
+
+.leaflet-tooltip.street-label,
+.leaflet-tooltip.house-label{
+  background:transparent;
+  border:0;
+  box-shadow:none;
+  color:#111827;
+  font-weight:700;
+  text-shadow:
+    0 1px 2px #fff,
+    1px 0 2px #fff,
+    -1px 0 2px #fff;
+  font-size:12px
 }
 </style>
 </head>
@@ -354,8 +395,9 @@ button{
 <header class="topbar">
   <div>
     <div class="brand">MAUR STRASSENDIENST</div>
-    <div class="status" id="status">ONLINE • V14</div>
+    <div class="status" id="status">ONLINE • V15</div>
   </div>
+
   <button class="iconbtn" id="settingsBtn">⚙️</button>
 </header>
 
@@ -364,12 +406,12 @@ button{
     id="search"
     class="search"
     placeholder="Ort, Strasse oder Adresse suchen …"
-    autocomplete="off">
+    autocomplete="off"
+  >
   <div id="results" class="results"></div>
 </div>
 
 <div id="mapmsg" class="mapmsg"></div>
-
 <div id="map"></div>
 
 <section id="navInfo" class="navinfo">
@@ -398,7 +440,7 @@ button{
   </div>
 
   <div class="setting-row">
-    <span>Ortschaftsgrenzen</span>
+    <span>Gemeindegrenze Maur</span>
     <input type="checkbox" id="toggleBorders" checked>
   </div>
 
@@ -429,9 +471,8 @@ button{
   </button>
 
   <p class="hint">
-    V14 zeigt den Bereich der Gemeinde Maur. Die Grenzen von
-    Binz, Aesch, Forch, Maur und Uessikon werden besonders kräftig
-    dargestellt und bleiben beim Rein- und Rauszoomen sichtbar.
+    Die Karte ist auf die Gemeinde Maur ausgerichtet.
+    Gebiete ausserhalb der Gemeinde werden ausgeblendet.
   </p>
 
 </section>
@@ -453,23 +494,19 @@ button{
 <nav class="bottom">
 
   <button id="navTab" class="active">
-    <span>🧭</span>
-    Navi
+    <span>🧭</span>Navi
   </button>
 
   <button id="gpsTab">
-    <span>📍</span>
-    GPS
+    <span>📍</span>GPS
   </button>
 
   <button id="pointsTab">
-    <span>⭐</span>
-    Punkte
+    <span>⭐</span>Punkte
   </button>
 
   <button id="mapTab">
-    <span>🗺️</span>
-    Karte
+    <span>🗺️</span>Karte
   </button>
 
 </nav>
@@ -479,32 +516,39 @@ button{
 <script>
 
 /* =========================================================
-   MAUR STRASSENDIENST V14
+   MAUR STRASSENDIENST V15
+   Nur Gemeinde Maur auf der Karte
    ========================================================= */
 
 const CENTER = [47.337,8.667];
 
-const ORTSCHAFTEN = [
-  {name:'Binz',query:'Binz, Maur, Schweiz'},
-  {name:'Aesch',query:'Aesch, Maur, Schweiz'},
-  {name:'Forch',query:'Forch, Maur, Schweiz'},
-  {name:'Maur',query:'Maur, Maur, Schweiz'},
-  {name:'Uessikon',query:'Uessikon, Maur, Schweiz'}
-];
-
 const OSRM =
-'https://router.project-osrm.org/route/v1/driving/';
+  'https://router.project-osrm.org/route/v1/driving/';
+
+const WFS_URL =
+  'https://maps.zh.ch/wfs/OGDZHWFS' +
+  '?service=WFS' +
+  '&version=1.1.0' +
+  '&request=GetFeature' +
+  '&typeName=ms:OGDZHWFS_GEMEINDEGEBIET' +
+  '&outputFormat=application/json' +
+  '&srsName=EPSG:4326';
 
 const NOMINATIM =
-'https://nominatim.openstreetmap.org/search';
+  'https://nominatim.openstreetmap.org/search';
 
-const GEOADMIN =
-'https://wms.geo.admin.ch/';
-
+const ORTSCHAFTEN = [
+  'FORCH',
+  'AESCH',
+  'BINZ',
+  'MAUR',
+  'UESSIKON'
+];
 
 let map;
 let osm;
 let sat;
+
 let streetNames;
 let houseNumbers;
 
@@ -518,14 +562,17 @@ let navigationActive = false;
 let followEnabled = false;
 let voiceEnabled = true;
 
+let lastReroute = 0;
 let routeLayer = null;
 
-let borderLayer = null;
+let maurBoundary = null;
+let maurMask = null;
+let ortLayers = [];
 
 let ownMarkers = [];
 let ownPoints = [];
 
-let lastReroute = 0;
+let maurBounds = null;
 
 
 /* =========================================================
@@ -534,24 +581,21 @@ let lastReroute = 0;
 
 function toast(text,ms=2600){
 
-  const e=document.getElementById('toast');
+  const e = document.getElementById('toast');
 
-  e.textContent=text;
-
+  e.textContent = text;
   e.classList.add('show');
 
-  clearTimeout(toast.timer);
+  clearTimeout(toast.t);
 
-  toast.timer=setTimeout(()=>{
+  toast.t = setTimeout(()=>{
     e.classList.remove('show');
   },ms);
 }
 
 
 function status(text){
-
-  document.getElementById('status').textContent=text;
-
+  document.getElementById('status').textContent = text;
 }
 
 
@@ -559,7 +603,7 @@ function esc(s){
 
   return String(s ?? '').replace(
     /[&<>"']/g,
-    c=>({
+    c => ({
       '&':'&amp;',
       '<':'&lt;',
       '>':'&gt;',
@@ -575,31 +619,16 @@ function esc(s){
    KARTE
    ========================================================= */
 
-map=L.map('map',{
-
+map = L.map('map',{
   zoomControl:true,
-
   preferCanvas:true,
-
-  /*
-   * Nicht weiter herauszoomen als nötig.
-   * Dadurch bleibt der Bereich Maur sinnvoll gross
-   * und die Grenzen bleiben sichtbar.
-   */
   minZoom:11,
-
   maxZoom:19,
-
   maxBoundsViscosity:1.0
+}).setView(CENTER,12.5);
 
-}).setView(CENTER,13);
 
-
-/* =========================================================
-   BASISKARTEN
-   ========================================================= */
-
-osm=L.tileLayer(
+osm = L.tileLayer(
   'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
   {
     maxZoom:19,
@@ -609,7 +638,7 @@ osm=L.tileLayer(
 ).addTo(map);
 
 
-sat=L.tileLayer(
+sat = L.tileLayer(
   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
   {
     maxZoom:19,
@@ -622,8 +651,8 @@ sat=L.tileLayer(
    OFFIZIELLE SCHWEIZER STRASSENNAMEN
    ========================================================= */
 
-streetNames=L.tileLayer.wms(
-  GEOADMIN,
+streetNames = L.tileLayer.wms(
+  'https://wms.geo.admin.ch/',
   {
     layers:'ch.swisstopo.amtliches-strassenverzeichnis',
     styles:'default',
@@ -642,8 +671,8 @@ streetNames=L.tileLayer.wms(
    OFFIZIELLE SCHWEIZER HAUSNUMMERN
    ========================================================= */
 
-houseNumbers=L.tileLayer.wms(
-  GEOADMIN,
+houseNumbers = L.tileLayer.wms(
+  'https://wms.geo.admin.ch/',
   {
     layers:'ch.swisstopo.amtliches-gebaeudeadressverzeichnis',
     styles:'default',
@@ -659,29 +688,12 @@ houseNumbers=L.tileLayer.wms(
 
 
 /* =========================================================
-   GRENZEN-PANE
-   ========================================================= */
-
-map.createPane('maurBorderCasing');
-
-map.getPane('maurBorderCasing').style.zIndex=630;
-
-map.createPane('maurBorders');
-
-map.getPane('maurBorders').style.zIndex=640;
-
-map.createPane('maurLabels');
-
-map.getPane('maurLabels').style.zIndex=650;
-
-
-/* =========================================================
-   KARTE START
+   START
    ========================================================= */
 
 map.whenReady(async()=>{
 
-  await loadBorders();
+  await loadMaurOnly();
 
   startGPS();
 
@@ -691,33 +703,446 @@ map.whenReady(async()=>{
 
   renderPoints();
 
-  toast('Maur Strassendienst V14 geladen.');
+  toast('Maur Strassendienst V15 geladen.');
 
 });
+
+
+/* =========================================================
+   GEMEINDE MAUR LADEN
+   ========================================================= */
+
+async function loadMaurOnly(){
+
+  try{
+
+    status('ONLINE • Lade Gemeinde Maur …');
+
+    const r = await fetch(
+      WFS_URL,
+      {
+        cache:'no-store'
+      }
+    );
+
+    if(!r.ok){
+      throw new Error('WFS '+r.status);
+    }
+
+    const geo = await r.json();
+
+    const features = geo.features || [];
+
+    /*
+      Das WFS enthält Gemeindegebiete.
+      Wir suchen deshalb exakt das Gemeindegebiet MAUR
+      und NICHT einzelne Ortschaften.
+    */
+
+    let maurFeature = features.find(f=>{
+
+      const p = f.properties || {};
+
+      return Object.values(p).some(v=>
+        String(v ?? '').trim().toUpperCase() === 'MAUR'
+      );
+
+    });
+
+
+    /*
+      Fallback:
+      Wenn die Eigenschaft anders geschrieben ist,
+      nehmen wir das Feature, dessen Eigenschaften
+      "MAUR" enthalten.
+    */
+
+    if(!maurFeature){
+
+      maurFeature = features.find(f=>{
+
+        const p = f.properties || {};
+
+        return Object.values(p).some(v=>
+          String(v ?? '').toUpperCase().includes('MAUR')
+        );
+
+      });
+
+    }
+
+
+    if(!maurFeature){
+
+      throw new Error(
+        'Gemeinde Maur im WFS nicht gefunden'
+      );
+
+    }
+
+
+    /* -----------------------------------------------------
+       Gemeindegrenze
+       ----------------------------------------------------- */
+
+    maurBoundary = L.geoJSON(
+      maurFeature,
+      {
+        style:{
+          color:'#0057d9',
+          weight:6,
+          opacity:1,
+          fill:false
+        },
+        interactive:false
+      }
+    ).addTo(map);
+
+
+    /* -----------------------------------------------------
+       Gemeindegrenzen-Bereich
+       ----------------------------------------------------- */
+
+    maurBounds = maurBoundary.getBounds();
+
+
+    /*
+      Karte darf etwas ausserhalb der Gemeinde bewegt werden,
+      aber nicht weit weg.
+    */
+
+    map.setMaxBounds(
+      maurBounds.pad(0.12)
+    );
+
+
+    /*
+      Maur automatisch passend anzeigen.
+    */
+
+    map.fitBounds(
+      maurBounds.pad(0.06),
+      {
+        animate:false
+      }
+    );
+
+
+    /* -----------------------------------------------------
+       WEISSER MASKENBEREICH AUSSERHALB MAUR
+       ----------------------------------------------------- */
+
+    createMaurMask(
+      maurFeature.geometry
+    );
+
+
+    /* -----------------------------------------------------
+       Ortsgrenzen innerhalb Maur laden
+       ----------------------------------------------------- */
+
+    await loadOrtschaftsgrenzen();
+
+
+    status('ONLINE • NUR GEMEINDE MAUR');
+
+    toast(
+      'Gemeinde Maur geladen',
+      2500
+    );
+
+
+  }catch(e){
+
+    console.warn(
+      'Maur-Gemeindegrenze:',
+      e
+    );
+
+    status(
+      'ONLINE • Gemeindegrenze nicht geladen'
+    );
+
+    showMapMsg(
+      'Die Karte läuft, aber die Gemeindegrenze von Maur konnte momentan nicht geladen werden.'
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   MASKIERUNG AUSSERHALB VON MAUR
+   ========================================================= */
+
+function createMaurMask(geometry){
+
+  if(maurMask){
+
+    map.removeLayer(maurMask);
+
+  }
+
+
+  const world = [
+    [90,-180],
+    [90,180],
+    [-90,180],
+    [-90,-180]
+  ];
+
+
+  const holes = [];
+
+
+  if(!geometry){
+    return;
+  }
+
+
+  /*
+    Polygon
+  */
+
+  if(geometry.type === 'Polygon'){
+
+    if(
+      geometry.coordinates &&
+      geometry.coordinates[0]
+    ){
+
+      holes.push(
+        geometry.coordinates[0].map(
+          p=>[p[1],p[0]]
+        )
+      );
+
+    }
+
+  }
+
+
+  /*
+    MultiPolygon
+  */
+
+  if(geometry.type === 'MultiPolygon'){
+
+    geometry.coordinates.forEach(poly=>{
+
+      if(poly && poly[0]){
+
+        holes.push(
+          poly[0].map(
+            p=>[p[1],p[0]]
+          )
+        );
+
+      }
+
+    });
+
+  }
+
+
+  /*
+    Weisser Bereich über der gesamten Karte.
+    Die Gemeinde Maur bleibt als Loch sichtbar.
+  */
+
+  maurMask = L.polygon(
+    [
+      world,
+      ...holes
+    ],
+    {
+      stroke:false,
+      fillColor:'#ffffff',
+      fillOpacity:1,
+      interactive:false,
+      className:'maur-mask'
+    }
+  ).addTo(map);
+
+
+  /*
+    Maskierung soll über der Basiskarte,
+    aber unter der Gemeindegrenze liegen.
+  */
+
+  maurMask.bringToFront();
+
+  if(maurBoundary){
+    maurBoundary.bringToFront();
+  }
+
+}
+
+
+/* =========================================================
+   ORTSCHAFTSGRENZEN
+   ========================================================= */
+
+async function loadOrtschaftsgrenzen(){
+
+  /*
+    Wir laden die Ortsgrenzen nur innerhalb
+    der Gemeinde Maur.
+
+    Sie ersetzen NICHT die Gemeindegrenze.
+  */
+
+  ortLayers.forEach(l=>{
+
+    if(map.hasLayer(l)){
+      map.removeLayer(l);
+    }
+
+  });
+
+  ortLayers = [];
+
+
+  for(const ort of ORTSCHAFTEN){
+
+    try{
+
+      const url =
+        NOMINATIM +
+        '?format=jsonv2' +
+        '&polygon_geojson=1' +
+        '&limit=1' +
+        '&countrycodes=ch' +
+        '&q=' +
+        encodeURIComponent(
+          ort+', Maur, Zürich, Schweiz'
+        );
+
+
+      const r = await fetch(
+        url,
+        {
+          headers:{
+            'Accept':'application/json'
+          }
+        }
+      );
+
+
+      if(!r.ok){
+        continue;
+      }
+
+
+      const data = await r.json();
+
+
+      if(!data.length){
+        continue;
+      }
+
+
+      const x = data[0];
+
+
+      if(!x.geojson){
+        continue;
+      }
+
+
+      const layer =
+        L.geoJSON(
+          x.geojson,
+          {
+            style:{
+              color:'#0066ff',
+              weight:4,
+              opacity:1,
+              dashArray:'10 8',
+              fillColor:'#0066ff',
+              fillOpacity:.025
+            },
+            interactive:false
+          }
+        );
+
+
+      layer.eachLayer(l=>{
+
+        try{
+
+          l.bindTooltip(
+            ort,
+            {
+              sticky:true,
+              direction:'center',
+              className:'maur-label'
+            }
+          );
+
+        }catch(e){}
+
+      });
+
+
+      layer.addTo(map);
+
+      ortLayers.push(layer);
+
+
+      await new Promise(
+        resolve=>setTimeout(resolve,800)
+      );
+
+
+    }catch(e){
+
+      console.warn(
+        'Ortschaft '+ort,
+        e
+      );
+
+    }
+
+  }
+
+
+  /*
+    Ganz wichtig:
+    Gemeindegrenze ganz oben.
+  */
+
+  if(maurBoundary){
+    maurBoundary.bringToFront();
+  }
+
+}
 
 
 /* =========================================================
    KARTENANSICHT
    ========================================================= */
 
-function changeView(view){
+function changeView(v){
 
   localStorage.setItem(
     'maurMapView',
-    view
+    v
   );
+
 
   document
     .querySelectorAll('[data-view]')
-    .forEach(button=>{
-      button.classList.toggle(
+    .forEach(b=>{
+      b.classList.toggle(
         'active',
-        button.dataset.view===view
+        b.dataset.view===v
       );
     });
 
 
-  if(view==='normal'){
+  if(v==='normal'){
 
     if(!map.hasLayer(osm)){
       osm.addTo(map);
@@ -732,7 +1157,7 @@ function changeView(view){
   }
 
 
-  else if(view==='satellite'){
+  else if(v==='satellite'){
 
     if(map.hasLayer(osm)){
       map.removeLayer(osm);
@@ -759,6 +1184,19 @@ function changeView(view){
 
   }
 
+
+  /*
+    Maske und Gemeindegrenze immer oben.
+  */
+
+  if(maurMask){
+    maurMask.bringToFront();
+  }
+
+  if(maurBoundary){
+    maurBoundary.bringToFront();
+  }
+
 }
 
 
@@ -769,322 +1207,53 @@ function changeView(view){
 function restoreSettings(){
 
   changeView(
-    localStorage.getItem('maurMapView') || 'normal'
+    localStorage.getItem(
+      'maurMapView'
+    ) || 'normal'
   );
 
 
-  [
-    'toggleBorders',
-    'toggleStreetNames',
-    'toggleHouseNumbers',
-    'toggleBuildings',
-    'toggleRoads'
-  ].forEach(id=>{
+  for(
+    const id of [
+      'toggleBorders',
+      'toggleStreetNames',
+      'toggleHouseNumbers',
+      'toggleBuildings',
+      'toggleRoads'
+    ]
+  ){
 
-    const value=localStorage.getItem(id);
+    const v =
+      localStorage.getItem(id);
 
-    if(value!==null){
+    if(v!==null){
 
       document.getElementById(id).checked =
-        value==='true';
+        v==='true';
 
     }
 
-  });
+  }
 
 
   toggleBorders();
 
   toggleMapLabels();
 
-  status('ONLINE • V14');
-
-}
-
-
-/* =========================================================
-   GRENZEN LADEN
-   ========================================================= */
-
-async function loadBorders(){
-
-  if(borderLayer){
-
-    map.removeLayer(borderLayer);
-
-    borderLayer=null;
-
-  }
-
-
-  borderLayer=L.layerGroup().addTo(map);
-
-
-  /*
-   * Zuerst die einzelnen Ortschaften.
-   */
-
-  for(const ort of ORTSCHAFTEN){
-
-    try{
-
-      const url=
-        NOMINATIM+
-        '?format=jsonv2'+
-        '&polygon_geojson=1'+
-        '&limit=1'+
-        '&q='+
-        encodeURIComponent(ort.query);
-
-
-      const response=
-        await fetch(
-          url,
-          {
-            cache:'no-store',
-            headers:{
-              'Accept':'application/json'
-            }
-          }
-        );
-
-
-      if(!response.ok){
-        continue;
-      }
-
-
-      const data=
-        await response.json();
-
-
-      if(!data.length){
-        continue;
-      }
-
-
-      const geo=data[0].geojson;
-
-
-      if(
-        !geo ||
-        !(
-          geo.type==='Polygon' ||
-          geo.type==='MultiPolygon'
-        )
-      ){
-        continue;
-      }
-
-
-      /*
-       * Weisser Rand unter der blauen Linie.
-       * Dadurch bleibt die Grenze auch auf
-       * Satellitenkarten sehr gut sichtbar.
-       */
-
-      const casing=
-        L.geoJSON(
-          geo,
-          {
-            pane:'maurBorderCasing',
-
-            interactive:false,
-
-            style:{
-              color:'#ffffff',
-              weight:10,
-              opacity:1,
-              fill:false
-            }
-          }
-        );
-
-
-      /*
-       * Hauptgrenze.
-       */
-
-      const line=
-        L.geoJSON(
-          geo,
-          {
-            pane:'maurBorders',
-
-            interactive:false,
-
-            style:{
-              color:'#1d4ed8',
-              weight:5,
-              opacity:1,
-              dashArray:'12 7',
-              fillColor:'#2563eb',
-              fillOpacity:.035
-            }
-          }
-        );
-
-
-      /*
-       * Label in der Mitte der jeweiligen Fläche.
-       */
-
-      let center=null;
-
-      try{
-
-        center=line.getBounds().getCenter();
-
-      }catch(e){}
-
-
-      borderLayer.addLayer(casing);
-
-      borderLayer.addLayer(line);
-
-
-      if(center){
-
-        const label=
-          L.marker(
-            center,
-            {
-              pane:'maurLabels',
-              interactive:false,
-              icon:L.divIcon({
-                className:'',
-                html:
-                  '<div class="maur-label">'+
-                  esc(ort.name)+
-                  '</div>',
-                iconSize:null
-              })
-            }
-          );
-
-        borderLayer.addLayer(label);
-
-      }
-
-
-      /*
-       * Kleine Pause zwischen Nominatim-Abfragen.
-       */
-
-      await new Promise(
-        resolve=>setTimeout(resolve,1100)
-      );
-
-
-    }catch(error){
-
-      console.warn(
-        'Grenze '+ort.name+':',
-        error
-      );
-
-    }
-
-  }
-
-
-  /*
-   * Zusätzlich versuchen wir die eigentliche
-   * Gemeinde Maur zu finden.
-   */
-
-  try{
-
-    const municipalityUrl=
-      NOMINATIM+
-      '?format=jsonv2'+
-      '&polygon_geojson=1'+
-      '&limit=1'+
-      '&q='+
-      encodeURIComponent(
-        'Gemeinde Maur, Zürich, Schweiz'
-      );
-
-
-    const response=
-      await fetch(
-        municipalityUrl,
-        {
-          cache:'no-store',
-          headers:{
-            'Accept':'application/json'
-          }
-        }
-      );
-
-
-    if(response.ok){
-
-      const data=
-        await response.json();
-
-
-      if(
-        data.length &&
-        data[0].geojson &&
-        (
-          data[0].geojson.type==='Polygon' ||
-          data[0].geojson.type==='MultiPolygon'
-        )
-      ){
-
-        const municipality=
-          L.geoJSON(
-            data[0].geojson,
-            {
-              pane:'maurBorders',
-
-              interactive:false,
-
-              style:{
-                color:'#111827',
-                weight:4,
-                opacity:.9,
-                dashArray:'18 8',
-                fill:false
-              }
-            }
-          );
-
-
-        borderLayer.addLayer(
-          municipality
-        );
-
-      }
-
-    }
-
-  }catch(error){
-
-    console.warn(
-      'Gemeindegrenze:',
-      error
-    );
-
-  }
-
-
-  toast(
-    'Grenzen von Binz, Aesch, Forch, Maur und Uessikon geladen.',
-    3500
+  status(
+    'ONLINE • NUR GEMEINDE MAUR'
   );
 
 }
 
 
 /* =========================================================
-   GRENZEN EIN/AUS
+   GEMEINDEGRENZE EIN/AUS
    ========================================================= */
 
 function toggleBorders(){
 
-  const enabled=
+  const on =
     document.getElementById(
       'toggleBorders'
     ).checked;
@@ -1092,22 +1261,41 @@ function toggleBorders(){
 
   localStorage.setItem(
     'toggleBorders',
-    enabled
+    on
   );
 
 
-  if(!borderLayer){
-    return;
+  if(maurBoundary){
+
+    if(on){
+
+      maurBoundary.addTo(map);
+
+      maurBoundary.bringToFront();
+
+    }else{
+
+      map.removeLayer(
+        maurBoundary
+      );
+
+    }
+
   }
 
 
-  if(enabled){
+  /*
+    Die weisse Maske bleibt immer aktiv,
+    damit ausserhalb Maur nichts angezeigt wird.
+  */
 
-    borderLayer.addTo(map);
+  if(maurMask){
 
-  }else{
+    maurMask.bringToFront();
 
-    map.removeLayer(borderLayer);
+    if(maurBoundary && on){
+      maurBoundary.bringToFront();
+    }
 
   }
 
@@ -1115,18 +1303,17 @@ function toggleBorders(){
 
 
 /* =========================================================
-   STRASSEN / HAUSNUMMERN
+   STRASSENNAMEN / HAUSNUMMERN
    ========================================================= */
 
 function toggleMapLabels(){
 
-  const streets=
+  const streets =
     document.getElementById(
       'toggleStreetNames'
     ).checked;
 
-
-  const houses=
+  const houses =
     document.getElementById(
       'toggleHouseNumbers'
     ).checked;
@@ -1136,7 +1323,6 @@ function toggleMapLabels(){
     'toggleStreetNames',
     streets
   );
-
 
   localStorage.setItem(
     'toggleHouseNumbers',
@@ -1173,18 +1359,30 @@ function toggleMapLabels(){
 
   }
 
+
+  /*
+    Maske wieder ganz nach vorne.
+  */
+
+  if(maurMask){
+    maurMask.bringToFront();
+  }
+
+  if(maurBoundary){
+    maurBoundary.bringToFront();
+  }
+
 }
 
 
 function toggleOptional(){
 
-  const buildings=
+  const b =
     document.getElementById(
       'toggleBuildings'
     ).checked;
 
-
-  const roads=
+  const r =
     document.getElementById(
       'toggleRoads'
     ).checked;
@@ -1192,13 +1390,12 @@ function toggleOptional(){
 
   localStorage.setItem(
     'toggleBuildings',
-    buildings
+    b
   );
-
 
   localStorage.setItem(
     'toggleRoads',
-    roads
+    r
   );
 
 }
@@ -1212,7 +1409,9 @@ function startGPS(){
 
   if(!navigator.geolocation){
 
-    status('GPS nicht verfügbar');
+    status(
+      'GPS nicht verfügbar'
+    );
 
     return;
 
@@ -1223,12 +1422,9 @@ function startGPS(){
 
     updateGPS,
 
-    error=>{
+    e=>{
 
-      console.warn(
-        'GPS:',
-        error
-      );
+      console.warn(e);
 
       status(
         'ONLINE • GPS wartet'
@@ -1247,25 +1443,27 @@ function startGPS(){
 }
 
 
-function updateGPS(position){
+function updateGPS(p){
 
-  currentPosition={
-    lat:position.coords.latitude,
-    lng:position.coords.longitude,
-    accuracy:position.coords.accuracy
+  currentPosition = {
+
+    lat:p.coords.latitude,
+    lng:p.coords.longitude,
+    accuracy:p.coords.accuracy
+
   };
 
 
   status(
-    'ONLINE • GPS '+
+    'ONLINE • GPS ' +
     Math.round(
-      currentPosition.accuracy
-    )+
+      p.coords.accuracy
+    ) +
     ' m'
   );
 
 
-  const latLng=[
+  const ll = [
     currentPosition.lat,
     currentPosition.lng
   ];
@@ -1273,9 +1471,9 @@ function updateGPS(position){
 
   if(!userMarker){
 
-    userMarker=
+    userMarker =
       L.circleMarker(
-        latLng,
+        ll,
         {
           radius:8,
           color:'#fff',
@@ -1287,45 +1485,39 @@ function updateGPS(position){
 
   }else{
 
-    userMarker.setLatLng(
-      latLng
+    userMarker.setLatLng(ll);
+
+  }
+
+
+  /*
+    GPS darf den Zoom NICHT automatisch verändern,
+    solange "Folgen" ausgeschaltet ist.
+  */
+
+  if(
+    followEnabled &&
+    maurBounds &&
+    maurBounds.contains(ll)
+  ){
+
+    map.setView(
+      ll,
+      Math.max(
+        map.getZoom(),
+        16
+      ),
+      {
+        animate:true
+      }
     );
 
   }
 
 
   /*
-   * Nur wenn "Folgen" eingeschaltet ist,
-   * wird die Karte automatisch verschoben.
-   *
-   * Manuelles Zoomen bleibt dadurch erhalten.
-   */
-
-  if(followEnabled){
-
-    if(
-      !map
-        .getBounds()
-        .pad(-.2)
-        .contains(latLng)
-    ){
-
-      map.setView(
-        latLng,
-        Math.max(
-          map.getZoom(),
-          16
-        )
-      );
-
-    }
-
-  }
-
-
-  /*
-   * Navigation automatisch neu berechnen.
-   */
+    Navigation neu berechnen.
+  */
 
   if(
     navigationActive &&
@@ -1333,7 +1525,7 @@ function updateGPS(position){
     Date.now()-lastReroute>10000
   ){
 
-    lastReroute=Date.now();
+    lastReroute = Date.now();
 
     routeTo(
       destination,
@@ -1346,7 +1538,7 @@ function updateGPS(position){
 
 
 /* =========================================================
-   GPS ZENTRIEREN
+   GPS STANDORT ANZEIGEN
    ========================================================= */
 
 function goToLocation(){
@@ -1362,21 +1554,29 @@ function goToLocation(){
   }
 
 
-  setFollow(true);
+  /*
+    Wenn der GPS-Punkt ausserhalb Maur liegt,
+    wird er nicht ausserhalb der Karte angezeigt.
+  */
 
-
-  map.setView(
-    [
+  if(
+    maurBounds &&
+    !maurBounds.contains([
       currentPosition.lat,
       currentPosition.lng
-    ],
-    16
-  );
+    ])
+  ){
+
+    toast(
+      'Dein GPS befindet sich ausserhalb der Gemeinde Maur.'
+    );
+
+    return;
+
+  }
 
 
-  toast(
-    'Standort angezeigt.'
-  );
+  setFollow(true);
 
 }
 
@@ -1385,29 +1585,30 @@ function goToLocation(){
    SUCHE
    ========================================================= */
 
-const search=
-  document.getElementById('search');
+const search =
+  document.getElementById(
+    'search'
+  );
 
-const results=
-  document.getElementById('results');
+const results =
+  document.getElementById(
+    'results'
+  );
 
-let searchTimer;
+let timer;
 
 
 search.addEventListener(
   'input',
   ()=>{
 
-    clearTimeout(
-      searchTimer
-    );
+    clearTimeout(timer);
 
-
-    const query=
+    const q =
       search.value.trim();
 
 
-    if(query.length<3){
+    if(q.length<3){
 
       results.innerHTML='';
 
@@ -1416,57 +1617,56 @@ search.addEventListener(
     }
 
 
-    searchTimer=
-      setTimeout(
-        ()=>doSearch(query),
-        350
-      );
+    timer=setTimeout(
+      ()=>doSearch(q),
+      350
+    );
 
   }
 );
 
 
 /* =========================================================
-   SUCHE AUSFÜHREN
+   ADRESSSUCHE
    ========================================================= */
 
-async function doSearch(query){
+async function doSearch(q){
 
-  results.innerHTML=
+  results.innerHTML =
     '<div class="result">Suche …</div>';
 
 
   try{
 
-    const url=
-      NOMINATIM+
-      '?format=jsonv2'+
-      '&limit=6'+
-      '&countrycodes=ch'+
-      '&q='+
+    const url =
+      NOMINATIM +
+      '?format=jsonv2' +
+      '&limit=8' +
+      '&countrycodes=ch' +
+      '&q=' +
       encodeURIComponent(
-        query+', Schweiz'
+        q+', Maur, Zürich, Schweiz'
       );
 
 
-    const response=
+    const r =
       await fetch(
         url,
         {
           headers:{
-            Accept:'application/json'
+            'Accept':'application/json'
           }
         }
       );
 
 
-    const data=
-      await response.json();
+    const d =
+      await r.json();
 
 
-    if(!data.length){
+    if(!d.length){
 
-      results.innerHTML=
+      results.innerHTML =
         '<div class="result">Nichts gefunden.</div>';
 
       return;
@@ -1474,31 +1674,26 @@ async function doSearch(query){
     }
 
 
-    results.innerHTML=
-      data.map(
-        (item,index)=>`
+    results.innerHTML =
+      d.map(
+        (x,i)=>`
 
-          <div
-            class="result"
-            data-index="${index}"
-          >
+        <div class="result" data-i="${i}">
+          <b>
+            ${esc(
+              x.display_name
+                .split(',')
+                .slice(0,2)
+                .join(', ')
+            )}
+          </b>
 
-            <b>
-              ${esc(
-                item.display_name
-                  .split(',')
-                  .slice(0,2)
-                  .join(', ')
-              )}
-            </b>
-
-            <small>
-              ${esc(
-                item.display_name
-              )}
-            </small>
-
-          </div>
+          <small>
+            ${esc(
+              x.display_name
+            )}
+          </small>
+        </div>
 
         `
       ).join('');
@@ -1507,28 +1702,21 @@ async function doSearch(query){
     [
       ...results.children
     ].forEach(
-      (element,index)=>{
-
-        element.onclick=
-          ()=>{
-            selectSearch(
-              data[index]
-            );
-          };
-
+      (e,i)=>{
+        e.onclick=()=>{
+          selectSearch(
+            d[i]
+          );
+        };
       }
     );
 
 
-  }catch(error){
+  }catch(e){
 
-    console.warn(
-      'Suche:',
-      error
-    );
+    console.warn(e);
 
-
-    results.innerHTML=
+    results.innerHTML =
       '<div class="result">Suche nicht verfügbar.</div>';
 
   }
@@ -1537,34 +1725,52 @@ async function doSearch(query){
 
 
 /* =========================================================
-   SUCHERGEBNIS AUSWÄHLEN
+   SUCHERGEBNIS
    ========================================================= */
 
-function selectSearch(item){
+function selectSearch(x){
+
+  const c = [
+    Number(x.lat),
+    Number(x.lon)
+  ];
+
+
+  /*
+    Nur Ziele innerhalb Maur zulassen.
+  */
+
+  if(
+    maurBounds &&
+    !maurBounds.contains(c)
+  ){
+
+    toast(
+      'Dieses Ziel liegt ausserhalb der Gemeinde Maur.'
+    );
+
+    return;
+
+  }
+
 
   setFollow(false);
 
 
-  const coords=[
-    Number(item.lat),
-    Number(item.lon)
-  ];
-
-
-  search.value=
-    item.display_name
+  search.value =
+    x.display_name
       ?.split(',')
       .slice(0,2)
-      .join(', ') ||
-    'Ziel';
+      .join(', ')
+    || 'Ziel';
 
 
   results.innerHTML='';
 
 
-  destination=[
-    coords[1],
-    coords[0]
+  destination = [
+    c[1],
+    c[0]
   ];
 
 
@@ -1577,17 +1783,15 @@ function selectSearch(item){
   }
 
 
-  destMarker=
-    L.marker(
-      coords
-    )
-    .addTo(map)
-    .bindPopup('Ziel')
-    .openPopup();
+  destMarker =
+    L.marker(c)
+      .addTo(map)
+      .bindPopup('Ziel')
+      .openPopup();
 
 
   map.setView(
-    coords,
+    c,
     16
   );
 
@@ -1601,7 +1805,7 @@ function selectSearch(item){
 
 
 /* =========================================================
-   ROUTING
+   ROUTE
    ========================================================= */
 
 async function routeTo(
@@ -1620,7 +1824,7 @@ async function routeTo(
   }
 
 
-  const from=[
+  const from = [
     currentPosition.lng,
     currentPosition.lat
   ];
@@ -1628,37 +1832,34 @@ async function routeTo(
 
   try{
 
-    const url=
-      OSRM+
-      from.join(',')+
-      ';'+
-      coords.join(',')+
-      '?overview=full'+
-      '&geometries=geojson'+
+    const url =
+      OSRM +
+      from.join(',') +
+      ';' +
+      coords.join(',') +
+      '?overview=full' +
+      '&geometries=geojson' +
       '&steps=true';
 
 
-    const response=
+    const r =
       await fetch(url);
 
 
-    if(!response.ok){
+    if(!r.ok){
 
       throw Error(
-        response.status
+        r.status
       );
 
     }
 
 
-    const data=
-      await response.json();
+    const d =
+      await r.json();
 
 
-    if(
-      !data.routes ||
-      !data.routes.length
-    ){
+    if(!d.routes?.length){
 
       throw Error(
         'Keine Route'
@@ -1667,8 +1868,8 @@ async function routeTo(
     }
 
 
-    const route=
-      data.routes[0];
+    const rt =
+      d.routes[0];
 
 
     if(routeLayer){
@@ -1680,9 +1881,9 @@ async function routeTo(
     }
 
 
-    routeLayer=
+    routeLayer =
       L.geoJSON(
-        route.geometry,
+        rt.geometry,
         {
           style:{
             color:'#2563eb',
@@ -1697,10 +1898,8 @@ async function routeTo(
 
 
     /*
-     * Nur bei einer neuen Route automatisch
-     * auf die komplette Strecke zoomen.
-     * Bei GPS-Rerouting nicht ständig springen.
-     */
+      Route nur beim Start anzeigen.
+    */
 
     if(announce){
 
@@ -1711,12 +1910,10 @@ async function routeTo(
             30,
             90
           ],
-
           paddingBottomRight:[
             30,
             150
           ],
-
           maxZoom:16
         }
       );
@@ -1735,49 +1932,40 @@ async function routeTo(
       .getElementById(
         'navMain'
       )
-      .textContent=
-        'Route: '+
-        formatDistance(
-          route.distance
-        )+
-        ' • '+
-        formatTime(
-          route.duration
-        );
+      .textContent =
+        'Route: ' +
+        fmtDist(rt.distance) +
+        ' • ' +
+        fmtTime(rt.duration);
 
 
     document
       .getElementById(
         'navSub'
       )
-      .textContent=
+      .textContent =
         'Ziel wird angefahren';
 
 
     if(announce){
 
       speak(
-        'Route berechnet. '+
-        formatDistance(
-          route.distance
-        )+
-        ', etwa '+
-        formatTime(
-          route.duration
-        )+
+        'Route berechnet. ' +
+        fmtDist(rt.distance) +
+        ', etwa ' +
+        fmtTime(rt.duration) +
         '.'
       );
 
     }
 
 
-  }catch(error){
+  }catch(e){
 
     console.warn(
-      'Routing:',
-      error
+      'Route:',
+      e
     );
-
 
     toast(
       'Route konnte nicht berechnet werden.'
@@ -1792,50 +1980,27 @@ async function routeTo(
    DISTANZ / ZEIT
    ========================================================= */
 
-function formatDistance(meters){
+function fmtDist(m){
 
-  if(meters<1000){
-
-    return Math.round(
-      meters
-    )+
-    ' m';
-
-  }
-
-
-  return (
-    meters/1000
-  ).toFixed(1)+
-  ' km';
+  return m<1000
+    ? Math.round(m)+' m'
+    : (m/1000).toFixed(1)+' km';
 
 }
 
 
-function formatTime(seconds){
+function fmtTime(s){
 
-  const minutes=
+  const m =
     Math.round(
-      seconds/60
+      s/60
     );
 
 
-  if(minutes<60){
-
-    return minutes+
-      ' min';
-
-  }
-
-
-  return Math.floor(
-    minutes/60
-  )+
-  ' h '+
-  (
-    minutes%60
-  )+
-  ' min';
+  return m<60
+    ? m+' min'
+    : Math.floor(m/60)+' h '+
+      (m%60)+' min';
 
 }
 
@@ -1859,7 +2024,6 @@ function stopNav(){
 
   }
 
-
   routeLayer=null;
 
 
@@ -1867,9 +2031,7 @@ function stopNav(){
     .getElementById(
       'navInfo'
     )
-    .classList.remove(
-      'show'
-    );
+    .classList.remove('show');
 
 
   if(destMarker){
@@ -1909,41 +2071,38 @@ function speak(text){
   speechSynthesis.cancel();
 
 
-  const utterance=
+  const u =
     new SpeechSynthesisUtterance(
       text
     );
 
 
-  utterance.lang='de-CH';
+  u.lang='de-CH';
 
-
-  speechSynthesis.speak(
-    utterance
-  );
+  speechSynthesis.speak(u);
 
 }
 
 
 function toggleVoice(){
 
-  voiceEnabled=
+  voiceEnabled =
     !voiceEnabled;
 
 
-  const button=
+  const b =
     document.getElementById(
       'voiceBtn'
     );
 
 
-  button.textContent=
+  b.textContent =
     voiceEnabled
       ? '🔊 Sprache an'
       : '🔇 Sprache aus';
 
 
-  button.classList.toggle(
+  b.classList.toggle(
     'off',
     !voiceEnabled
   );
@@ -1952,28 +2111,28 @@ function toggleVoice(){
 
 
 /* =========================================================
-   FOLLOW
+   FOLGEN
    ========================================================= */
 
-function setFollow(enabled){
+function setFollow(on){
 
-  followEnabled=
-    !!enabled;
+  followEnabled =
+    !!on;
 
 
-  const button=
+  const b =
     document.getElementById(
       'followBtn'
     );
 
 
-  button.textContent=
+  b.textContent =
     followEnabled
       ? '📍 Folgen an'
       : '📍 Folgen aus';
 
 
-  button.classList.toggle(
+  b.classList.toggle(
     'off',
     !followEnabled
   );
@@ -1984,13 +2143,23 @@ function setFollow(enabled){
     currentPosition
   ){
 
-    map.setView(
-      [
-        currentPosition.lat,
-        currentPosition.lng
-      ],
-      16
-    );
+    const ll = [
+      currentPosition.lat,
+      currentPosition.lng
+    ];
+
+
+    if(
+      !maurBounds ||
+      maurBounds.contains(ll)
+    ){
+
+      map.setView(
+        ll,
+        16
+      );
+
+    }
 
   }
 
@@ -2007,9 +2176,10 @@ function toggleFollow(){
 
 
 /*
- * Sobald der Benutzer während der Navigation
- * die Karte verschiebt, geht "Folgen" automatisch aus.
- */
+  Sobald während Navigation
+  die Karte verschoben wird:
+  Folgen automatisch aus.
+*/
 
 map.on(
   'dragstart',
@@ -2036,15 +2206,14 @@ function loadPoints(){
 
   try{
 
-    ownPoints=
+    ownPoints =
       JSON.parse(
         localStorage.getItem(
-          'maurOwnPointsV14'
-        ) ||
-        '[]'
+          'maurOwnPointsV15'
+        ) || '[]'
       );
 
-  }catch(error){
+  }catch(e){
 
     ownPoints=[];
 
@@ -2056,7 +2225,7 @@ function loadPoints(){
 function savePoints(){
 
   localStorage.setItem(
-    'maurOwnPointsV14',
+    'maurOwnPointsV15',
     JSON.stringify(
       ownPoints
     )
@@ -2078,20 +2247,37 @@ function addPoint(){
   }
 
 
-  const name=
-    prompt(
-      'Name für den Punkt:',
-      'Punkt '+
-      (
-        ownPoints.length+1
-      )
+  /*
+    Nur Punkte innerhalb Maur speichern.
+  */
+
+  if(
+    maurBounds &&
+    !maurBounds.contains([
+      currentPosition.lat,
+      currentPosition.lng
+    ])
+  ){
+
+    toast(
+      'Der Standort liegt ausserhalb Maur.'
     );
-
-
-  if(!name){
 
     return;
 
+  }
+
+
+  const n =
+    prompt(
+      'Name für den Punkt:',
+      'Punkt '+
+      (ownPoints.length+1)
+    );
+
+
+  if(!n){
+    return;
   }
 
 
@@ -2099,7 +2285,7 @@ function addPoint(){
 
     id:Date.now(),
 
-    name:name,
+    name:n,
 
     lat:currentPosition.lat,
 
@@ -2122,13 +2308,15 @@ function addPoint(){
 }
 
 
+/* =========================================================
+   PUNKTE ANZEIGEN
+   ========================================================= */
+
 function renderPoints(){
 
   ownMarkers.forEach(
-    marker=>{
-      map.removeLayer(
-        marker
-      );
+    m=>{
+      map.removeLayer(m);
     }
   );
 
@@ -2136,35 +2324,50 @@ function renderPoints(){
   ownMarkers=[];
 
 
-  ownPoints.forEach(
-    point=>{
+  ownPoints.forEach(p=>{
 
-      const marker=
-        L.marker(
-          [
-            point.lat,
-            point.lng
-          ]
-        )
-        .addTo(map)
-        .bindTooltip(
-          point.name
-        );
+    /*
+      Punkte ausserhalb Maur nicht anzeigen.
+    */
 
+    if(
+      maurBounds &&
+      !maurBounds.contains([
+        p.lat,
+        p.lng
+      ])
+    ){
 
-      ownMarkers.push(
-        marker
-      );
+      return;
 
     }
-  );
+
+
+    ownMarkers.push(
+
+      L.marker([
+        p.lat,
+        p.lng
+      ])
+      .addTo(map)
+      .bindTooltip(
+        p.name
+      )
+
+    );
+
+  });
 
 }
 
 
+/* =========================================================
+   PUNKTELISTE
+   ========================================================= */
+
 function updatePointsList(){
 
-  const element=
+  const e =
     document.getElementById(
       'pointsList'
     );
@@ -2172,7 +2375,7 @@ function updatePointsList(){
 
   if(!ownPoints.length){
 
-    element.innerHTML=
+    e.innerHTML =
       '<p class="hint">Noch keine eigenen Punkte gespeichert.</p>';
 
     return;
@@ -2180,40 +2383,40 @@ function updatePointsList(){
   }
 
 
-  element.innerHTML=
+  e.innerHTML =
     ownPoints.map(
-      point=>`
+      p=>`
 
-        <div class="point-item">
+      <div class="point-item">
 
-          <b>
-            ${esc(point.name)}
-          </b>
+        <b>
+          ${esc(p.name)}
+        </b>
 
-          <div class="hint">
-            ${point.lat.toFixed(5)},
-            ${point.lng.toFixed(5)}
-          </div>
+        <div class="hint">
+          ${p.lat.toFixed(5)},
+          ${p.lng.toFixed(5)}
+        </div>
 
-          <div class="point-actions">
+        <div class="point-actions">
 
-            <button
-              class="smallbtn primary"
-              onclick="showPoint(${point.id})"
-            >
-              Anzeigen
-            </button>
+          <button
+            class="smallbtn primary"
+            onclick="showPoint(${p.id})"
+          >
+            Anzeigen
+          </button>
 
-            <button
-              class="smallbtn danger"
-              onclick="deletePoint(${point.id})"
-            >
-              Löschen
-            </button>
-
-          </div>
+          <button
+            class="smallbtn danger"
+            onclick="deletePoint(${p.id})"
+          >
+            Löschen
+          </button>
 
         </div>
+
+      </div>
 
       `
     ).join('');
@@ -2223,36 +2426,28 @@ function updatePointsList(){
 
 function showPoint(id){
 
-  const point=
+  const p =
     ownPoints.find(
       x=>x.id===id
     );
 
 
-  if(!point){
-
+  if(!p){
     return;
-
   }
 
 
   closePanels();
 
 
-  setFollow(false);
-
-
   map.setView(
-    [
-      point.lat,
-      point.lng
-    ],
+    [p.lat,p.lng],
     16
   );
 
 
   toast(
-    point.name
+    p.name
   );
 
 }
@@ -2260,9 +2455,9 @@ function showPoint(id){
 
 function deletePoint(id){
 
-  ownPoints=
+  ownPoints =
     ownPoints.filter(
-      point=>point.id!==id
+      x=>x.id!==id
     );
 
 
@@ -2284,8 +2479,8 @@ function openPanel(id){
   document
     .querySelectorAll('.panel')
     .forEach(
-      panel=>{
-        panel.classList.remove(
+      x=>{
+        x.classList.remove(
           'open'
         );
       }
@@ -2294,9 +2489,7 @@ function openPanel(id){
 
   document
     .getElementById(id)
-    .classList.add(
-      'open'
-    );
+    .classList.add('open');
 
 
   document
@@ -2313,8 +2506,8 @@ function closePanels(){
   document
     .querySelectorAll('.panel')
     .forEach(
-      panel=>{
-        panel.classList.remove(
+      x=>{
+        x.classList.remove(
           'open'
         );
       }
@@ -2339,35 +2532,54 @@ function closePanels(){
 
 
 /* =========================================================
+   FEHLERMELDUNG
+   ========================================================= */
+
+function showMapMsg(t){
+
+  const e =
+    document.getElementById(
+      'mapmsg'
+    );
+
+
+  e.textContent=t;
+
+  e.style.display='block';
+
+
+  setTimeout(
+    ()=>{
+      e.style.display='none';
+    },
+    5000
+  );
+
+}
+
+
+/* =========================================================
    BUTTONS
    ========================================================= */
 
-document
-  .getElementById(
-    'settingsBtn'
-  )
-  .onclick=
-    ()=>{
-      openPanel(
-        'settingsPanel'
-      );
-    };
+document.getElementById(
+  'settingsBtn'
+).onclick =
+  ()=>openPanel(
+    'settingsPanel'
+  );
 
 
-document
-  .getElementById(
-    'closeSettings'
-  )
-  .onclick=
-    closePanels;
+document.getElementById(
+  'closeSettings'
+).onclick =
+  closePanels;
 
 
-document
-  .getElementById(
-    'closePoints'
-  )
-  .onclick=
-    closePanels;
+document.getElementById(
+  'closePoints'
+).onclick =
+  closePanels;
 
 
 document
@@ -2375,162 +2587,119 @@ document
     '[data-view]'
   )
   .forEach(
-    button=>{
-
-      button.onclick=
-        ()=>{
-          changeView(
-            button.dataset.view
-          );
-        };
-
+    b=>{
+      b.onclick =
+        ()=>changeView(
+          b.dataset.view
+        );
     }
   );
 
 
-document
-  .getElementById(
-    'toggleBorders'
-  )
-  .onchange=
-    toggleBorders;
+document.getElementById(
+  'toggleBorders'
+).onchange =
+  toggleBorders;
 
 
-document
-  .getElementById(
-    'toggleStreetNames'
-  )
-  .onchange=
-    toggleMapLabels;
+document.getElementById(
+  'toggleStreetNames'
+).onchange =
+  toggleMapLabels;
 
 
-document
-  .getElementById(
-    'toggleHouseNumbers'
-  )
-  .onchange=
-    toggleMapLabels;
+document.getElementById(
+  'toggleHouseNumbers'
+).onchange =
+  toggleMapLabels;
 
 
-document
-  .getElementById(
-    'toggleBuildings'
-  )
-  .onchange=
-    toggleOptional;
+document.getElementById(
+  'toggleBuildings'
+).onchange =
+  toggleOptional;
 
 
-document
-  .getElementById(
-    'toggleRoads'
-  )
-  .onchange=
-    toggleOptional;
+document.getElementById(
+  'toggleRoads'
+).onchange =
+  toggleOptional;
 
 
-document
-  .getElementById(
-    'locateBtn'
-  )
-  .onclick=
-    ()=>{
-      closePanels();
-      goToLocation();
-    };
+document.getElementById(
+  'locateBtn'
+).onclick =
+  ()=>{
+    closePanels();
+    goToLocation();
+  };
 
 
-document
-  .getElementById(
-    'addPointBtn'
-  )
-  .onclick=
-    addPoint;
+document.getElementById(
+  'addPointBtn'
+).onclick =
+  addPoint;
 
 
-document
-  .getElementById(
-    'voiceBtn'
-  )
-  .onclick=
-    toggleVoice;
+document.getElementById(
+  'voiceBtn'
+).onclick =
+  toggleVoice;
 
 
-document
-  .getElementById(
-    'followBtn'
-  )
-  .onclick=
-    toggleFollow;
+document.getElementById(
+  'followBtn'
+).onclick =
+  toggleFollow;
 
 
-document
-  .getElementById(
-    'stopNavBtn'
-  )
-  .onclick=
-    stopNav;
+document.getElementById(
+  'stopNavBtn'
+).onclick =
+  stopNav;
 
 
-document
-  .getElementById(
-    'navTab'
-  )
-  .onclick=
-    ()=>{
-      closePanels();
-      search.focus();
-    };
+document.getElementById(
+  'navTab'
+).onclick =
+  ()=>{
+    closePanels();
+    search.focus();
+  };
 
 
-document
-  .getElementById(
-    'gpsTab'
-  )
-  .onclick=
-    ()=>{
-      closePanels();
-      goToLocation();
-    };
+document.getElementById(
+  'gpsTab'
+).onclick =
+  ()=>{
+    closePanels();
+    goToLocation();
+  };
 
 
-document
-  .getElementById(
-    'pointsTab'
-  )
-  .onclick=
-    ()=>{
-      openPanel(
-        'pointsPanel'
-      );
-      updatePointsList();
-    };
+document.getElementById(
+  'pointsTab'
+).onclick =
+  ()=>{
+    openPanel(
+      'pointsPanel'
+    );
+    updatePointsList();
+  };
 
 
-document
-  .getElementById(
-    'mapTab'
-  )
-  .onclick=
-    ()=>{
-      closePanels();
-      map.invalidateSize();
-    };
+document.getElementById(
+  'mapTab'
+).onclick =
+  ()=>{
+    closePanels();
+    map.invalidateSize();
+  };
 
 
 /* =========================================================
-   FEHLER / ONLINE STATUS
+   RESIZE / ONLINE
    ========================================================= */
-
-map.on(
-  'tileerror',
-  event=>{
-    console.warn(
-      'Kartenkachel konnte nicht geladen werden',
-      event
-    );
-  }
-);
-
 
 window.addEventListener(
   'resize',
@@ -2544,7 +2713,7 @@ window.addEventListener(
   'online',
   ()=>{
     status(
-      'ONLINE • V14'
+      'ONLINE • NUR GEMEINDE MAUR'
     );
   }
 );
@@ -2554,7 +2723,7 @@ window.addEventListener(
   'offline',
   ()=>{
     status(
-      'OFFLINE • V14'
+      'OFFLINE • NUR GEMEINDE MAUR'
     );
   }
 );
