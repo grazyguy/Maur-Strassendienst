@@ -1746,4 +1746,785 @@ async function() {
 
         window.lastDestination = {
 
-           
+            lat: lat,
+
+            lng: lon,
+
+            name:
+                result.display_name
+
+        };
+
+
+        document
+            .getElementById(
+                "destinationText"
+            )
+            .textContent =
+                result.display_name;
+
+
+        showToast(
+            "Adresse gefunden."
+        );
+
+
+    } catch(error) {
+
+        console.error(error);
+
+        showToast(
+            "Suche fehlgeschlagen."
+        );
+
+    }
+
+};
+
+
+/* =========================
+   EIGENE PUNKTE
+========================= */
+
+window.addingPoint =
+    false;
+
+
+window.startAddPoint =
+function() {
+
+    closePanels();
+
+
+    window.addingPoint =
+        true;
+
+
+    showToast(
+        "Tippe jetzt auf die Karte."
+    );
+
+};
+
+
+function createOwnPoint(
+    lat,
+    lng
+) {
+
+
+    window.addingPoint =
+        false;
+
+
+    const name =
+        prompt(
+            "Name des Punktes:"
+        );
+
+
+    if (!name) {
+
+        return;
+
+    }
+
+
+    const description =
+        prompt(
+            "Beschreibung:"
+        ) || "";
+
+
+    const point = {
+
+        id: Date.now(),
+
+        name: name,
+
+        description:
+            description,
+
+        lat: lat,
+
+        lng: lng
+
+    };
+
+
+    const points =
+        getOwnPoints();
+
+
+    points.push(point);
+
+
+    localStorage.setItem(
+
+        "maurOwnPoints",
+
+        JSON.stringify(
+            points
+        )
+
+    );
+
+
+    addOwnMarker(
+        point
+    );
+
+
+    showToast(
+        "Punkt gespeichert."
+    );
+
+}
+
+
+function addOwnMarker(
+    point
+) {
+
+
+    const element =
+        document
+        .createElement(
+            "div"
+        );
+
+
+    element.className =
+        "own-marker";
+
+
+    element.textContent =
+        "📍";
+
+
+    const marker =
+
+        new maplibregl.Marker({
+
+            element:
+                element
+
+        })
+
+        .setLngLat([
+
+            point.lng,
+
+            point.lat
+
+        ])
+
+        .setPopup(
+
+            new maplibregl.Popup()
+
+            .setHTML(
+
+                "<b>" +
+                escapeHtml(
+                    point.name
+                ) +
+                "</b><br>" +
+
+                escapeHtml(
+                    point.description
+                ) +
+
+                "<br><br>" +
+
+                "<button onclick=\"deleteOwnPoint(" +
+                point.id +
+                ")\" style=\"padding:8px;border:0;border-radius:8px;background:#dc2626;color:white\">" +
+
+                "Punkt löschen" +
+
+                "</button>"
+
+            )
+
+        )
+
+        .addTo(map);
+
+
+    point._marker =
+        marker;
+
+}
+
+
+function loadOwnPoints() {
+
+
+    const points =
+        getOwnPoints();
+
+
+    points.forEach(
+        point => {
+
+            addOwnMarker(
+                point
+            );
+
+        }
+    );
+
+}
+
+
+function getOwnPoints() {
+
+
+    try {
+
+        return JSON.parse(
+
+            localStorage.getItem(
+                "maurOwnPoints"
+            ) || "[]"
+
+        );
+
+    } catch {
+
+        return [];
+
+    }
+
+}
+
+
+window.deleteOwnPoint =
+function(id) {
+
+
+    const points =
+
+        getOwnPoints()
+
+        .filter(
+            p =>
+                p.id !== id
+        );
+
+
+    localStorage.setItem(
+
+        "maurOwnPoints",
+
+        JSON.stringify(
+            points
+        )
+
+    );
+
+
+    location.reload();
+
+};
+
+
+/* =========================
+   NAVIGATION
+========================= */
+
+window.lastDestination =
+    null;
+
+
+window.useCurrentLocationAsStart =
+function() {
+
+
+    if (!currentLocation) {
+
+        goToLocation();
+
+        return;
+
+    }
+
+
+    showToast(
+        "Aktueller Standort ist Startpunkt."
+    );
+
+};
+
+
+window.openGoogleMaps =
+function() {
+
+
+    if (
+        !window.lastDestination
+    ) {
+
+        showToast(
+            "Bitte zuerst ein Ziel auswählen."
+        );
+
+        return;
+
+    }
+
+
+    let url;
+
+
+    if (currentLocation) {
+
+        url =
+
+            "https://www.google.com/maps/dir/" +
+
+            currentLocation.lat +
+            "," +
+            currentLocation.lng +
+
+            "/" +
+
+            window.lastDestination.lat +
+            "," +
+            window.lastDestination.lng;
+
+    } else {
+
+        url =
+
+            "https://www.google.com/maps/dir/?api=1" +
+
+            "&destination=" +
+
+            window.lastDestination.lat +
+            "," +
+            window.lastDestination.lng;
+
+    }
+
+
+    window.open(
+        url,
+        "_blank"
+    );
+
+};
+
+
+/* =========================
+   PANELS
+========================= */
+
+window.openLayers =
+function() {
+
+    closePanels();
+
+    document
+        .getElementById(
+            "layersPanel"
+        )
+        .classList.add(
+            "active"
+        );
+
+};
+
+
+window.openNavigation =
+function() {
+
+    closePanels();
+
+    document
+        .getElementById(
+            "navPanel"
+        )
+        .classList.add(
+            "active"
+        );
+
+};
+
+
+window.openPointPanel =
+function() {
+
+    closePanels();
+
+    document
+        .getElementById(
+            "pointPanel"
+        )
+        .classList.add(
+            "active"
+        );
+
+};
+
+
+window.closePanels =
+function() {
+
+    document
+        .querySelectorAll(
+            ".panel"
+        )
+        .forEach(
+            panel =>
+                panel.classList.remove(
+                    "active"
+                )
+        );
+
+};
+
+
+/* =========================
+   EBENEN EIN/AUS
+========================= */
+
+function setLayerVisibility(
+    ids,
+    visible
+) {
+
+
+    if (!map) return;
+
+
+    ids.forEach(id => {
+
+        if (
+            map.getLayer(id)
+        ) {
+
+            map.setLayoutProperty(
+
+                id,
+
+                "visibility",
+
+                visible
+                    ? "visible"
+                    : "none"
+
+            );
+
+        }
+
+    });
+
+}
+
+
+document
+.getElementById(
+    "roadsCheck"
+)
+.addEventListener(
+    "change",
+    function() {
+
+        setLayerVisibility(
+
+            [
+                "street-polygons",
+                "streets-casing",
+                "streets",
+                "street-labels"
+            ],
+
+            this.checked
+
+        );
+
+    }
+);
+
+
+document
+.getElementById(
+    "buildingsCheck"
+)
+.addEventListener(
+    "change",
+    function() {
+
+        setLayerVisibility(
+
+            [
+                "buildings"
+            ],
+
+            this.checked
+
+        );
+
+    }
+);
+
+
+document
+.getElementById(
+    "landCheck"
+)
+.addEventListener(
+    "change",
+    function() {
+
+        setLayerVisibility(
+
+            [
+                "land",
+                "sites"
+            ],
+
+            this.checked
+
+        );
+
+    }
+);
+
+
+document
+.getElementById(
+    "waterCheck"
+)
+.addEventListener(
+    "change",
+    function() {
+
+        setLayerVisibility(
+
+            [
+                "water",
+                "water-lines",
+                "water-labels"
+            ],
+
+            this.checked
+
+        );
+
+    }
+);
+
+
+document
+.getElementById(
+    "ownCheck"
+)
+.addEventListener(
+    "change",
+    function() {
+
+        document
+        .querySelectorAll(
+            ".own-marker"
+        )
+        .forEach(
+            marker => {
+
+                marker.style.display =
+                    this.checked
+                    ? "flex"
+                    : "none";
+
+            }
+        );
+
+    }
+);
+
+
+/* =========================
+   ONLINE / OFFLINE
+========================= */
+
+function updateConnectionStatus() {
+
+
+    const status =
+        document
+        .getElementById(
+            "connectionStatus"
+        );
+
+
+    if (navigator.onLine) {
+
+        status.textContent =
+            "● Online";
+
+        status.style.background =
+            "#166534";
+
+    } else {
+
+        status.textContent =
+            "● Offline";
+
+        status.style.background =
+            "#991b1b";
+
+    }
+
+}
+
+
+window.addEventListener(
+    "online",
+    updateConnectionStatus
+);
+
+
+window.addEventListener(
+    "offline",
+    updateConnectionStatus
+);
+
+
+updateConnectionStatus();
+
+
+/* =========================
+   TOAST
+========================= */
+
+function showToast(
+    message
+) {
+
+
+    const toast =
+        document
+        .getElementById(
+            "toast"
+        );
+
+
+    toast.textContent =
+        message;
+
+
+    toast.style.display =
+        "block";
+
+
+    clearTimeout(
+        window.toastTimer
+    );
+
+
+    window.toastTimer =
+
+        setTimeout(
+            function() {
+
+                toast.style.display =
+                    "none";
+
+            },
+
+            3000
+        );
+
+}
+
+
+/* =========================
+   HTML SICHER MACHEN
+========================= */
+
+function escapeHtml(
+    text
+) {
+
+    return String(text)
+
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
+
+}
+
+
+/* =========================
+   SERVICE WORKER
+========================= */
+
+if (
+    "serviceWorker"
+    in navigator
+) {
+
+    window.addEventListener(
+        "load",
+        function() {
+
+            navigator
+            .serviceWorker
+            .register(
+                "./sw.js"
+            )
+
+            .then(
+                () => {
+
+                    console.log(
+                        "Maur Strassendienst: Offline-Modus aktiviert"
+                    );
+
+                }
+            )
+
+            .catch(
+                error => {
+
+                    console.error(
+                        "Service Worker Fehler:",
+                        error
+                    );
+
+                }
+            );
+
+        }
+    );
+
+}
+
+</script>
+
+
+</body>
+</html>
