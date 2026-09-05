@@ -1,40 +1,29 @@
 /* =========================================================
    MAUR STRASSENDIENST
    KOMPLETTER APP.JS
-   ---------------------------------------------------------
-   Funktionen:
-   - MapLibre + PMTiles
-   - Normale Karte
-   - Satellit
-   - Hybrid
-   - Ortschaftsgrenzen
-   - GPS Live-Position
-   - Suche
-   - Ziel auswählen
-   - Navigation
-   - Route auf Karte
-   - automatische Neuberechnung bei Abweichung
-   - Restdistanz
-   - Restzeit
-   - Sprachansagen
-   - Navigation folgen
-   - Eigene Punkte
-   - Offline/Online Anzeige
    ========================================================= */
 
 
 /* =========================================================
-   GRUNDLEGENDE EINSTELLUNGEN
+   EINSTELLUNGEN
    ========================================================= */
 
 const PMTILES_URL = "./maur.pmtiles";
 
-const DEFAULT_CENTER = [
-    8.667,
-    47.337
-];
+const DEFAULT_CENTER = [8.667, 47.337];
 
 const DEFAULT_ZOOM = 13;
+
+const OSRM_URL =
+    "https://router.project-osrm.org/route/v1/driving/";
+
+const ORTSCHAFTEN = [
+    "FORCH",
+    "AESCH",
+    "BINZ",
+    "MAUR",
+    "UESSIKON"
+];
 
 
 /* =========================================================
@@ -79,11 +68,13 @@ let searchTimeout = null;
 
 
 /* =========================================================
-   MAPLIBRE / PMTILES
+   PMTILES
    ========================================================= */
 
 const protocol =
-    new pmtiles.Protocol();
+    new pmtiles.Protocol({
+        metadata: true
+    });
 
 maplibregl.addProtocol(
     "pmtiles",
@@ -92,7 +83,7 @@ maplibregl.addProtocol(
 
 
 /* =========================================================
-   KARTE ERSTELLEN
+   KARTE
    ========================================================= */
 
 map = new maplibregl.Map({
@@ -102,8 +93,6 @@ map = new maplibregl.Map({
     center: DEFAULT_CENTER,
 
     zoom: DEFAULT_ZOOM,
-
-    attributionControl: true,
 
     style: {
 
@@ -120,7 +109,6 @@ map = new maplibregl.Map({
                     PMTILES_URL
 
             },
-
 
             satellite: {
 
@@ -141,7 +129,6 @@ map = new maplibregl.Map({
 
         },
 
-
         layers: [
 
             {
@@ -150,14 +137,11 @@ map = new maplibregl.Map({
                 type: "background",
 
                 paint: {
-
                     "background-color":
                         "#e5e7eb"
-
                 }
 
             },
-
 
             {
                 id: "satellite",
@@ -167,13 +151,10 @@ map = new maplibregl.Map({
                 source: "satellite",
 
                 layout: {
-
                     visibility: "none"
-
                 }
 
             },
-
 
             {
                 id: "land",
@@ -185,14 +166,11 @@ map = new maplibregl.Map({
                 "source-layer": "land",
 
                 paint: {
-
                     "fill-color":
                         "#e5e7eb"
-
                 }
 
             },
-
 
             {
                 id: "water",
@@ -204,14 +182,11 @@ map = new maplibregl.Map({
                 "source-layer": "water",
 
                 paint: {
-
                     "fill-color":
                         "#a5d8ff"
-
                 }
 
             },
-
 
             {
                 id: "water-lines",
@@ -223,16 +198,13 @@ map = new maplibregl.Map({
                 "source-layer": "water",
 
                 paint: {
-
                     "line-color":
                         "#60a5fa",
 
                     "line-width": 1
-
                 }
 
             },
-
 
             {
                 id: "buildings",
@@ -254,7 +226,6 @@ map = new maplibregl.Map({
                 }
 
             },
-
 
             {
                 id: "roads",
@@ -293,7 +264,6 @@ map = new maplibregl.Map({
 
             },
 
-
             {
                 id: "street-labels",
 
@@ -327,7 +297,6 @@ map = new maplibregl.Map({
 
             },
 
-
             {
                 id: "addresses",
 
@@ -357,27 +326,31 @@ map = new maplibregl.Map({
 
 
 /* =========================================================
-   MAP READY
+   KARTE GELADEN
    ========================================================= */
 
 map.on("load", async () => {
 
     console.log(
-        "Maur Strassendienst Karte geladen"
+        "Maur Strassendienst gestartet"
     );
 
 
-    createNavigationRouteLayers();
+    createNavigationLayers();
 
     createOrtschaftsgrenzenLayers();
 
     await loadOrtschaftsgrenzen();
 
-    loadSavedSettings();
+    loadMapSettings();
+
+    loadNavigationSettings();
 
     loadOwnPoints();
 
     updateOwnPointsList();
+
+    updateConnectionStatus();
 
     registerServiceWorker();
 
@@ -385,38 +358,14 @@ map.on("load", async () => {
 
 
 /* =========================================================
-   MAP BEWEGEN
+   NAVIGATION LAYER
    ========================================================= */
 
-map.on("dragstart", () => {
+function createNavigationLayers() {
 
-    if (navigationActive) {
-
-        navigationFollow = false;
-
-        const checkbox =
-            document.getElementById(
-                "followNavigation"
-            );
-
-        if (checkbox) {
-
-            checkbox.checked = false;
-
-        }
-
-    }
-
-});
-
-
-/* =========================================================
-   NAVIGATION ROUTE LAYER
-   ========================================================= */
-
-function createNavigationRouteLayers() {
-
-    if (!map.getSource("navigation-route")) {
+    if (!map.getSource(
+        "navigation-route"
+    )) {
 
         map.addSource(
             "navigation-route",
@@ -514,7 +463,7 @@ function createNavigationRouteLayers() {
 
                 "line-width": 6,
 
-                "line-opacity": 0.95
+                "line-opacity": 1
 
             }
 
@@ -632,7 +581,8 @@ function createOrtschaftsgrenzenLayers() {
 
                 data: {
 
-                    type: "FeatureCollection",
+                    type:
+                        "FeatureCollection",
 
                     features: []
 
@@ -645,6 +595,8 @@ function createOrtschaftsgrenzenLayers() {
     }
 
 
+    /* FÄRBUNG INNERHALB */
+
     if (!map.getLayer(
         "ortsgrenzen-fill"
     )) {
@@ -654,7 +606,8 @@ function createOrtschaftsgrenzenLayers() {
             id:
                 "ortsgrenzen-fill",
 
-            type: "fill",
+            type:
+                "fill",
 
             source:
                 "ortsgrenzen-source",
@@ -665,7 +618,7 @@ function createOrtschaftsgrenzenLayers() {
                     "#ef4444",
 
                 "fill-opacity":
-                    0.03
+                    0.025
 
             }
 
@@ -673,6 +626,8 @@ function createOrtschaftsgrenzenLayers() {
 
     }
 
+
+    /* ROTE GRENZE */
 
     if (!map.getLayer(
         "ortsgrenzen-line"
@@ -683,7 +638,8 @@ function createOrtschaftsgrenzenLayers() {
             id:
                 "ortsgrenzen-line",
 
-            type: "line",
+            type:
+                "line",
 
             source:
                 "ortsgrenzen-source",
@@ -703,11 +659,115 @@ function createOrtschaftsgrenzenLayers() {
 
     }
 
+
+    /* NAMEN */
+
+    if (!map.getLayer(
+        "ortsgrenzen-labels"
+    )) {
+
+        map.addLayer({
+
+            id:
+                "ortsgrenzen-labels",
+
+            type:
+                "symbol",
+
+            source:
+                "ortsgrenzen-source",
+
+            layout: {
+
+                "text-field": [
+
+                    "coalesce",
+
+                    [
+                        "get",
+                        "ortschaftsname"
+                    ],
+
+                    [
+                        "get",
+                        "ORTSCHAFTSNAME"
+                    ],
+
+                    [
+                        "get",
+                        "Ortschaftsname"
+                    ],
+
+                    [
+                        "get",
+                        "name"
+                    ],
+
+                    [
+                        "get",
+                        "NAME"
+                    ],
+
+                    ""
+
+                ],
+
+                "text-size": [
+
+                    "interpolate",
+
+                    ["linear"],
+
+                    ["zoom"],
+
+                    10,
+                    11,
+
+                    13,
+                    15,
+
+                    16,
+                    20
+
+                ],
+
+                "text-font": [
+                    "Open Sans Bold"
+                ],
+
+                "text-letter-spacing":
+                    0.05,
+
+                "text-allow-overlap":
+                    false,
+
+                "text-ignore-placement":
+                    false
+
+            },
+
+            paint: {
+
+                "text-color":
+                    "#b91c1c",
+
+                "text-halo-color":
+                    "#ffffff",
+
+                "text-halo-width":
+                    2.5
+
+            }
+
+        });
+
+    }
+
 }
 
 
 /* =========================================================
-   OFFIZIELLE ORTSCHAFTSGRENZEN LADEN
+   ORTSCHAFTSGRENZEN LADEN
    ========================================================= */
 
 async function loadOrtschaftsgrenzen() {
@@ -736,14 +796,24 @@ async function loadOrtschaftsgrenzen() {
         try {
 
             const url =
+
                 "https://maps.zh.ch/wfs/OGDZHWFS" +
+
                 "?service=WFS" +
+
                 "&version=2.0.0" +
+
                 "&request=GetFeature" +
+
                 "&typeNames=" +
-                encodeURIComponent(typeName) +
+                encodeURIComponent(
+                    typeName
+                ) +
+
                 "&outputFormat=application/json" +
+
                 "&srsName=EPSG:4326" +
+
                 "&bbox=" +
                 bbox +
                 ",EPSG:4326";
@@ -780,7 +850,7 @@ async function loadOrtschaftsgrenzen() {
         catch (error) {
 
             console.warn(
-                "WFS Versuch fehlgeschlagen",
+                "Grenzen konnten nicht geladen werden:",
                 error
             );
 
@@ -792,7 +862,7 @@ async function loadOrtschaftsgrenzen() {
     if (!data) {
 
         console.warn(
-            "Ortschaftsgrenzen konnten nicht geladen werden."
+            "Keine Ortschaftsgrenzen verfügbar."
         );
 
         return;
@@ -800,42 +870,36 @@ async function loadOrtschaftsgrenzen() {
     }
 
 
-    const wanted = [
-
-        "BINZ",
-
-        "MAUR",
-
-        "AESCH",
-
-        "FORCH",
-
-        "UESSIKON"
-
-    ];
-
-
-    const filtered =
+    const features =
         data.features.filter(
             feature => {
 
-                const properties =
-                    feature.properties || {};
+                const p =
+                    feature.properties ||
+                    {};
 
 
                 const name =
-                    properties.ortschaftsname ||
-                    properties.ORTSCHAFTSNAME ||
-                    properties.Ortschaftsname ||
-                    properties.name ||
-                    properties.NAME ||
+
+                    p.ortschaftsname ||
+
+                    p.ORTSCHAFTSNAME ||
+
+                    p.Ortschaftsname ||
+
+                    p.name ||
+
+                    p.NAME ||
+
                     "";
 
 
-                return wanted.includes(
+                return ORTSCHAFTEN.includes(
+
                     String(name)
                         .trim()
                         .toUpperCase()
+
                 );
 
             }
@@ -856,11 +920,89 @@ async function loadOrtschaftsgrenzen() {
                 "FeatureCollection",
 
             features:
-                filtered
+                features
 
         });
 
     }
+
+
+    console.log(
+        "Ortschaften geladen:",
+        features.length
+    );
+
+
+    updateOrtschaftsgrenzenVisibility();
+
+}
+
+
+/* =========================================================
+   ORTSCHAFTSGRENZEN SICHTBARKEIT
+   ========================================================= */
+
+function toggleOrtsgrenzen(
+    visible
+) {
+
+    localStorage.setItem(
+
+        "maurOrtsgrenzen",
+
+        visible
+
+    );
+
+
+    updateOrtschaftsgrenzenVisibility();
+
+}
+
+
+function updateOrtschaftsgrenzenVisibility() {
+
+    const visible =
+        localStorage.getItem(
+            "maurOrtsgrenzen"
+        ) !== "false";
+
+
+    const visibility =
+        visible
+            ? "visible"
+            : "none";
+
+
+    [
+
+        "ortsgrenzen-fill",
+
+        "ortsgrenzen-line",
+
+        "ortsgrenzen-labels"
+
+    ].forEach(
+        layerId => {
+
+            if (
+                map.getLayer(layerId)
+            ) {
+
+                map.setLayoutProperty(
+
+                    layerId,
+
+                    "visibility",
+
+                    visibility
+
+                );
+
+            }
+
+        }
+    );
 
 
     const checkbox =
@@ -872,83 +1014,7 @@ async function loadOrtschaftsgrenzen() {
     if (checkbox) {
 
         checkbox.checked =
-            localStorage.getItem(
-                "maurOrtsgrenzen"
-            ) !== "false";
-
-    }
-
-
-    updateOrtsgrenzenVisibility();
-
-}
-
-
-/* =========================================================
-   ORTSCHAFTSGRENZEN EIN/AUS
-   ========================================================= */
-
-function toggleOrtsgrenzen(
-    visible
-) {
-
-    localStorage.setItem(
-        "maurOrtsgrenzen",
-        visible
-    );
-
-
-    updateOrtsgrenzenVisibility();
-
-}
-
-
-function updateOrtsgrenzenVisibility() {
-
-    const visible =
-        localStorage.getItem(
-            "maurOrtsgrenzen"
-        ) !== "false";
-
-
-    if (
-        map.getLayer(
-            "ortsgrenzen-line"
-        )
-    ) {
-
-        map.setLayoutProperty(
-
-            "ortsgrenzen-line",
-
-            "visibility",
-
-            visible
-                ? "visible"
-                : "none"
-
-        );
-
-    }
-
-
-    if (
-        map.getLayer(
-            "ortsgrenzen-fill"
-        )
-    ) {
-
-        map.setLayoutProperty(
-
-            "ortsgrenzen-fill",
-
-            "visibility",
-
-            visible
-                ? "visible"
-                : "none"
-
-        );
+            visible;
 
     }
 
@@ -963,24 +1029,24 @@ function changeView(
     view
 ) {
 
-    if (!map) {
-        return;
-    }
-
-
     localStorage.setItem(
         "maurMapView",
         view
     );
 
 
-    const satellite =
-        map.getLayer(
-            "satellite"
-        );
+    if (!map) {
+        return;
+    }
 
 
-    if (satellite) {
+    const satelliteVisible =
+        view !== "normal";
+
+
+    if (
+        map.getLayer("satellite")
+    ) {
 
         map.setLayoutProperty(
 
@@ -988,16 +1054,16 @@ function changeView(
 
             "visibility",
 
-            view === "normal"
-                ? "none"
-                : "visible"
+            satelliteVisible
+                ? "visible"
+                : "none"
 
         );
 
     }
 
 
-    const vectorLayers = [
+    const normalLayers = [
 
         "background",
 
@@ -1012,7 +1078,7 @@ function changeView(
     ];
 
 
-    vectorLayers.forEach(
+    normalLayers.forEach(
         id => {
 
             if (!map.getLayer(id)) {
@@ -1048,22 +1114,7 @@ function changeView(
 
             "visibility",
 
-            view === "satellite"
-                ? "visible"
-                : "visible"
-
-        );
-
-
-        map.setPaintProperty(
-
-            "roads",
-
-            "line-color",
-
-            view === "satellite"
-                ? "#ffffff"
-                : "#ffffff"
+            "visible"
 
         );
 
@@ -1082,9 +1133,7 @@ function changeView(
 
             "visibility",
 
-            view === "satellite"
-                ? "visible"
-                : "visible"
+            "visible"
 
         );
 
@@ -1102,17 +1151,10 @@ function toggleLayer(
     visible
 ) {
 
-    if (!map) {
-        return;
-    }
-
-
-    if (!map.getLayer(layerId)) {
-
-        console.warn(
-            "Layer nicht gefunden:",
-            layerId
-        );
+    if (
+        !map ||
+        !map.getLayer(layerId)
+    ) {
 
         return;
 
@@ -1134,7 +1176,8 @@ function toggleLayer(
 
     localStorage.setItem(
 
-        "layer_" + layerId,
+        "layer_" +
+        layerId,
 
         visible
 
@@ -1144,63 +1187,94 @@ function toggleLayer(
 
 
 /* =========================================================
-   EINSTELLUNGEN LADEN
+   MAP SETTINGS LADEN
    ========================================================= */
 
-function loadSavedSettings() {
+function loadMapSettings() {
 
     const view =
         localStorage.getItem(
             "maurMapView"
-        ) || "normal";
+        ) ||
+        "normal";
 
 
     changeView(view);
 
 
-    const layerSettings = [
+    const settings = [
 
-        "buildings",
+        {
+            layer:
+                "buildings",
 
-        "roads",
+            checkbox:
+                "buildings"
+        },
 
-        "street-labels"
+        {
+            layer:
+                "roads",
+
+            checkbox:
+                "roads"
+        },
+
+        {
+            layer:
+                "street-labels",
+
+            checkbox:
+                "streetLabels"
+        }
 
     ];
 
 
-    layerSettings.forEach(
-        layerId => {
+    settings.forEach(
+        setting => {
 
             const saved =
                 localStorage.getItem(
-                    "layer_" + layerId
+
+                    "layer_" +
+                    setting.layer
+
                 );
 
 
-            if (saved !== null) {
+            if (
+                saved === null
+            ) {
 
-                toggleLayer(
-                    layerId,
-                    saved === "true"
+                return;
+
+            }
+
+
+            const visible =
+                saved === "true";
+
+
+            toggleLayer(
+
+                setting.layer,
+
+                visible
+
+            );
+
+
+            const checkbox =
+                document.getElementById(
+                    setting.checkbox
                 );
 
 
-                const checkbox =
-                    document.getElementById(
-                        layerId ===
-                        "street-labels"
-                            ? "streetLabels"
-                            : layerId
-                    );
+            if (checkbox) {
 
-
-                if (checkbox) {
-
-                    checkbox.checked =
-                        saved === "true";
-
-                }
+                checkbox.checked =
+                    visible;
 
             }
 
@@ -1214,15 +1288,17 @@ function loadSavedSettings() {
 
 
 /* =========================================================
-   GPS STARTEN
+   GPS
    ========================================================= */
 
 function startGpsTracking() {
 
-    if (!navigator.geolocation) {
+    if (
+        !navigator.geolocation
+    ) {
 
         showToast(
-            "GPS wird von diesem Gerät nicht unterstützt."
+            "GPS wird nicht unterstützt."
         );
 
         return;
@@ -1242,17 +1318,20 @@ function startGpsTracking() {
     gpsWatchId =
         navigator.geolocation.watchPosition(
 
-            handlePosition,
+            handleGpsPosition,
 
             handleGpsError,
 
             {
 
-                enableHighAccuracy: true,
+                enableHighAccuracy:
+                    true,
 
-                maximumAge: 3000,
+                maximumAge:
+                    3000,
 
-                timeout: 15000
+                timeout:
+                    15000
 
             }
 
@@ -1270,7 +1349,7 @@ function startGpsTracking() {
    GPS POSITION
    ========================================================= */
 
-function handlePosition(
+function handleGpsPosition(
     position
 ) {
 
@@ -1297,7 +1376,9 @@ function handlePosition(
     updateGpsInterface();
 
 
-    if (navigationActive) {
+    if (
+        navigationActive
+    ) {
 
         updateNavigationPosition();
 
@@ -1331,8 +1412,12 @@ function updateGpsMarker() {
 
         gpsMarker =
             new maplibregl.Marker({
-                element: element
+
+                element:
+                    element
+
             })
+
                 .setLngLat([
 
                     currentPosition.lng,
@@ -1340,6 +1425,7 @@ function updateGpsMarker() {
                     currentPosition.lat
 
                 ])
+
                 .addTo(map);
 
     }
@@ -1382,7 +1468,7 @@ function handleGpsError(
     ) {
 
         message =
-            "GPS-Berechtigung wurde verweigert.";
+            "GPS-Berechtigung verweigert.";
 
     }
 
@@ -1392,7 +1478,7 @@ function handleGpsError(
     ) {
 
         message =
-            "GPS-Position momentan nicht verfügbar.";
+            "GPS-Position nicht verfügbar.";
 
     }
 
@@ -1454,15 +1540,17 @@ function goToLocation() {
 
 
 /* =========================================================
-   NAVIGATION STARTEN
+   NAVIGATION START
    ========================================================= */
 
 async function startNavigation() {
 
-    if (!currentDestination) {
+    if (
+        !currentDestination
+    ) {
 
         showToast(
-            "Bitte zuerst ein Ziel suchen."
+            "Bitte zuerst ein Ziel auswählen."
         );
 
         openNavigationPanel();
@@ -1486,34 +1574,38 @@ async function startNavigation() {
     }
 
 
-    navigationActive = true;
-
-    navigationFollow = true;
-
-    arrivedAnnounced = false;
-
-    lastAnnouncedStep = -1;
+    navigationActive =
+        true;
 
 
-    const followCheckbox =
+    navigationFollow =
+        true;
+
+
+    arrivedAnnounced =
+        false;
+
+
+    lastAnnouncedStep =
+        -1;
+
+
+    const follow =
         document.getElementById(
             "followNavigation"
         );
 
 
-    if (followCheckbox) {
+    if (follow) {
 
-        followCheckbox.checked =
+        follow.checked =
             true;
 
     }
 
 
-    showNavigationInfo(true);
-
-
-    updateGpsStatus(
-        "Navigation aktiv"
+    showNavigationInfo(
+        true
     );
 
 
@@ -1548,7 +1640,7 @@ async function calculateRoute() {
 
     const url =
 
-        "https://router.project-osrm.org/route/v1/driving/" +
+        OSRM_URL +
 
         start.lng +
         "," +
@@ -1564,7 +1656,9 @@ async function calculateRoute() {
 
         "&geometries=geojson" +
 
-        "&steps=true";
+        "&steps=true" +
+
+        "&alternatives=true";
 
 
     updateNavigationInstruction(
@@ -1581,7 +1675,7 @@ async function calculateRoute() {
         if (!response.ok) {
 
             throw new Error(
-                "Routing-Server nicht erreichbar"
+                "Routing nicht erreichbar"
             );
 
         }
@@ -1624,13 +1718,14 @@ async function calculateRoute() {
             route.legs &&
             route.legs[0] &&
             route.legs[0].steps
+
                 ? route.legs[0].steps
+
                 : [];
 
 
-        lastAnnouncedStep = -1;
-
-        arrivedAnnounced = false;
+        lastAnnouncedStep =
+            -1;
 
 
         showRoute(
@@ -1641,18 +1736,7 @@ async function calculateRoute() {
         updateNavigationStats();
 
 
-        updateNavigationInstruction(
-            getFirstInstruction()
-        );
-
-
-        if (voiceEnabled) {
-
-            speak(
-                getFirstInstruction()
-            );
-
-        }
+        updateTurnInstruction();
 
 
         fitNavigationRoute();
@@ -1687,58 +1771,14 @@ async function calculateRoute() {
 
 
 /* =========================================================
-   ERSTE NAVI-ANWEISUNG
-   ========================================================= */
-
-function getFirstInstruction() {
-
-    if (!routeSteps.length) {
-
-        return "Folgen Sie der Route zum Ziel.";
-
-    }
-
-
-    for (
-        let i = 0;
-        i < routeSteps.length;
-        i++
-    ) {
-
-        const step =
-            routeSteps[i];
-
-
-        if (
-            step.maneuver &&
-            step.maneuver.type !== "depart"
-        ) {
-
-            return formatInstruction(
-                step,
-                step.distance
-            );
-
-        }
-
-    }
-
-
-    return "Navigation gestartet.";
-
-}
-
-
-/* =========================================================
-   NAVIGATION POSITION AKTUALISIEREN
+   NAVIGATION POSITION
    ========================================================= */
 
 function updateNavigationPosition() {
 
     if (
         !navigationActive ||
-        !currentPosition ||
-        !currentDestination
+        !currentPosition
     ) {
 
         return;
@@ -1748,8 +1788,11 @@ function updateNavigationPosition() {
 
     const remaining =
         calculateRemainingRouteDistance(
+
             currentPosition.lng,
+
             currentPosition.lat
+
         );
 
 
@@ -1764,7 +1807,9 @@ function updateNavigationPosition() {
     updateTurnInstruction();
 
 
-    if (navigationFollow) {
+    if (
+        navigationFollow
+    ) {
 
         map.easeTo({
 
@@ -1788,7 +1833,7 @@ function updateNavigationPosition() {
 
 
 /* =========================================================
-   RESTDISTANZ BERECHNEN
+   RESTDISTANZ
    ========================================================= */
 
 function calculateRemainingRouteDistance(
@@ -1805,23 +1850,30 @@ function calculateRemainingRouteDistance(
     }
 
 
-    let bestDistance =
+    let closestDistance =
         Infinity;
 
-    let bestIndex = 0;
 
-    let bestT = 0;
+    let closestIndex =
+        0;
+
+
+    let closestT =
+        0;
 
 
     for (
         let i = 0;
+
         i <
         routeCoordinates.length - 1;
+
         i++
     ) {
 
         const a =
             routeCoordinates[i];
+
 
         const b =
             routeCoordinates[i + 1];
@@ -1844,16 +1896,16 @@ function calculateRemainingRouteDistance(
 
         if (
             projection.distance <
-            bestDistance
+            closestDistance
         ) {
 
-            bestDistance =
+            closestDistance =
                 projection.distance;
 
-            bestIndex =
+            closestIndex =
                 i;
 
-            bestT =
+            closestT =
                 projection.t;
 
         }
@@ -1861,40 +1913,40 @@ function calculateRemainingRouteDistance(
     }
 
 
-    let remaining = 0;
+    let remaining =
+        0;
 
 
-    const firstA =
+    const a =
         routeCoordinates[
-            bestIndex
-        ];
-
-    const firstB =
-        routeCoordinates[
-            bestIndex + 1
+            closestIndex
         ];
 
 
-    const segmentDistance =
-        haversine(
-
-            firstA[1],
-            firstA[0],
-
-            firstB[1],
-            firstB[0]
-
-        );
+    const b =
+        routeCoordinates[
+            closestIndex + 1
+        ];
 
 
     remaining +=
-        segmentDistance *
-        (1 - bestT);
+
+        haversine(
+
+            a[1],
+            a[0],
+
+            b[1],
+            b[0]
+
+        ) *
+
+        (1 - closestT);
 
 
     for (
         let i =
-            bestIndex + 1;
+            closestIndex + 1;
 
         i <
             routeCoordinates.length - 1;
@@ -1903,6 +1955,7 @@ function calculateRemainingRouteDistance(
     ) {
 
         remaining +=
+
             haversine(
 
                 routeCoordinates[i][1],
@@ -1943,13 +1996,9 @@ function projectPointOnSegment(
         180;
 
 
-    const cosLat =
-        Math.cos(lat);
-
-
     const scaleX =
         111320 *
-        cosLat;
+        Math.cos(lat);
 
 
     const scaleY =
@@ -1989,10 +2038,12 @@ function projectPointOnSegment(
     ) {
 
         t =
+
             (
                 x * bxLocal +
                 y * byLocal
             ) /
+
             lengthSquared;
 
     }
@@ -2034,9 +2085,11 @@ function projectPointOnSegment(
 
     return {
 
-        distance: distance,
+        distance:
+            distance,
 
-        t: t
+        t:
+            t
 
     };
 
@@ -2078,8 +2131,9 @@ function haversine(
 
     const a =
 
-        Math.sin(dLat / 2) *
-        Math.sin(dLat / 2)
+        Math.sin(
+            dLat / 2
+        ) ** 2
 
         +
 
@@ -2099,8 +2153,9 @@ function haversine(
 
         *
 
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
+        Math.sin(
+            dLon / 2
+        ) ** 2;
 
 
     return (
@@ -2108,8 +2163,13 @@ function haversine(
         2 *
         R *
         Math.atan2(
+
             Math.sqrt(a),
-            Math.sqrt(1 - a)
+
+            Math.sqrt(
+                1 - a
+            )
+
         )
 
     );
@@ -2118,7 +2178,7 @@ function haversine(
 
 
 /* =========================================================
-   ABWEICHUNG VON ROUTE PRÜFEN
+   ROUTE VERLASSEN?
    ========================================================= */
 
 function checkOffRoute() {
@@ -2140,13 +2200,16 @@ function checkOffRoute() {
 
     for (
         let i = 0;
+
         i <
         routeCoordinates.length - 1;
+
         i++
     ) {
 
         const a =
             routeCoordinates[i];
+
 
         const b =
             routeCoordinates[i + 1];
@@ -2156,6 +2219,7 @@ function checkOffRoute() {
             projectPointOnSegment(
 
                 currentPosition.lng,
+
                 currentPosition.lat,
 
                 a[0],
@@ -2169,68 +2233,77 @@ function checkOffRoute() {
 
         closest =
             Math.min(
+
                 closest,
+
                 projection.distance
+
             );
 
     }
 
 
-    const gpsAccuracy =
-        currentPosition.accuracy || 10;
+    const accuracy =
+        currentPosition.accuracy ||
+        10;
 
 
     const threshold =
         Math.max(
             50,
-            gpsAccuracy * 1.5
+            accuracy * 1.5
         );
 
 
     if (
-        closest > threshold
+        closest <= threshold
     ) {
 
-        const now =
-            Date.now();
-
-
-        if (
-            now -
-            lastRerouteTime
-            >
-            10000
-        ) {
-
-            lastRerouteTime =
-                now;
-
-
-            updateNavigationInstruction(
-                "Route verlassen – neue Route wird gesucht..."
-            );
-
-
-            if (voiceEnabled) {
-
-                speak(
-                    "Sie haben die Route verlassen. Ich suche eine neue Route."
-                );
-
-            }
-
-
-            calculateRoute();
-
-        }
+        return;
 
     }
+
+
+    const now =
+        Date.now();
+
+
+    if (
+        now -
+        lastRerouteTime <
+        10000
+    ) {
+
+        return;
+
+    }
+
+
+    lastRerouteTime =
+        now;
+
+
+    updateNavigationInstruction(
+        "Route verlassen – neue Route wird gesucht..."
+    );
+
+
+    if (voiceEnabled) {
+
+        speak(
+            "Sie haben die Route verlassen. Ich berechne eine neue Route."
+        );
+
+    }
+
+
+    calculateRoute();
 
 }
 
 
 /* =========================================================
-   NÄCHSTE ABBIEGEANWEISUNG
+   ABBIEGEANWEISUNG
    ========================================================= */
 
 function updateTurnInstruction() {
@@ -2245,15 +2318,23 @@ function updateTurnInstruction() {
     }
 
 
+    let bestStep =
+        null;
+
+
+    let bestDistance =
+        Infinity;
+
+
+    let bestIndex =
+        -1;
+
+
     for (
-        let i =
-            Math.max(
-                0,
-                lastAnnouncedStep + 1
-            );
+        let i = 0;
 
         i <
-            routeSteps.length;
+        routeSteps.length;
 
         i++
     ) {
@@ -2280,87 +2361,72 @@ function updateTurnInstruction() {
             haversine(
 
                 currentPosition.lat,
+
                 currentPosition.lng,
 
                 location[1],
+
                 location[0]
 
             );
 
 
         if (
-            distance < 100
+            distance < bestDistance
         ) {
 
-            const instruction =
-                formatInstruction(
-                    step,
-                    distance
-                );
+            bestDistance =
+                distance;
 
+            bestStep =
+                step;
 
-            updateNavigationInstruction(
-                instruction
-            );
-
-
-            if (
-                voiceEnabled &&
-                i !== lastAnnouncedStep
-            ) {
-
-                speak(
-                    instruction
-                );
-
-            }
-
-
-            lastAnnouncedStep =
+            bestIndex =
                 i;
-
-
-            break;
 
         }
 
     }
 
 
-    const remaining =
-        calculateRemainingRouteDistance(
+    if (
+        !bestStep
+    ) {
 
-            currentPosition.lng,
-            currentPosition.lat
+        return;
+
+    }
+
+
+    const instruction =
+        formatInstruction(
+
+            bestStep,
+
+            bestDistance
 
         );
+
+
+    updateNavigationInstruction(
+        instruction
+    );
 
 
     if (
-        remaining < 25 &&
-        !arrivedAnnounced
+        voiceEnabled &&
+        bestIndex !==
+        lastAnnouncedStep &&
+        bestDistance < 120
     ) {
 
-        arrivedAnnounced = true;
-
-
-        updateNavigationInstruction(
-            "🏁 Sie haben Ihr Ziel erreicht."
+        speak(
+            instruction
         );
 
 
-        if (voiceEnabled) {
-
-            speak(
-                "Sie haben Ihr Ziel erreicht."
-            );
-
-        }
-
-
-        showToast(
-            "🏁 Ziel erreicht"
-        );
+        lastAnnouncedStep =
+            bestIndex;
 
     }
 
@@ -2377,15 +2443,18 @@ function formatInstruction(
 ) {
 
     const maneuver =
-        step.maneuver || {};
+        step.maneuver ||
+        {};
 
 
     const type =
-        maneuver.type || "";
+        maneuver.type ||
+        "";
 
 
     const modifier =
-        maneuver.modifier || "";
+        maneuver.modifier ||
+        "";
 
 
     const name =
@@ -2426,25 +2495,26 @@ function formatInstruction(
         type === "rotary"
     ) {
 
-        const exit =
-            maneuver.exit
-                ? " Ausfahrt " +
-                  maneuver.exit +
-                  "."
-                : "";
-
-
-        return (
-
+        let text =
             "In " +
             distanceText +
-            " in den Kreisverkehr einfahren." +
-            exit +
-            " Richtung " +
-            name +
-            "."
+            " in den Kreisverkehr einfahren.";
 
-        );
+
+        if (
+            maneuver.exit
+        ) {
+
+            text +=
+
+                " Ausfahrt " +
+                maneuver.exit +
+                ".";
+
+        }
+
+
+        return text;
 
     }
 
@@ -2457,8 +2527,19 @@ function formatInstruction(
 
             "In " +
             distanceText +
-            " rechts abbiegen auf " +
-            name +
+            " rechts abbiegen" +
+
+            (
+                name !==
+                "der Strasse"
+
+                    ? " auf " +
+                      name
+
+                    : ""
+
+            ) +
+
             "."
 
         );
@@ -2474,8 +2555,19 @@ function formatInstruction(
 
             "In " +
             distanceText +
-            " links abbiegen auf " +
-            name +
+            " links abbiegen" +
+
+            (
+                name !==
+                "der Strasse"
+
+                    ? " auf " +
+                      name
+
+                    : ""
+
+            ) +
+
             "."
 
         );
@@ -2484,16 +2576,15 @@ function formatInstruction(
 
 
     if (
-        modifier === "slight right"
+        modifier ===
+        "slight right"
     ) {
 
         return (
 
             "In " +
             distanceText +
-            " leicht rechts halten Richtung " +
-            name +
-            "."
+            " leicht rechts halten."
 
         );
 
@@ -2501,16 +2592,15 @@ function formatInstruction(
 
 
     if (
-        modifier === "slight left"
+        modifier ===
+        "slight left"
     ) {
 
         return (
 
             "In " +
             distanceText +
-            " leicht links halten Richtung " +
-            name +
-            "."
+            " leicht links halten."
 
         );
 
@@ -2525,9 +2615,7 @@ function formatInstruction(
 
             "In " +
             distanceText +
-            " einfädeln Richtung " +
-            name +
-            "."
+            " einfädeln."
 
         );
 
@@ -2538,9 +2626,7 @@ function formatInstruction(
 
         "In " +
         distanceText +
-        " geradeaus Richtung " +
-        name +
-        "."
+        " geradeaus."
 
     );
 
@@ -2548,7 +2634,7 @@ function formatInstruction(
 
 
 /* =========================================================
-   ROUTE FITTEN
+   ROUTE ANZEIGE
    ========================================================= */
 
 function fitNavigationRoute() {
@@ -2578,12 +2664,14 @@ function fitNavigationRoute() {
 
 
     map.fitBounds(
+
         bounds,
+
         {
 
             padding: {
 
-                top: 180,
+                top: 190,
 
                 bottom: 120,
 
@@ -2596,22 +2684,19 @@ function fitNavigationRoute() {
             duration: 1000
 
         }
+
     );
 
 }
 
 
 /* =========================================================
-   NAVIGATION STATS
+   NAVIGATION STATISTIK
    ========================================================= */
 
 function updateNavigationStats(
-    remainingOverride
+    remaining
 ) {
-
-    let remaining =
-        remainingOverride;
-
 
     if (
         remaining === undefined
@@ -2623,21 +2708,23 @@ function updateNavigationStats(
     }
 
 
-    const remainingDistance =
+    const distanceElement =
         document.getElementById(
             "remainingDistance"
         );
 
 
-    const remainingTime =
+    const timeElement =
         document.getElementById(
             "remainingTime"
         );
 
 
-    if (remainingDistance) {
+    if (
+        distanceElement
+    ) {
 
-        remainingDistance.textContent =
+        distanceElement.textContent =
             formatDistance(
                 remaining
             );
@@ -2645,7 +2732,9 @@ function updateNavigationStats(
     }
 
 
-    if (remainingTime) {
+    if (
+        timeElement
+    ) {
 
         let seconds =
             routeDuration;
@@ -2656,7 +2745,9 @@ function updateNavigationStats(
         ) {
 
             seconds =
+
                 routeDuration *
+
                 (
                     remaining /
                     routeDistance
@@ -2665,7 +2756,7 @@ function updateNavigationStats(
         }
 
 
-        remainingTime.textContent =
+        timeElement.textContent =
             formatTime(
                 seconds
             );
@@ -2699,26 +2790,44 @@ function formatDistance(
     ) {
 
         return (
-            Math.round(meters / 10) *
+
+            Math.round(
+                meters / 10
+            ) *
             10 +
+
             " m"
+
         );
 
     }
 
 
     return (
-        (meters / 1000)
+
+        (
+            meters /
+            1000
+        )
+
             .toFixed(1)
-            .replace(".", ",") +
+
+            .replace(
+                ".",
+                ","
+            )
+
+        +
+
         " km"
+
     );
 
 }
 
 
 /* =========================================================
-   ZEIT FORMATIEREN
+   ZEIT
    ========================================================= */
 
 function formatTime(
@@ -2726,8 +2835,7 @@ function formatTime(
 ) {
 
     if (
-        !isFinite(seconds) ||
-        seconds < 0
+        !isFinite(seconds)
     ) {
 
         return "–";
@@ -2736,8 +2844,11 @@ function formatTime(
 
 
     const minutes =
-        Math.round(
-            seconds / 60
+        Math.max(
+            0,
+            Math.round(
+                seconds / 60
+            )
         );
 
 
@@ -2760,27 +2871,21 @@ function formatTime(
 
 
     const rest =
-        minutes % 60;
-
-
-    if (
-        rest === 0
-    ) {
-
-        return (
-            hours +
-            " h"
-        );
-
-    }
+        minutes %
+        60;
 
 
     return (
 
         hours +
         " h " +
-        rest +
-        " min"
+
+        (
+            rest > 0
+                ? rest + " min"
+                : ""
+
+        )
 
     );
 
@@ -2801,10 +2906,6 @@ function stopNavigation() {
         false;
 
 
-    lastAnnouncedStep =
-        -1;
-
-
     clearRoute();
 
 
@@ -2813,16 +2914,19 @@ function stopNavigation() {
     );
 
 
+    if (
+        "speechSynthesis"
+        in window
+    ) {
+
+        speechSynthesis.cancel();
+
+    }
+
+
     updateNavigationInstruction(
         ""
     );
-
-
-    if (voiceEnabled) {
-
-        window.speechSynthesis.cancel();
-
-    }
 
 
     showToast(
@@ -2833,7 +2937,7 @@ function stopNavigation() {
 
 
 /* =========================================================
-   NAVIGATION FOLGEN
+   FOLLOW
    ========================================================= */
 
 function toggleNavigationFollow(
@@ -2854,7 +2958,7 @@ function toggleNavigationFollow(
 
 
 /* =========================================================
-   NAVIGATION ZENTRIEREN
+   ZENTRIEREN
    ========================================================= */
 
 function recenterNavigation() {
@@ -2862,7 +2966,6 @@ function recenterNavigation() {
     if (!currentPosition) {
 
         startGpsTracking();
-
 
         showToast(
             "GPS wird gesucht..."
@@ -2911,7 +3014,7 @@ function recenterNavigation() {
 
 
 /* =========================================================
-   SPRACHNAVIGATION
+   SPRACHE EIN/AUS
    ========================================================= */
 
 function toggleVoice(
@@ -2923,14 +3026,25 @@ function toggleVoice(
 
 
     localStorage.setItem(
+
         "maurVoiceNavigation",
+
         enabled
+
     );
 
 
     if (!enabled) {
 
-        window.speechSynthesis.cancel();
+        if (
+            "speechSynthesis"
+            in window
+        ) {
+
+            speechSynthesis.cancel();
+
+        }
+
 
         showToast(
             "Sprachansagen ausgeschaltet"
@@ -2944,22 +3058,13 @@ function toggleVoice(
             "Sprachansagen eingeschaltet"
         );
 
-
-        if (navigationActive) {
-
-            speak(
-                "Sprachansagen sind eingeschaltet."
-            );
-
-        }
-
     }
 
 }
 
 
 /* =========================================================
-   SPRACHANSAGE
+   SPRACHE
    ========================================================= */
 
 function speak(
@@ -2976,7 +3081,7 @@ function speak(
     }
 
 
-    window.speechSynthesis.cancel();
+    speechSynthesis.cancel();
 
 
     const utterance =
@@ -3001,7 +3106,7 @@ function speak(
         1;
 
 
-    window.speechSynthesis.speak(
+    speechSynthesis.speak(
         utterance
     );
 
@@ -3009,7 +3114,7 @@ function speak(
 
 
 /* =========================================================
-   NAVIGATION INFO ANZEIGEN
+   NAVIGATION INFO
    ========================================================= */
 
 function showNavigationInfo(
@@ -3084,7 +3189,7 @@ function openNavigationPanel() {
 
 
 /* =========================================================
-   PANEL ÖFFNEN
+   PANEL
    ========================================================= */
 
 function openPanel(
@@ -3092,7 +3197,9 @@ function openPanel(
 ) {
 
     const panel =
-        document.getElementById(id);
+        document.getElementById(
+            id
+        );
 
 
     if (!panel) {
@@ -3107,16 +3214,14 @@ function openPanel(
 }
 
 
-/* =========================================================
-   PANEL SCHLIESSEN
-   ========================================================= */
-
 function closePanel(
     id
 ) {
 
     const panel =
-        document.getElementById(id);
+        document.getElementById(
+            id
+        );
 
 
     if (!panel) {
@@ -3144,7 +3249,9 @@ const searchInput =
 if (searchInput) {
 
     searchInput.addEventListener(
+
         "keydown",
+
         event => {
 
             if (
@@ -3156,11 +3263,14 @@ if (searchInput) {
             }
 
         }
+
     );
 
 
     searchInput.addEventListener(
+
         "input",
+
         () => {
 
             clearTimeout(
@@ -3185,22 +3295,22 @@ if (searchInput) {
 
             searchTimeout =
                 setTimeout(
-                    () => {
 
-                        searchLocation();
+                    searchLocation,
 
-                    },
                     500
+
                 );
 
         }
+
     );
 
 }
 
 
 /* =========================================================
-   ORT SUCHEN
+   SUCHEN
    ========================================================= */
 
 async function searchLocation() {
@@ -3240,8 +3350,12 @@ async function searchLocation() {
         results.style.display =
             "block";
 
+
         results.innerHTML =
-            "<div class='result'>🔎 Suche läuft...</div>";
+
+            "<div class='result'>" +
+            "🔎 Suche läuft..." +
+            "</div>";
 
     }
 
@@ -3255,7 +3369,9 @@ async function searchLocation() {
             "?format=json" +
 
             "&q=" +
-            encodeURIComponent(query) +
+            encodeURIComponent(
+                query
+            ) +
 
             "&limit=8" +
 
@@ -3265,16 +3381,7 @@ async function searchLocation() {
 
 
         const response =
-            await fetch(url, {
-
-                headers: {
-
-                    "Accept":
-                        "application/json"
-
-                }
-
-            });
+            await fetch(url);
 
 
         if (!response.ok) {
@@ -3306,7 +3413,10 @@ async function searchLocation() {
         if (results) {
 
             results.innerHTML =
-                "<div class='result'>❌ Suche fehlgeschlagen.</div>";
+
+                "<div class='result'>" +
+                "❌ Suche fehlgeschlagen." +
+                "</div>";
 
         }
 
@@ -3340,7 +3450,10 @@ function displaySearchResults(
     ) {
 
         results.innerHTML =
-            "<div class='result'>Keine Ergebnisse gefunden.</div>";
+
+            "<div class='result'>" +
+            "Keine Ergebnisse gefunden." +
+            "</div>";
 
         results.style.display =
             "block";
@@ -3357,38 +3470,47 @@ function displaySearchResults(
     data.forEach(
         item => {
 
-            const div =
+            const result =
                 document.createElement(
                     "div"
                 );
 
 
-            div.className =
+            result.className =
                 "result";
 
 
-            const name =
+            const fullName =
                 item.display_name ||
                 "Unbekannter Ort";
 
 
-            div.innerHTML =
+            result.innerHTML =
 
                 "<strong>" +
+
                 escapeHtml(
-                    name.split(",")[0]
+
+                    fullName
+                        .split(",")[0]
+
                 ) +
+
                 "</strong>" +
 
                 "<small>" +
+
                 escapeHtml(
-                    name
+                    fullName
                 ) +
+
                 "</small>";
 
 
-            div.addEventListener(
+            result.addEventListener(
+
                 "click",
+
                 () => {
 
                     selectSearchResult(
@@ -3396,11 +3518,12 @@ function displaySearchResults(
                     );
 
                 }
+
             );
 
 
             results.appendChild(
-                div
+                result
             );
 
         }
@@ -3414,7 +3537,7 @@ function displaySearchResults(
 
 
 /* =========================================================
-   SUCHERGEBNIS AUSWÄHLEN
+   ZIEL AUS SUCHERGEBNIS
    ========================================================= */
 
 function selectSearchResult(
@@ -3445,15 +3568,75 @@ function selectSearchResult(
 
     currentDestination = {
 
-        lng: lng,
+        lng:
+            lng,
 
-        lat: lat,
+        lat:
+            lat,
 
         name:
             item.display_name ||
             "Ziel"
 
     };
+
+
+    setDestinationMarker();
+
+
+    const destination =
+        document.getElementById(
+            "navigationDestination"
+        );
+
+
+    if (destination) {
+
+        destination.textContent =
+            currentDestination.name;
+
+    }
+
+
+    hideSearchResults();
+
+
+    map.flyTo({
+
+        center: [
+
+            lng,
+
+            lat
+
+        ],
+
+        zoom: 16,
+
+        speed: 1.1
+
+    });
+
+
+    openNavigationPanel();
+
+
+    showToast(
+        "Ziel ausgewählt"
+    );
+
+}
+
+
+/* =========================================================
+   ZIEL MARKER
+   ========================================================= */
+
+function setDestinationMarker() {
+
+    if (!currentDestination) {
+        return;
+    }
 
 
     if (destinationMarker) {
@@ -3478,53 +3661,23 @@ function selectSearchResult(
 
 
     destinationMarker =
+
         new maplibregl.Marker({
-            element: element
+
+            element:
+                element
+
         })
+
             .setLngLat([
-                lng,
-                lat
+
+                currentDestination.lng,
+
+                currentDestination.lat
+
             ])
+
             .addTo(map);
-
-
-    map.flyTo({
-
-        center: [
-            lng,
-            lat
-        ],
-
-        zoom: 16,
-
-        speed: 1.1
-
-    });
-
-
-    const destinationText =
-        document.getElementById(
-            "navigationDestination"
-        );
-
-
-    if (destinationText) {
-
-        destinationText.textContent =
-            currentDestination.name;
-
-    }
-
-
-    hideSearchResults();
-
-
-    openNavigationPanel();
-
-
-    showToast(
-        "Ziel ausgewählt"
-    );
 
 }
 
@@ -3552,7 +3705,7 @@ function hideSearchResults() {
 
 
 /* =========================================================
-   HTML SICHER MACHEN
+   HTML SICHERN
    ========================================================= */
 
 function escapeHtml(
@@ -3590,7 +3743,7 @@ function escapeHtml(
 
 
 /* =========================================================
-   EIGENE PUNKTE
+   EIGENE PUNKTE LADEN
    ========================================================= */
 
 function loadOwnPoints() {
@@ -3706,7 +3859,7 @@ function addOwnPoint() {
 
 
 /* =========================================================
-   EIGENEN PUNKT MARKER
+   EIGENER PUNKT MARKER
    ========================================================= */
 
 function createOwnPointMarker(
@@ -3751,10 +3904,6 @@ function createOwnPointMarker(
         "center";
 
 
-    element.style.color =
-        "white";
-
-
     element.style.fontSize =
         "13px";
 
@@ -3769,8 +3918,12 @@ function createOwnPointMarker(
 
     const marker =
         new maplibregl.Marker({
-            element: element
+
+            element:
+                element
+
         })
+
             .setLngLat([
 
                 point.lng,
@@ -3778,15 +3931,19 @@ function createOwnPointMarker(
                 point.lat
 
             ])
+
             .setPopup(
 
                 new maplibregl.Popup({
                     offset: 20
-                }).setText(
-                    point.name
-                )
+                })
+
+                    .setText(
+                        point.name
+                    )
 
             )
+
             .addTo(map);
 
 
@@ -3797,7 +3954,7 @@ function createOwnPointMarker(
 
 
 /* =========================================================
-   EIGENE PUNKTE SPEICHERN
+   PUNKTE SPEICHERN
    ========================================================= */
 
 function saveOwnPoints() {
@@ -3836,7 +3993,7 @@ function saveOwnPoints() {
 
 
 /* =========================================================
-   EIGENE PUNKTE LISTE
+   PUNKTE LISTE
    ========================================================= */
 
 function updateOwnPointsList() {
@@ -3852,7 +4009,9 @@ function updateOwnPointsList() {
     }
 
 
-    if (!ownPoints.length) {
+    if (
+        !ownPoints.length
+    ) {
 
         list.innerHTML =
             "<p>Noch keine eigenen Punkte gespeichert.</p>";
@@ -3883,25 +4042,44 @@ function updateOwnPointsList() {
                 "1px solid #eee";
 
 
-            div.innerHTML =
+            const title =
+                document.createElement(
+                    "strong"
+                );
 
-                "<strong>" +
-                escapeHtml(
-                    point.name
-                ) +
-                "</strong>" +
 
-                "<br>" +
+            title.textContent =
+                point.name;
 
-                "<small>" +
+
+            div.appendChild(
+                title
+            );
+
+
+            div.appendChild(
+                document.createElement(
+                    "br"
+                )
+            );
+
+
+            const coordinates =
+                document.createElement(
+                    "small"
+                );
+
+
+            coordinates.textContent =
 
                 point.lat.toFixed(5) +
-
                 ", " +
+                point.lng.toFixed(5);
 
-                point.lng.toFixed(5) +
 
-                "</small>";
+            div.appendChild(
+                coordinates
+            );
 
 
             const button =
@@ -3919,7 +4097,9 @@ function updateOwnPointsList() {
 
 
             button.addEventListener(
+
                 "click",
+
                 () => {
 
                     currentDestination = {
@@ -3936,58 +4116,42 @@ function updateOwnPointsList() {
                     };
 
 
-                    if (destinationMarker) {
-
-                        destinationMarker.remove();
-
-                    }
+                    setDestinationMarker();
 
 
-                    const element =
-                        document.createElement(
-                            "div"
-                        );
-
-
-                    element.className =
-                        "destination-marker";
-
-
-                    element.textContent =
-                        "🏁";
-
-
-                    destinationMarker =
-                        new maplibregl.Marker({
-                            element: element
-                        })
-                            .setLngLat([
-
-                                point.lng,
-
-                                point.lat
-
-                            ])
-                            .addTo(map);
-
-
-                    const destinationText =
+                    const destination =
                         document.getElementById(
                             "navigationDestination"
                         );
 
 
-                    if (destinationText) {
+                    if (destination) {
 
-                        destinationText.textContent =
+                        destination.textContent =
                             point.name;
 
                     }
 
 
+                    map.flyTo({
+
+                        center: [
+
+                            point.lng,
+
+                            point.lat
+
+                        ],
+
+                        zoom: 16
+
+                    });
+
+
                     openNavigationPanel();
 
                 }
+
             );
 
 
@@ -4007,7 +4171,7 @@ function updateOwnPointsList() {
 
 
 /* =========================================================
-   GPS / NAVIGATION INTERFACE
+   GPS INTERFACE
    ========================================================= */
 
 function updateGpsInterface() {
@@ -4018,17 +4182,21 @@ function updateGpsInterface() {
 
 
     const accuracy =
+        Math.round(
+            currentPosition.accuracy
+        );
+
+
+    const gpsAccuracy =
         document.getElementById(
             "gpsAccuracy"
         );
 
 
-    if (accuracy) {
+    if (gpsAccuracy) {
 
-        accuracy.textContent =
-            Math.round(
-                currentPosition.accuracy
-            ) +
+        gpsAccuracy.textContent =
+            accuracy +
             " m";
 
     }
@@ -4039,15 +4207,11 @@ function updateGpsInterface() {
         navigationActive
 
             ? "Navigation aktiv – GPS " +
-              Math.round(
-                  currentPosition.accuracy
-              ) +
+              accuracy +
               " m"
 
             : "GPS aktiv – Genauigkeit " +
-              Math.round(
-                  currentPosition.accuracy
-              ) +
+              accuracy +
               " m"
 
     );
@@ -4112,14 +4276,18 @@ function showToast(
 
 
     showToast.timeout =
+
         setTimeout(
+
             () => {
 
                 toast.style.display =
                     "none";
 
             },
+
             3000
+
         );
 
 }
@@ -4142,19 +4310,10 @@ function updateConnectionStatus() {
     }
 
 
-    if (navigator.onLine) {
-
-        element.textContent =
-            "Online";
-
-    }
-
-    else {
-
-        element.textContent =
-            "Offline";
-
-    }
+    element.textContent =
+        navigator.onLine
+            ? "Online"
+            : "Offline";
 
 }
 
@@ -4171,7 +4330,42 @@ window.addEventListener(
 );
 
 
-updateConnectionStatus();
+/* =========================================================
+   NAVIGATION SETTINGS LADEN
+   ========================================================= */
+
+function loadNavigationSettings() {
+
+    const savedVoice =
+        localStorage.getItem(
+            "maurVoiceNavigation"
+        );
+
+
+    if (
+        savedVoice !== null
+    ) {
+
+        voiceEnabled =
+            savedVoice === "true";
+
+    }
+
+
+    const checkbox =
+        document.getElementById(
+            "voiceNavigation"
+        );
+
+
+    if (checkbox) {
+
+        checkbox.checked =
+            voiceEnabled;
+
+    }
+
+}
 
 
 /* =========================================================
@@ -4218,80 +4412,6 @@ function registerServiceWorker() {
 
 
 /* =========================================================
-   GESPEICHERTE NAVIGATIONSEINSTELLUNGEN
-   ========================================================= */
-
-function loadNavigationSettings() {
-
-    const savedVoice =
-        localStorage.getItem(
-            "maurVoiceNavigation"
-        );
-
-
-    if (
-        savedVoice !== null
-    ) {
-
-        voiceEnabled =
-            savedVoice === "true";
-
-    }
-
-
-    const checkbox =
-        document.getElementById(
-            "voiceNavigation"
-        );
-
-
-    if (checkbox) {
-
-        checkbox.checked =
-            voiceEnabled;
-
-    }
-
-}
-
-
-loadNavigationSettings();
-
-
-/* =========================================================
-   KLICK AUF KARTE
-   ========================================================= */
-
-map.on(
-    "click",
-    event => {
-
-        /*
-           Kein automatisches Ziel setzen,
-           damit normale Kartenbedienung
-           weiterhin funktioniert.
-        */
-
-        if (
-            navigationActive
-        ) {
-
-            return;
-
-        }
-
-    }
-);
-
-
-/* =========================================================
-   DOPPELKLICK NICHT ALS ZIEL
-   ========================================================= */
-
-map.doubleClickZoom.enable();
-
-
-/* =========================================================
    ESC = PANELS SCHLIESSEN
    ========================================================= */
 
@@ -4330,9 +4450,9 @@ document.addEventListener(
 
 
 /* =========================================================
-   APP START
+   ENDE
    ========================================================= */
 
 console.log(
-    "Maur Strassendienst App gestartet."
+    "MAUR STRASSENDIENST APP.JS VOLLSTÄNDIG GELADEN"
 );
