@@ -1,2099 +1,1228 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de-CH">
+
 <head>
 
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<meta name="viewport"
-      content="width=device-width,
-               initial-scale=1.0,
-               viewport-fit=cover">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
+    >
 
-<meta name="theme-color" content="#111827">
+    <meta
+        name="theme-color"
+        content="#111827"
+    >
 
-<meta name="apple-mobile-web-app-capable" content="yes">
+    <meta
+        name="apple-mobile-web-app-capable"
+        content="yes"
+    >
 
-<meta name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent">
+    <meta
+        name="apple-mobile-web-app-status-bar-style"
+        content="black-translucent"
+    >
 
-<title>Maur Strassendienst</title>
+    <title>Maur Strassendienst</title>
 
-<link rel="manifest" href="./manifest.json">
 
-<link rel="stylesheet"
-      href="https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.css">
+    <!-- PWA -->
 
-<style>
+    <link
+        rel="manifest"
+        href="./manifest.json"
+    >
 
-* {
-    box-sizing: border-box;
-}
 
-html,
-body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
+    <!-- MapLibre CSS -->
 
-    font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Arial,
-        sans-serif;
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.css"
+    >
 
-    background: #eef2f7;
-}
 
-#app {
-    position: relative;
-    width: 100%;
-    height: 100%;
-}
+    <!-- MapLibre JS -->
 
-#map {
-    position: absolute;
-    inset: 0;
-}
+    <script
+        src="https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.js"
+    ></script>
 
 
-/* =========================
-   HEADER
-========================= */
+    <!-- PMTiles -->
 
-header {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
+    <script
+        src="https://unpkg.com/pmtiles@4.5.0/dist/pmtiles.js"
+    ></script>
 
-    z-index: 1000;
 
-    padding: 12px;
-    padding-top:
-        calc(12px + env(safe-area-inset-top));
+    <style>
 
-    background: rgba(17,24,39,.96);
+        * {
+            box-sizing: border-box;
+        }
 
-    color: white;
 
-    box-shadow:
-        0 2px 10px rgba(0,0,0,.25);
-}
+        html,
+        body {
 
-.header-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
+            margin: 0;
+            padding: 0;
 
-.logo {
-    font-size: 21px;
-    font-weight: 800;
-    letter-spacing: .5px;
-}
+            width: 100%;
+            height: 100%;
 
-.subtitle {
-    font-size: 12px;
-    opacity: .75;
-}
+            overflow: hidden;
 
-.status {
-    padding: 6px 9px;
-    border-radius: 20px;
-    font-size: 12px;
-    background: #166534;
-}
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
 
+            background: #111827;
 
-/* =========================
-   SEARCH
-========================= */
+        }
 
-.search {
-    display: flex;
-    gap: 7px;
-    margin-top: 10px;
-}
 
-.search input {
-    flex: 1;
-    min-width: 0;
+        /* =========================
+           KARTE
+        ========================= */
 
-    border: 0;
-    border-radius: 10px;
+        #map {
 
-    padding: 12px;
+            position: absolute;
 
-    font-size: 15px;
-    outline: none;
-}
+            top: 64px;
 
-.search button {
-    border: 0;
-    border-radius: 10px;
+            bottom: 72px;
 
-    padding: 11px 14px;
+            left: 0;
 
-    background: white;
-    color: #111827;
+            right: 0;
 
-    font-weight: 700;
-}
+            z-index: 1;
 
+        }
 
-/* =========================
-   BOTTOM BAR
-========================= */
 
-.bottom-bar {
-    position: absolute;
+        /* =========================
+           OBERE LEISTE
+        ========================= */
 
-    left: 10px;
-    right: 10px;
+        .topbar {
 
-    bottom:
-        calc(10px + env(safe-area-inset-bottom));
+            position: absolute;
 
-    z-index: 1000;
+            top: 0;
 
-    display: grid;
+            left: 0;
 
-    grid-template-columns:
-        repeat(5,1fr);
+            right: 0;
 
-    gap: 6px;
-}
+            height: 64px;
 
-.bottom-bar button {
-    border: 0;
-    border-radius: 11px;
+            z-index: 1000;
 
-    background:
-        rgba(17,24,39,.96);
+            display: flex;
 
-    color: white;
+            align-items: center;
 
-    padding: 11px 3px;
+            justify-content: space-between;
 
-    font-size: 12px;
-    font-weight: 700;
+            padding: 8px 14px;
 
-    box-shadow:
-        0 3px 10px rgba(0,0,0,.25);
-}
+            background:
+                rgba(17,24,39,.97);
 
+            color: white;
 
-/* =========================
-   PANELS
-========================= */
+        }
 
-.panel {
 
-    display: none;
+        .title {
 
-    position: absolute;
+            display: flex;
 
-    left: 10px;
-    right: 10px;
+            flex-direction: column;
 
-    bottom:
-        calc(76px + env(safe-area-inset-bottom));
+        }
 
-    z-index: 2000;
 
-    background: white;
+        .title strong {
 
-    border-radius: 16px;
+            font-size: 19px;
 
-    padding: 16px;
+            letter-spacing: .7px;
 
-    box-shadow:
-        0 8px 30px rgba(0,0,0,.35);
+        }
 
-    max-height: 70vh;
 
-    overflow-y: auto;
-}
+        .title span {
 
-.panel.active {
-    display: block;
-}
+            font-size: 11px;
 
-.panel h2 {
-    margin: 0 0 12px;
-    font-size: 19px;
-}
+            opacity: .7;
 
-.panel-row {
+        }
 
-    display: flex;
 
-    align-items: center;
+        .iconButton {
 
-    justify-content: space-between;
+            width: 46px;
 
-    padding: 10px 0;
+            height: 46px;
 
-    border-bottom:
-        1px solid #e5e7eb;
-}
+            border: 0;
 
-.panel-row:last-child {
-    border-bottom: 0;
-}
+            border-radius: 50%;
 
-.panel input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
-}
+            background: white;
 
-.panel button {
+            color: #111827;
 
-    width: 100%;
+            font-size: 21px;
 
-    margin-top: 10px;
+        }
 
-    border: 0;
 
-    border-radius: 10px;
+        /* =========================
+           SUCHE
+        ========================= */
 
-    padding: 12px;
+        .searchBox {
 
-    font-weight: 700;
-}
+            position: absolute;
 
-.blue {
-    background: #2563eb;
-    color: white;
-}
+            top: 74px;
 
-.close {
-    background: #111827;
-    color: white;
-}
+            left: 10px;
 
+            right: 10px;
 
-/* =========================
-   VIEW BUTTONS
-========================= */
+            z-index: 1001;
 
-.view-button {
+            display: flex;
 
-    display: flex;
+            background: white;
 
-    align-items: center;
+            border-radius: 14px;
 
-    justify-content: space-between;
+            box-shadow:
+                0 4px 20px rgba(0,0,0,.25);
 
-    width: 100%;
+            overflow: hidden;
 
-    margin: 7px 0;
+        }
 
-    padding: 14px;
 
-    border: 0;
+        .searchBox input {
 
-    border-radius: 12px;
+            flex: 1;
 
-    background: #f3f4f6;
+            height: 50px;
 
-    color: #111827;
+            border: 0;
 
-    font-size: 15px;
+            outline: 0;
 
-    font-weight: 700;
+            padding: 0 14px;
 
-    text-align: left;
-}
+            font-size: 16px;
 
-.view-button.active {
-    background: #2563eb;
-    color: white;
-}
+        }
 
 
-/* =========================
-   TOAST
-========================= */
+        .searchBox button {
 
-.toast {
+            width: 55px;
 
-    display: none;
+            border: 0;
 
-    position: absolute;
+            background: white;
 
-    left: 50%;
+            font-size: 20px;
 
-    bottom:
-        calc(90px + env(safe-area-inset-bottom));
+        }
 
-    transform:
-        translateX(-50%);
 
-    z-index: 3000;
+        /* =========================
+           SUCHERGEBNISSE
+        ========================= */
 
-    background: #111827;
+        #searchResults {
 
-    color: white;
+            position: absolute;
 
-    padding: 10px 15px;
+            top: 130px;
 
-    border-radius: 20px;
+            left: 10px;
 
-    font-size: 13px;
+            right: 10px;
 
-    white-space: nowrap;
+            z-index: 2500;
 
-    box-shadow:
-        0 4px 15px rgba(0,0,0,.3);
-}
+            background: white;
 
+            border-radius: 12px;
 
-/* =========================
-   MARKER
-========================= */
+            overflow: hidden;
 
-.gps-marker {
+            display: none;
 
-    width: 22px;
-    height: 22px;
+            box-shadow:
+                0 5px 20px rgba(0,0,0,.25);
 
-    background: #2563eb;
+            max-height: 55vh;
 
-    border: 4px solid white;
+            overflow-y: auto;
 
-    border-radius: 50%;
+        }
 
-    box-shadow:
-        0 2px 8px rgba(0,0,0,.5);
-}
 
-.own-marker {
+        .result {
 
-    width: 31px;
-    height: 31px;
+            padding: 14px;
 
-    background: #111827;
+            border-bottom:
+                1px solid #ddd;
 
-    color: white;
+            cursor: pointer;
 
-    border-radius: 50%;
+        }
 
-    display: flex;
 
-    align-items: center;
-    justify-content: center;
+        .result:last-child {
 
-    border: 3px solid white;
+            border-bottom: 0;
 
-    box-shadow:
-        0 2px 8px rgba(0,0,0,.4);
-}
+        }
 
 
-/* =========================
-   MAP CONTROLS
-========================= */
+        .result strong {
 
-.maplibregl-ctrl-top-right {
-    top: 145px;
-}
+            display: block;
 
-</style>
+            font-size: 15px;
+
+            margin-bottom: 4px;
+
+        }
+
+
+        .result small {
+
+            color: #666;
+
+        }
+
+
+        /* =========================
+           NAVIGATION INFO OBEN
+        ========================= */
+
+        #navigationInfo {
+
+            position: absolute;
+
+            top: 132px;
+
+            left: 10px;
+
+            right: 10px;
+
+            z-index: 1500;
+
+            background:
+                rgba(17,24,39,.96);
+
+            color: white;
+
+            border-radius: 16px;
+
+            padding: 12px 14px;
+
+            box-shadow:
+                0 5px 20px rgba(0,0,0,.3);
+
+            display: none;
+
+        }
+
+
+        #navigationInfo.active {
+
+            display: block;
+
+        }
+
+
+        #navigationInstruction {
+
+            font-size: 16px;
+
+            font-weight: 700;
+
+            margin-bottom: 8px;
+
+        }
+
+
+        .navStats {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            gap: 8px;
+
+        }
+
+
+        .navStat {
+
+            flex: 1;
+
+            background:
+                rgba(255,255,255,.08);
+
+            border-radius: 10px;
+
+            padding: 8px;
+
+            text-align: center;
+
+        }
+
+
+        .navStat strong {
+
+            display: block;
+
+            font-size: 15px;
+
+        }
+
+
+        .navStat span {
+
+            display: block;
+
+            font-size: 10px;
+
+            opacity: .7;
+
+            margin-top: 2px;
+
+        }
+
+
+        /* =========================
+           UNTERE LEISTE
+        ========================= */
+
+        .bottomPanel {
+
+            position: absolute;
+
+            bottom: 0;
+
+            left: 0;
+
+            right: 0;
+
+            height: 72px;
+
+            z-index: 1000;
+
+            display: flex;
+
+            justify-content: space-around;
+
+            align-items: center;
+
+            background:
+                rgba(17,24,39,.98);
+
+            padding-bottom:
+                env(safe-area-inset-bottom);
+
+        }
+
+
+        .bottomPanel button {
+
+            background: transparent;
+
+            color: white;
+
+            border: 0;
+
+            font-size: 22px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            gap: 3px;
+
+        }
+
+
+        .bottomPanel span {
+
+            font-size: 10px;
+
+            opacity: .8;
+
+        }
+
+
+        /* =========================
+           PANELS
+        ========================= */
+
+        .panel {
+
+            position: absolute;
+
+            z-index: 3000;
+
+            left: 10px;
+
+            right: 10px;
+
+            bottom: 82px;
+
+            max-height: 75vh;
+
+            overflow-y: auto;
+
+            background: white;
+
+            border-radius: 18px;
+
+            padding: 20px;
+
+            box-shadow:
+                0 8px 30px rgba(0,0,0,.35);
+
+        }
+
+
+        .hidden {
+
+            display: none !important;
+
+        }
+
+
+        .panel h2 {
+
+            margin-top: 0;
+
+        }
+
+
+        .panel label {
+
+            display: block;
+
+            padding: 14px 0;
+
+            border-bottom:
+                1px solid #eee;
+
+            font-size: 16px;
+
+        }
+
+
+        .panel label input {
+
+            margin-right: 10px;
+
+            transform: scale(1.2);
+
+        }
+
+
+        .close {
+
+            float: right;
+
+            border: 0;
+
+            background: #eee;
+
+            border-radius: 50%;
+
+            width: 34px;
+
+            height: 34px;
+
+            font-size: 20px;
+
+        }
+
+
+        .mainButton {
+
+            width: 100%;
+
+            padding: 15px;
+
+            border: 0;
+
+            border-radius: 12px;
+
+            background: #111827;
+
+            color: white;
+
+            font-size: 16px;
+
+            margin-top: 10px;
+
+        }
+
+
+        .successButton {
+
+            background: #047857;
+
+        }
+
+
+        .dangerButton {
+
+            background: #b91c1c;
+
+        }
+
+
+        .infoText {
+
+            background: #f3f4f6;
+
+            padding: 12px;
+
+            border-radius: 10px;
+
+            margin: 10px 0;
+
+        }
+
+
+        /* =========================
+           GPS PUNKT
+        ========================= */
+
+        .gps-marker {
+
+            width: 22px;
+
+            height: 22px;
+
+            border-radius: 50%;
+
+            background: #2563eb;
+
+            border: 4px solid white;
+
+            box-shadow:
+
+                0 0 0 5px
+                rgba(37,99,235,.25),
+
+                0 2px 8px
+                rgba(0,0,0,.4);
+
+        }
+
+
+        /* =========================
+           ZIEL PUNKT
+        ========================= */
+
+        .destination-marker {
+
+            width: 30px;
+
+            height: 30px;
+
+            border-radius: 50%;
+
+            background: #dc2626;
+
+            border: 4px solid white;
+
+            box-shadow:
+                0 2px 8px rgba(0,0,0,.4);
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            color: white;
+
+            font-size: 13px;
+
+        }
+
+
+        /* =========================
+           TOAST
+        ========================= */
+
+        #toast {
+
+            position: fixed;
+
+            left: 50%;
+
+            bottom: 92px;
+
+            transform:
+                translateX(-50%);
+
+            z-index: 9999;
+
+            background:
+                rgba(17,24,39,.96);
+
+            color: white;
+
+            padding: 11px 16px;
+
+            border-radius: 12px;
+
+            font-size: 14px;
+
+            display: none;
+
+            max-width: 90%;
+
+            text-align: center;
+
+        }
+
+
+        /* =========================
+           MAPLIBRE
+        ========================= */
+
+        .maplibregl-ctrl-bottom-right {
+
+            bottom: 8px;
+
+        }
+
+    </style>
 
 </head>
 
 
 <body>
 
-<div id="app">
 
+    <!-- ==================================================
+         OBERE LEISTE
+    ================================================== -->
 
-<header>
+    <div class="topbar">
 
-    <div class="header-top">
+        <div class="title">
 
-        <div>
+            <strong>
+                MAUR STRASSENDIENST
+            </strong>
 
-            <div class="logo">
-                MAUR
-            </div>
-
-            <div class="subtitle">
-                Strassendienst
-            </div>
-
-        </div>
-
-        <div id="connectionStatus"
-             class="status">
-
-            ● Online
+            <span id="connectionStatus">
+                Online
+            </span>
 
         </div>
 
-    </div>
 
-
-    <div class="search">
-
-        <input
-            id="searchInput"
-            type="text"
-            placeholder="Adresse oder Ort suchen..."
+        <button
+            class="iconButton"
+            onclick="openPanel('settingsPanel')"
         >
-
-        <button onclick="searchAddress()">
-            Suchen
+            ⚙️
         </button>
 
     </div>
 
-</header>
 
 
-<div id="map"></div>
+    <!-- ==================================================
+         SUCHE
+    ================================================== -->
 
-
-<!-- =====================
-     EBENEN
-===================== -->
-
-<div id="layersPanel"
-     class="panel">
-
-    <h2>Ebenen</h2>
-
-
-    <div class="panel-row">
-
-        <span>Strassen</span>
+    <div class="searchBox">
 
         <input
-            id="roadsCheck"
-            type="checkbox"
-            checked
-            onchange="toggleLayer('roads', this.checked)"
+            id="searchInput"
+            type="search"
+            placeholder="Ort, Strasse oder Adresse suchen..."
+            autocomplete="off"
         >
 
+
+        <button
+            onclick="searchLocation()"
+        >
+            🔎
+        </button>
+
     </div>
 
 
-    <div class="panel-row">
+    <div id="searchResults"></div>
 
-        <span>Gebäude</span>
 
-        <input
-            id="buildingsCheck"
-            type="checkbox"
-            checked
-            onchange="toggleLayer('buildings', this.checked)"
+
+    <!-- ==================================================
+         NAVIGATION INFO
+    ================================================== -->
+
+    <div id="navigationInfo">
+
+        <div id="navigationInstruction">
+
+            Navigation wird vorbereitet...
+
+        </div>
+
+
+        <div class="navStats">
+
+
+            <div class="navStat">
+
+                <strong
+                    id="remainingDistance"
+                >
+                    –
+                </strong>
+
+                <span>
+                    Reststrecke
+                </span>
+
+            </div>
+
+
+            <div class="navStat">
+
+                <strong
+                    id="remainingTime"
+                >
+                    –
+                </strong>
+
+                <span>
+                    Restzeit
+                </span>
+
+            </div>
+
+
+            <div class="navStat">
+
+                <strong
+                    id="gpsAccuracy"
+                >
+                    –
+                </strong>
+
+                <span>
+                    GPS
+                </span>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ==================================================
+         KARTE
+    ================================================== -->
+
+    <div id="map"></div>
+
+
+
+    <!-- ==================================================
+         NAVIGATION PANEL
+    ================================================== -->
+
+    <div
+        id="navigationPanel"
+        class="panel hidden"
+    >
+
+
+        <button
+            class="close"
+            onclick="closePanel('navigationPanel')"
+        >
+            ×
+        </button>
+
+
+        <h2>
+            🧭 Navigation
+        </h2>
+
+
+        <div class="infoText">
+
+            <strong>
+                🏁 Ziel
+            </strong>
+
+            <div
+                id="navigationDestination"
+            >
+                Noch kein Ziel ausgewählt.
+            </div>
+
+        </div>
+
+
+        <div class="infoText">
+
+            <strong>
+                📍 Standort
+            </strong>
+
+            <div id="gpsStatus">
+
+                GPS wird noch nicht verwendet.
+
+            </div>
+
+        </div>
+
+
+        <label>
+
+            <input
+                type="checkbox"
+                id="voiceNavigation"
+                checked
+                onchange="toggleVoice(this.checked)"
+            >
+
+            🔊 Sprachansagen
+
+        </label>
+
+
+        <label>
+
+            <input
+                type="checkbox"
+                id="followNavigation"
+                checked
+                onchange="toggleNavigationFollow(this.checked)"
+            >
+
+            🧭 Karte automatisch folgen
+
+        </label>
+
+
+        <button
+            class="mainButton successButton"
+            onclick="startNavigation()"
+        >
+            🧭 Navigation starten
+        </button>
+
+
+        <button
+            class="mainButton"
+            onclick="recenterNavigation()"
+        >
+            📍 Zu meiner Position
+        </button>
+
+
+        <button
+            class="mainButton dangerButton"
+            onclick="stopNavigation()"
+        >
+            🛑 Navigation beenden
+        </button>
+
+
+    </div>
+
+
+
+    <!-- ==================================================
+         EINSTELLUNGEN
+    ================================================== -->
+
+    <div
+        id="settingsPanel"
+        class="panel hidden"
+    >
+
+
+        <button
+            class="close"
+            onclick="closePanel('settingsPanel')"
+        >
+            ×
+        </button>
+
+
+        <h2>
+            ⚙️ Einstellungen
+        </h2>
+
+
+        <label>
+
+            <input
+                type="radio"
+                name="mapView"
+                value="normal"
+                checked
+                onchange="changeView('normal')"
+            >
+
+            🗺️ Normale Karte
+
+        </label>
+
+
+        <label>
+
+            <input
+                type="radio"
+                name="mapView"
+                value="satellite"
+                onchange="changeView('satellite')"
+            >
+
+            🛰️ Satellit
+
+        </label>
+
+
+        <label>
+
+            <input
+                type="radio"
+                name="mapView"
+                value="hybrid"
+                onchange="changeView('hybrid')"
+            >
+
+            🔀 Hybrid
+
+        </label>
+
+
+        <label>
+
+            <input
+                type="checkbox"
+                id="ortsgrenzen"
+                checked
+                onchange="toggleOrtsgrenzen(this.checked)"
+            >
+
+            🔴 Ortschaftsgrenzen
+
+        </label>
+
+
+        <label>
+
+            <input
+                type="checkbox"
+                id="buildings"
+                checked
+                onchange="toggleLayer('buildings', this.checked)"
+            >
+
+            🏠 Gebäude
+
+        </label>
+
+
+        <label>
+
+            <input
+                type="checkbox"
+                id="roads"
+                checked
+                onchange="toggleLayer('roads', this.checked)"
+            >
+
+            🛣️ Strassen
+
+        </label>
+
+
+        <label>
+
+            <input
+                type="checkbox"
+                id="streetLabels"
+                checked
+                onchange="toggleLayer('street-labels', this.checked)"
+            >
+
+            🏷️ Strassennamen
+
+        </label>
+
+
+        <button
+            class="mainButton"
+            onclick="openNavigationPanel()"
+        >
+            🧭 Navigation öffnen
+        </button>
+
+
+    </div>
+
+
+
+    <!-- ==================================================
+         EIGENE PUNKTE
+    ================================================== -->
+
+    <div
+        id="pointsPanel"
+        class="panel hidden"
+    >
+
+
+        <button
+            class="close"
+            onclick="closePanel('pointsPanel')"
+        >
+            ×
+        </button>
+
+
+        <h2>
+            📌 Eigene Punkte
+        </h2>
+
+
+        <button
+            class="mainButton"
+            onclick="addOwnPoint()"
+        >
+            📍 Punkt an meiner Position speichern
+        </button>
+
+
+        <div id="ownPointsList"></div>
+
+
+    </div>
+
+
+
+    <!-- ==================================================
+         UNTERE NAVIGATION
+    ================================================== -->
+
+    <div class="bottomPanel">
+
+
+        <button
+            onclick="openNavigationPanel()"
         >
 
-    </div>
+            🧭
+
+            <span>
+                Navi
+            </span>
+
+        </button>
 
 
-    <div class="panel-row">
-
-        <span>Landschaft</span>
-
-        <input
-            id="landCheck"
-            type="checkbox"
-            checked
-            onchange="toggleLayer('land', this.checked)"
+        <button
+            onclick="goToLocation()"
         >
 
-    </div>
+            📍
+
+            <span>
+                GPS
+            </span>
+
+        </button>
 
 
-    <div class="panel-row">
-
-        <span>Wasser</span>
-
-        <input
-            id="waterCheck"
-            type="checkbox"
-            checked
-            onchange="toggleLayer('water', this.checked)"
+        <button
+            onclick="openPanel('pointsPanel')"
         >
 
-    </div>
+            📌
+
+            <span>
+                Punkte
+            </span>
+
+        </button>
 
 
-    <div class="panel-row">
-
-        <span>Eigene Punkte</span>
-
-        <input
-            id="ownCheck"
-            type="checkbox"
-            checked
-            onchange="toggleOwnPoints(this.checked)"
+        <button
+            onclick="openPanel('settingsPanel')"
         >
 
-    </div>
+            ⚙️
 
+            <span>
+                Karte
+            </span>
 
-    <button
-        class="close"
-        onclick="closePanels()">
+        </button>
 
-        Schliessen
-
-    </button>
-
-</div>
-
-
-<!-- =====================
-     ANSICHT
-===================== -->
-
-<div id="viewPanel"
-     class="panel">
-
-    <h2>🗺️ Kartenansicht</h2>
-
-
-    <button
-        id="normalViewButton"
-        class="view-button active"
-        onclick="changeView('normal')">
-
-        <span>🗺️ Karte</span>
-
-        <span>✓</span>
-
-    </button>
-
-
-    <button
-        id="satelliteViewButton"
-        class="view-button"
-        onclick="changeView('satellite')">
-
-        <span>🛰️ Satellit</span>
-
-        <span></span>
-
-    </button>
-
-
-    <button
-        id="hybridViewButton"
-        class="view-button"
-        onclick="changeView('hybrid')">
-
-        <span>🗺️🛰️ Hybrid</span>
-
-        <span></span>
-
-    </button>
-
-
-    <button
-        class="close"
-        onclick="closePanels()">
-
-        Schliessen
-
-    </button>
-
-</div>
-
-
-<!-- =====================
-     NAVIGATION
-===================== -->
-
-<div id="navPanel"
-     class="panel">
-
-    <h2>Navigation</h2>
-
-    <p>
-        <b>Ziel:</b>
-    </p>
-
-    <div id="destinationText">
-
-        Noch kein Ziel ausgewählt.
 
     </div>
 
 
-    <button
-        class="blue"
-        onclick="useCurrentLocationAsStart()">
 
-        📍 Aktuellen Standort verwenden
+    <!-- ==================================================
+         TOAST
+    ================================================== -->
 
-    </button>
+    <div id="toast"></div>
 
 
-    <button
-        class="blue"
-        onclick="openGoogleMaps()">
 
-        🧭 Navigation starten
+    <!-- ==================================================
+         APP.JS
+    ================================================== -->
 
-    </button>
+    <script src="./app.js"></script>
 
-
-    <button
-        class="close"
-        onclick="closePanels()">
-
-        Schliessen
-
-    </button>
-
-</div>
-
-
-<!-- =====================
-     EIGENER PUNKT
-===================== -->
-
-<div id="pointPanel"
-     class="panel">
-
-    <h2>Eigenen Punkt setzen</h2>
-
-    <p>
-        Setze einen Punkt direkt
-        auf der Karte.
-    </p>
-
-
-    <button
-        class="blue"
-        onclick="startAddPoint()">
-
-        📍 Punkt auf Karte setzen
-
-    </button>
-
-
-    <button
-        class="close"
-        onclick="closePanels()">
-
-        Abbrechen
-
-    </button>
-
-</div>
-
-
-<div id="toast"
-     class="toast">
-</div>
-
-
-<!-- =====================
-     BOTTOM BAR
-===================== -->
-
-<div class="bottom-bar">
-
-    <button onclick="goToLocation()">
-        📍<br>
-        Standort
-    </button>
-
-
-    <button onclick="openLayers()">
-        ☰<br>
-        Ebenen
-    </button>
-
-
-    <button onclick="openViewPanel()">
-        🗺️<br>
-        Ansicht
-    </button>
-
-
-    <button onclick="openNavigation()">
-        🧭<br>
-        Navi
-    </button>
-
-
-    <button onclick="openPointPanel()">
-        ➕<br>
-        Punkt
-    </button>
-
-</div>
-
-
-</div>
-
-
-<!-- =========================
-     LIBRARIES
-========================= -->
-
-<script
-    src="https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.js">
-</script>
-
-<script
-    src="https://unpkg.com/pmtiles@4.5.0/dist/pmtiles.js">
-</script>
-
-
-<script>
-
-/* =========================
-   PMTILES
-========================= */
-
-const protocol =
-    new pmtiles.Protocol();
-
-maplibregl.addProtocol(
-    "pmtiles",
-    protocol.tile
-);
-
-const PMTILES_URL =
-    "./maur.pmtiles";
-
-const pmtilesArchive =
-    new pmtiles.PMTiles(
-        PMTILES_URL
-    );
-
-protocol.add(
-    pmtilesArchive
-);
-
-
-/* =========================
-   VARIABLEN
-========================= */
-
-let map;
-
-let gpsMarker = null;
-
-let ownMarkers = [];
-
-let addingPoint = false;
-
-let currentDestination = null;
-
-let currentView = "normal";
-
-
-/* =========================
-   MAP START
-========================= */
-
-pmtilesArchive
-.getHeader()
-.then(header => {
-
-    const centerLon =
-        header.centerLon || 8.667;
-
-    const centerLat =
-        header.centerLat || 47.337;
-
-
-    map =
-        new maplibregl.Map({
-
-            container: "map",
-
-            center: [
-                centerLon,
-                centerLat
-            ],
-
-            zoom: 13,
-
-            minZoom: 8,
-
-            maxZoom: 19,
-
-
-            style: {
-
-                version: 8,
-
-                glyphs:
-                    "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
-
-
-                sources: {
-
-                    maur: {
-
-                        type: "vector",
-
-                        url:
-                            "pmtiles://" +
-                            PMTILES_URL,
-
-                        attribution:
-                            "© OpenStreetMap contributors"
-
-                    },
-
-
-                    satellite: {
-
-                        type: "raster",
-
-                        tiles: [
-
-                            "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-
-                        ],
-
-                        tileSize: 256,
-
-                        maxzoom: 19,
-
-                        attribution:
-                            "© Esri"
-
-                    }
-
-                },
-
-
-                layers: [
-
-
-                    /* =================
-                       SATELLIT
-                    ================= */
-
-                    {
-
-                        id: "satellite",
-
-                        type: "raster",
-
-                        source: "satellite",
-
-                        layout: {
-
-                            visibility:
-                                "none"
-
-                        }
-
-                    },
-
-
-                    /* =================
-                       HINTERGRUND
-                    ================= */
-
-                    {
-
-                        id: "background",
-
-                        type: "background",
-
-                        paint: {
-
-                            "background-color":
-                                "#f1f3f5"
-
-                        }
-
-                    },
-
-
-                    /* =================
-                       LAND
-                    ================= */
-
-                    {
-
-                        id: "land",
-
-                        type: "fill",
-
-                        source: "maur",
-
-                        "source-layer":
-                            "land",
-
-                        paint: {
-
-                            "fill-color":
-
-                                [
-
-                                    "match",
-
-                                    [
-                                        "get",
-                                        "kind"
-                                    ],
-
-                                    "forest",
-                                    "#c8dfc0",
-
-                                    "grass",
-                                    "#dcebd4",
-
-                                    "meadow",
-                                    "#e2efd7",
-
-                                    "orchard",
-                                    "#d7e7c5",
-
-                                    "vineyard",
-                                    "#dce6c5",
-
-                                    "#e7eadf"
-
-                                ]
-
-                        }
-
-                    },
-
-
-                    /* =================
-                       SITES
-                    ================= */
-
-                    {
-
-                        id: "sites",
-
-                        type: "fill",
-
-                        source: "maur",
-
-                        "source-layer":
-                            "sites",
-
-                        paint: {
-
-                            "fill-color":
-                                "#e3e8dc",
-
-                            "fill-opacity":
-                                0.75
-
-                        }
-
-                    },
-
-
-                    /* =================
-                       WASSER
-                    ================= */
-
-                    {
-
-                        id: "water",
-
-                        type: "fill",
-
-                        source: "maur",
-
-                        "source-layer":
-                            "water_polygons",
-
-                        paint: {
-
-                            "fill-color":
-                                "#9ecae1"
-
-                        }
-
-                    },
-
-
-                    /* =================
-                       WASSERLINIEN
-                    ================= */
-
-                    {
-
-                        id: "water-lines",
-
-                        type: "line",
-
-                        source: "maur",
-
-                        "source-layer":
-                            "water_lines",
-
-                        paint: {
-
-                            "line-color":
-                                "#7db7d8",
-
-                            "line-width": 1.5
-
-                        }
-
-                    },
-
-
-                    /* =================
-                       GEBÄUDE
-                    ================= */
-
-                    {
-
-                        id: "buildings",
-
-                        type: "fill",
-
-                        source: "maur",
-
-                        "source-layer":
-                            "buildings",
-
-                        paint: {
-
-                            "fill-color":
-                                "#d7d2c8",
-
-                            "fill-opacity":
-                                0.85
-
-                        }
-
-                    },
-
-
-                    /* =================
-                       STRASSEN
-                    ================= */
-
-                    {
-
-                        id: "roads",
-
-                        type: "line",
-
-                        source: "maur",
-
-                        "source-layer":
-                            "streets",
-
-                        paint: {
-
-                            "line-color":
-
-                                [
-
-                                    "match",
-
-                                    [
-                                        "get",
-                                        "kind"
-                                    ],
-
-                                    "motorway",
-                                    "#e89292",
-
-                                    "trunk",
-                                    "#efa6a6",
-
-                                    "primary",
-                                    "#f0b36d",
-
-                                    "secondary",
-                                    "#f4d18c",
-
-                                    "tertiary",
-                                    "#ffffff",
-
-                                    "residential",
-                                    "#ffffff",
-
-                                    "service",
-                                    "#eeeeee",
-
-                                    "track",
-                                    "#d3c3a5",
-
-                                    "path",
-                                    "#c6b79f",
-
-                                    "#ffffff"
-
-                                ],
-
-                            "line-width":
-
-                                [
-
-                                    "interpolate",
-
-                                    [
-                                        "linear"
-                                    ],
-
-                                    [
-                                        "zoom"
-                                    ],
-
-                                    10,
-                                    1,
-
-                                    13,
-                                    2,
-
-                                    16,
-                                    4,
-
-                                    19,
-                                    8
-
-                                ]
-
-                        }
-
-                    },
-
-
-                    /* =================
-                       STRASSENLABEL
-                    ================= */
-
-                    {
-
-                        id: "street-labels",
-
-                        type: "symbol",
-
-                        source: "maur",
-
-                        "source-layer":
-                            "street_labels",
-
-                        layout: {
-
-                            "text-field":
-                                [
-                                    "coalesce",
-                                    [
-                                        "get",
-                                        "name"
-                                    ],
-                                    [
-                                        "get",
-                                        "ref"
-                                    ]
-                                ],
-
-                            "text-size":
-
-                                [
-
-                                    "interpolate",
-
-                                    [
-                                        "linear"
-                                    ],
-
-                                    [
-                                        "zoom"
-                                    ],
-
-                                    10,
-                                    10,
-
-                                    14,
-                                    12,
-
-                                    18,
-                                    15
-
-                                ],
-
-                            "text-font": [
-                                "Noto Sans Regular"
-                            ]
-
-                        },
-
-                        paint: {
-
-                            "text-color":
-                                "#333333",
-
-                            "text-halo-color":
-                                "#ffffff",
-
-                            "text-halo-width":
-                                1.5
-
-                        }
-
-                    },
-
-
-                    /* =================
-                       ORTS / ADRESSEN
-                    ================= */
-
-                    {
-
-                        id: "addresses",
-
-                        type: "symbol",
-
-                        source: "maur",
-
-                        "source-layer":
-                            "addresses",
-
-                        minzoom: 16,
-
-                        layout: {
-
-                            "text-field":
-                                [
-                                    "coalesce",
-                                    [
-                                        "get",
-                                        "housenumber"
-                                    ],
-                                    ""
-                                ],
-
-                            "text-size": 11,
-
-                            "text-font": [
-                                "Noto Sans Regular"
-                            ]
-
-                        },
-
-                        paint: {
-
-                            "text-color":
-                                "#555555",
-
-                            "text-halo-color":
-                                "#ffffff",
-
-                            "text-halo-width":
-                                1
-
-                        }
-
-                    }
-
-                ]
-
-            }
-
-        });
-
-
-    map.addControl(
-        new maplibregl.NavigationControl(),
-        "top-right"
-    );
-
-
-    map.on("click", function(e) {
-
-        if (!addingPoint) {
-            return;
-        }
-
-        addOwnPoint(
-            e.lngLat.lng,
-            e.lngLat.lat
-        );
-
-        addingPoint = false;
-
-        closePanels();
-
-        showToast(
-            "Punkt gespeichert"
-        );
-
-    });
-
-
-    loadOwnPoints();
-
-});
-
-
-/* =========================
-   ANSICHT WECHSELN
-========================= */
-
-function changeView(view) {
-
-    if (!map) {
-        return;
-    }
-
-    currentView = view;
-
-
-    const satelliteVisible =
-        view === "satellite" ||
-        view === "hybrid";
-
-
-    map.setLayoutProperty(
-        "satellite",
-        "visibility",
-        satelliteVisible
-            ? "visible"
-            : "none"
-    );
-
-
-    /* Normale Kartenelemente */
-
-    const normalLayers = [
-
-        "background",
-        "land",
-        "sites",
-        "water",
-        "water-lines",
-        "buildings"
-
-    ];
-
-
-    normalLayers.forEach(
-        layer => {
-
-            if (!map.getLayer(layer)) {
-                return;
-            }
-
-            map.setLayoutProperty(
-
-                layer,
-
-                "visibility",
-
-                view === "normal"
-                    ? "visible"
-                    : "none"
-
-            );
-
-        }
-    );
-
-
-    /* Strassen */
-
-    if (map.getLayer("roads")) {
-
-        map.setLayoutProperty(
-
-            "roads",
-
-            "visibility",
-
-            view === "satellite"
-                ? "none"
-                : "visible"
-
-        );
-
-    }
-
-
-    /* Hybrid und normale Karte
-       zeigen Strassennamen */
-
-    if (map.getLayer("street-labels")) {
-
-        map.setLayoutProperty(
-
-            "street-labels",
-
-            "visibility",
-
-            "visible"
-
-        );
-
-    }
-
-
-    if (map.getLayer("addresses")) {
-
-        map.setLayoutProperty(
-
-            "addresses",
-
-            "visibility",
-
-            "visible"
-
-        );
-
-    }
-
-
-    document
-        .querySelectorAll(".view-button")
-        .forEach(button => {
-
-            button.classList.remove(
-                "active"
-            );
-
-        });
-
-
-    if (view === "normal") {
-
-        document
-            .getElementById(
-                "normalViewButton"
-            )
-            .classList.add("active");
-
-    }
-
-
-    if (view === "satellite") {
-
-        document
-            .getElementById(
-                "satelliteViewButton"
-            )
-            .classList.add("active");
-
-    }
-
-
-    if (view === "hybrid") {
-
-        document
-            .getElementById(
-                "hybridViewButton"
-            )
-            .classList.add("active");
-
-    }
-
-
-    showToast(
-
-        view === "normal"
-            ? "Karte"
-            : view === "satellite"
-                ? "Satellit"
-                : "Hybrid"
-
-    );
-
-}
-
-
-/* =========================
-   PANELS
-========================= */
-
-function closePanels() {
-
-    document
-        .querySelectorAll(".panel")
-        .forEach(panel => {
-
-            panel.classList.remove(
-                "active"
-            );
-
-        });
-
-}
-
-
-function openLayers() {
-
-    closePanels();
-
-    document
-        .getElementById(
-            "layersPanel"
-        )
-        .classList.add("active");
-
-}
-
-
-function openViewPanel() {
-
-    closePanels();
-
-    document
-        .getElementById(
-            "viewPanel"
-        )
-        .classList.add("active");
-
-}
-
-
-function openNavigation() {
-
-    closePanels();
-
-    document
-        .getElementById(
-            "navPanel"
-        )
-        .classList.add("active");
-
-}
-
-
-function openPointPanel() {
-
-    closePanels();
-
-    document
-        .getElementById(
-            "pointPanel"
-        )
-        .classList.add("active");
-
-}
-
-
-/* =========================
-   LAYER
-========================= */
-
-function toggleLayer(
-    type,
-    enabled
-) {
-
-    if (!map) {
-        return;
-    }
-
-    const layer =
-        map.getLayer(type);
-
-    if (!layer) {
-        return;
-    }
-
-    map.setLayoutProperty(
-
-        type,
-
-        "visibility",
-
-        enabled
-            ? "visible"
-            : "none"
-
-    );
-
-}
-
-
-/* =========================
-   GPS
-========================= */
-
-function goToLocation() {
-
-    if (!navigator.geolocation) {
-
-        showToast(
-            "GPS wird nicht unterstützt"
-        );
-
-        return;
-
-    }
-
-
-    navigator.geolocation.getCurrentPosition(
-
-        position => {
-
-            const lat =
-                position.coords.latitude;
-
-            const lon =
-                position.coords.longitude;
-
-
-            map.flyTo({
-
-                center: [
-                    lon,
-                    lat
-                ],
-
-                zoom: 17,
-
-                speed: 1.2
-
-            });
-
-
-            if (gpsMarker) {
-
-                gpsMarker.remove();
-
-            }
-
-
-            const el =
-                document.createElement(
-                    "div"
-                );
-
-            el.className =
-                "gps-marker";
-
-
-            gpsMarker =
-                new maplibregl.Marker(el)
-
-                    .setLngLat([
-                        lon,
-                        lat
-                    ])
-
-                    .addTo(map);
-
-
-            showToast(
-                "Standort gefunden"
-            );
-
-        },
-
-        () => {
-
-            showToast(
-                "GPS konnte nicht gefunden werden"
-            );
-
-        },
-
-        {
-
-            enableHighAccuracy:
-                true,
-
-            timeout:
-                10000,
-
-            maximumAge:
-                5000
-
-        }
-
-    );
-
-}
-
-
-/* =========================
-   SUCHE
-========================= */
-
-async function searchAddress() {
-
-    const input =
-        document.getElementById(
-            "searchInput"
-        );
-
-    const query =
-        input.value.trim();
-
-
-    if (!query) {
-        return;
-    }
-
-
-    showToast(
-        "Suche..."
-    );
-
-
-    try {
-
-        const url =
-            "https://nominatim.openstreetmap.org/search" +
-            "?format=json" +
-            "&limit=1" +
-            "&countrycodes=ch" +
-            "&q=" +
-            encodeURIComponent(query);
-
-
-        const response =
-            await fetch(url);
-
-
-        const data =
-            await response.json();
-
-
-        if (!data.length) {
-
-            showToast(
-                "Kein Treffer"
-            );
-
-            return;
-
-        }
-
-
-        const lat =
-            parseFloat(data[0].lat);
-
-        const lon =
-            parseFloat(data[0].lon);
-
-
-        map.flyTo({
-
-            center: [
-                lon,
-                lat
-            ],
-
-            zoom: 17,
-
-            speed: 1.2
-
-        });
-
-
-        currentDestination = {
-
-            lat: lat,
-
-            lon: lon,
-
-            name:
-                data[0].display_name
-
-        };
-
-
-        document
-            .getElementById(
-                "destinationText"
-            )
-            .innerText =
-                data[0].display_name;
-
-
-        showToast(
-            "Ziel gefunden"
-        );
-
-
-    } catch (error) {
-
-        showToast(
-            "Suche nicht verfügbar"
-        );
-
-    }
-
-}
-
-
-/* =========================
-   NAVIGATION
-========================= */
-
-function useCurrentLocationAsStart() {
-
-    goToLocation();
-
-}
-
-
-function openGoogleMaps() {
-
-    if (!currentDestination) {
-
-        showToast(
-            "Zuerst ein Ziel suchen"
-        );
-
-        return;
-
-    }
-
-
-    const url =
-        "https://www.google.com/maps/dir/?api=1" +
-        "&destination=" +
-        currentDestination.lat +
-        "," +
-        currentDestination.lon;
-
-
-    window.open(
-        url,
-        "_blank"
-    );
-
-}
-
-
-/* =========================
-   EIGENE PUNKTE
-========================= */
-
-function startAddPoint() {
-
-    addingPoint = true;
-
-    closePanels();
-
-    showToast(
-        "Jetzt auf die Karte tippen"
-    );
-
-}
-
-
-function addOwnPoint(
-    lon,
-    lat
-) {
-
-    const el =
-        document.createElement(
-            "div"
-        );
-
-    el.className =
-        "own-marker";
-
-    el.innerHTML =
-        "📍";
-
-
-    const marker =
-        new maplibregl.Marker(el)
-
-            .setLngLat([
-                lon,
-                lat
-            ])
-
-            .addTo(map);
-
-
-    ownMarkers.push(marker);
-
-
-    const saved =
-        JSON.parse(
-            localStorage.getItem(
-                "maurOwnPoints"
-            ) || "[]"
-        );
-
-
-    saved.push({
-
-        lon: lon,
-
-        lat: lat
-
-    });
-
-
-    localStorage.setItem(
-
-        "maurOwnPoints",
-
-        JSON.stringify(saved)
-
-    );
-
-}
-
-
-function loadOwnPoints() {
-
-    const saved =
-        JSON.parse(
-            localStorage.getItem(
-                "maurOwnPoints"
-            ) || "[]"
-        );
-
-
-    saved.forEach(point => {
-
-        const el =
-            document.createElement(
-                "div"
-            );
-
-        el.className =
-            "own-marker";
-
-        el.innerHTML =
-            "📍";
-
-
-        const marker =
-            new maplibregl.Marker(el)
-
-                .setLngLat([
-                    point.lon,
-                    point.lat
-                ])
-
-                .addTo(map);
-
-
-        ownMarkers.push(
-            marker
-        );
-
-    });
-
-}
-
-
-function toggleOwnPoints(
-    enabled
-) {
-
-    ownMarkers.forEach(
-        marker => {
-
-            marker
-                .getElement()
-                .style.display =
-                    enabled
-                        ? "flex"
-                        : "none";
-
-        }
-    );
-
-}
-
-
-/* =========================
-   TOAST
-========================= */
-
-function showToast(
-    message
-) {
-
-    const toast =
-        document.getElementById(
-            "toast"
-        );
-
-
-    toast.innerText =
-        message;
-
-
-    toast.style.display =
-        "block";
-
-
-    clearTimeout(
-        window.toastTimer
-    );
-
-
-    window.toastTimer =
-        setTimeout(() => {
-
-            toast.style.display =
-                "none";
-
-        }, 2200);
-
-}
-
-
-/* =========================
-   ONLINE STATUS
-========================= */
-
-function updateConnectionStatus() {
-
-    const status =
-        document.getElementById(
-            "connectionStatus"
-        );
-
-
-    if (navigator.onLine) {
-
-        status.innerText =
-            "● Online";
-
-        status.style.background =
-            "#166534";
-
-    } else {
-
-        status.innerText =
-            "● Offline";
-
-        status.style.background =
-            "#991b1b";
-
-    }
-
-}
-
-
-window.addEventListener(
-    "online",
-    updateConnectionStatus
-);
-
-window.addEventListener(
-    "offline",
-    updateConnectionStatus
-);
-
-updateConnectionStatus();
-
-
-</script>
 
 </body>
+
 </html>
