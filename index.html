@@ -3,10 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Maur Strassendienst V13</title>
+
+<title>Maur Strassendienst V14</title>
 
 <link rel="manifest" href="./manifest.json">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
@@ -21,8 +23,14 @@ html,body{
   color:#111827
 }
 
-button,input{font:inherit}
-button{border:0;cursor:pointer}
+button,input{
+  font:inherit
+}
+
+button{
+  border:0;
+  cursor:pointer
+}
 
 .topbar{
   height:64px;
@@ -36,8 +44,16 @@ button{border:0;cursor:pointer}
   z-index:1000
 }
 
-.brand{font-weight:800;font-size:16px}
-.status{font-size:10px;color:#9ca3af;margin-top:3px}
+.brand{
+  font-weight:800;
+  font-size:16px
+}
+
+.status{
+  font-size:10px;
+  color:#9ca3af;
+  margin-top:3px
+}
 
 .iconbtn{
   width:42px;
@@ -100,7 +116,9 @@ button{border:0;cursor:pointer}
   display:none
 }
 
-.panel.open{display:block}
+.panel.open{
+  display:block
+}
 
 .panel h2{
   margin:0 0 14px;
@@ -177,9 +195,19 @@ button{border:0;cursor:pointer}
   display:none
 }
 
-.navinfo.show{display:block}
-.navmain{font-weight:800}
-.navsub{font-size:13px;color:#6b7280;margin-top:3px}
+.navinfo.show{
+  display:block
+}
+
+.navmain{
+  font-weight:800
+}
+
+.navsub{
+  font-size:13px;
+  color:#6b7280;
+  margin-top:3px
+}
 
 .navbuttons{
   display:flex;
@@ -247,7 +275,9 @@ button{border:0;cursor:pointer}
   text-align:center
 }
 
-.toast.show{display:block}
+.toast.show{
+  display:block
+}
 
 .point-item{
   padding:10px 0;
@@ -297,20 +327,24 @@ button{border:0;cursor:pointer}
   z-index:1
 }
 
-/* Ortsgrenzen */
-.ort-label{
-  background:white;
-  border:2px solid #2563eb;
-  color:#111827;
-  font-weight:800;
-  border-radius:9px;
-  padding:3px 7px;
-  box-shadow:0 2px 8px #0003;
-  white-space:nowrap
+/* Sehr gut sichtbare Grenzen */
+.maur-border-casing{
+  pointer-events:none
 }
 
-.ort-label:before{
-  display:none
+.maur-border{
+  pointer-events:none
+}
+
+.maur-label{
+  background:white;
+  border:2px solid #1d4ed8;
+  color:#111827;
+  font-weight:800;
+  font-size:12px;
+  padding:4px 8px;
+  border-radius:8px;
+  box-shadow:0 2px 8px #0005
 }
 </style>
 </head>
@@ -320,7 +354,7 @@ button{border:0;cursor:pointer}
 <header class="topbar">
   <div>
     <div class="brand">MAUR STRASSENDIENST</div>
-    <div class="status" id="status">ONLINE • V13</div>
+    <div class="status" id="status">ONLINE • V14</div>
   </div>
   <button class="iconbtn" id="settingsBtn">⚙️</button>
 </header>
@@ -330,12 +364,12 @@ button{border:0;cursor:pointer}
     id="search"
     class="search"
     placeholder="Ort, Strasse oder Adresse suchen …"
-    autocomplete="off"
-  >
+    autocomplete="off">
   <div id="results" class="results"></div>
 </div>
 
 <div id="mapmsg" class="mapmsg"></div>
+
 <div id="map"></div>
 
 <section id="navInfo" class="navinfo">
@@ -344,12 +378,13 @@ button{border:0;cursor:pointer}
 
   <div class="navbuttons">
     <button id="voiceBtn">🔊 Sprache an</button>
-    <button id="followBtn">📍 Folgen an</button>
+    <button id="followBtn">📍 Folgen aus</button>
     <button id="stopNavBtn">✕ Stop</button>
   </div>
 </section>
 
 <section id="settingsPanel" class="panel">
+
   <button class="close" id="closeSettings">✕</button>
 
   <h2>Einstellungen</h2>
@@ -394,12 +429,15 @@ button{border:0;cursor:pointer}
   </button>
 
   <p class="hint">
-    Die Karte bleibt beim Herauszoomen genau dort, wo du sie hinschiebst.
-    Automatisches Nachführen erfolgt nur, wenn „Folgen“ eingeschaltet ist.
+    V14 zeigt den Bereich der Gemeinde Maur. Die Grenzen von
+    Binz, Aesch, Forch, Maur und Uessikon werden besonders kräftig
+    dargestellt und bleiben beim Rein- und Rauszoomen sichtbar.
   </p>
+
 </section>
 
 <section id="pointsPanel" class="panel">
+
   <button class="close" id="closePoints">✕</button>
 
   <h2>Eigene Punkte</h2>
@@ -409,111 +447,117 @@ button{border:0;cursor:pointer}
   </button>
 
   <div id="pointsList"></div>
+
 </section>
 
 <nav class="bottom">
+
   <button id="navTab" class="active">
-    <span>🧭</span>Navi
+    <span>🧭</span>
+    Navi
   </button>
 
   <button id="gpsTab">
-    <span>📍</span>GPS
+    <span>📍</span>
+    GPS
   </button>
 
   <button id="pointsTab">
-    <span>⭐</span>Punkte
+    <span>⭐</span>
+    Punkte
   </button>
 
   <button id="mapTab">
-    <span>🗺️</span>Karte
+    <span>🗺️</span>
+    Karte
   </button>
+
 </nav>
 
 <div id="toast" class="toast"></div>
 
 <script>
 
-const CENTER=[47.337,8.667];
+/* =========================================================
+   MAUR STRASSENDIENST V14
+   ========================================================= */
 
-const OSRM='https://router.project-osrm.org/route/v1/driving/';
+const CENTER = [47.337,8.667];
 
-const NOMINATIM='https://nominatim.openstreetmap.org/search';
-
-const ORTSCHAFTEN=[
-  {
-    name:'Binz',
-    query:'Binz, Maur, Schweiz'
-  },
-  {
-    name:'Aesch',
-    query:'Aesch, Maur, Schweiz'
-  },
-  {
-    name:'Forch',
-    query:'Forch, Maur, Schweiz'
-  },
-  {
-    name:'Maur',
-    query:'Maur, Maur, Schweiz'
-  },
-  {
-    name:'Uessikon',
-    query:'Uessikon, Maur, Schweiz'
-  }
+const ORTSCHAFTEN = [
+  {name:'Binz',query:'Binz, Maur, Schweiz'},
+  {name:'Aesch',query:'Aesch, Maur, Schweiz'},
+  {name:'Forch',query:'Forch, Maur, Schweiz'},
+  {name:'Maur',query:'Maur, Maur, Schweiz'},
+  {name:'Uessikon',query:'Uessikon, Maur, Schweiz'}
 ];
 
+const OSRM =
+'https://router.project-osrm.org/route/v1/driving/';
+
+const NOMINATIM =
+'https://nominatim.openstreetmap.org/search';
+
+const GEOADMIN =
+'https://wms.geo.admin.ch/';
+
+
 let map;
-let userMarker;
-let destMarker;
-
-let currentPosition=null;
-let destination=null;
-
-let navigationActive=false;
-let followEnabled=false;
-let voiceEnabled=true;
-
-let lastReroute=0;
-let routeLayer=null;
-
 let osm;
 let sat;
 let streetNames;
 let houseNumbers;
 
-let borderLayerGroup=L.layerGroup();
-let ownMarkers=[];
+let userMarker = null;
+let destMarker = null;
 
-let ortBoundaryLayers=[];
+let currentPosition = null;
+let destination = null;
 
-let ownPoints=[];
+let navigationActive = false;
+let followEnabled = false;
+let voiceEnabled = true;
+
+let routeLayer = null;
+
+let borderLayer = null;
+
+let ownMarkers = [];
+let ownPoints = [];
+
+let lastReroute = 0;
 
 
-/* ---------------------------------------------------------
+/* =========================================================
    HILFSFUNKTIONEN
---------------------------------------------------------- */
+   ========================================================= */
 
-function toast(t,ms=2600){
+function toast(text,ms=2600){
+
   const e=document.getElementById('toast');
 
-  e.textContent=t;
+  e.textContent=text;
+
   e.classList.add('show');
 
-  clearTimeout(toast.t);
+  clearTimeout(toast.timer);
 
-  toast.t=setTimeout(()=>{
+  toast.timer=setTimeout(()=>{
     e.classList.remove('show');
   },ms);
 }
 
 
-function status(t){
-  document.getElementById('status').textContent=t;
+function status(text){
+
+  document.getElementById('status').textContent=text;
+
 }
 
 
 function esc(s){
-  return String(s??'').replace(
+
+  return String(s ?? '').replace(
     /[&<>"']/g,
     c=>({
       '&':'&amp;',
@@ -523,26 +567,37 @@ function esc(s){
       "'":'&#39;'
     }[c])
   );
+
 }
 
 
-/* ---------------------------------------------------------
+/* =========================================================
    KARTE
---------------------------------------------------------- */
+   ========================================================= */
 
 map=L.map('map',{
+
   zoomControl:true,
+
   preferCanvas:true,
 
   /*
-    KEIN maxBounds:
-    Dadurch kann man beliebig weit herauszoomen.
-  */
+   * Nicht weiter herauszoomen als nötig.
+   * Dadurch bleibt der Bereich Maur sinnvoll gross
+   * und die Grenzen bleiben sichtbar.
+   */
+  minZoom:11,
 
-  minZoom:3,
-  maxZoom:19
+  maxZoom:19,
+
+  maxBoundsViscosity:1.0
+
 }).setView(CENTER,13);
 
+
+/* =========================================================
+   BASISKARTEN
+   ========================================================= */
 
 osm=L.tileLayer(
   'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -563,12 +618,12 @@ sat=L.tileLayer(
 );
 
 
-/* ---------------------------------------------------------
-   OFFIZIELLE SCHWEIZER STRASSEN / ADRESSEN
---------------------------------------------------------- */
+/* =========================================================
+   OFFIZIELLE SCHWEIZER STRASSENNAMEN
+   ========================================================= */
 
 streetNames=L.tileLayer.wms(
-  'https://wms.geo.admin.ch/',
+  GEOADMIN,
   {
     layers:'ch.swisstopo.amtliches-strassenverzeichnis',
     styles:'default',
@@ -577,14 +632,18 @@ streetNames=L.tileLayer.wms(
     version:'1.3.0',
     opacity:1,
     attribution:'© swisstopo / geo.admin.ch',
-    minZoom:10,
-    maxZoom:19
+    minZoom:14,
+    maxZoom:20
   }
 ).addTo(map);
 
 
+/* =========================================================
+   OFFIZIELLE SCHWEIZER HAUSNUMMERN
+   ========================================================= */
+
 houseNumbers=L.tileLayer.wms(
-  'https://wms.geo.admin.ch/',
+  GEOADMIN,
   {
     layers:'ch.swisstopo.amtliches-gebaeudeadressverzeichnis',
     styles:'default',
@@ -593,225 +652,72 @@ houseNumbers=L.tileLayer.wms(
     version:'1.3.0',
     opacity:1,
     attribution:'© swisstopo / geo.admin.ch',
-    minZoom:13,
-    maxZoom:19
+    minZoom:16,
+    maxZoom:20
   }
 ).addTo(map);
 
 
-/* ---------------------------------------------------------
-   ORTSGRENZEN
---------------------------------------------------------- */
+/* =========================================================
+   GRENZEN-PANE
+   ========================================================= */
 
-map.addLayer(borderLayerGroup);
+map.createPane('maurBorderCasing');
 
+map.getPane('maurBorderCasing').style.zIndex=630;
 
-/*
-  Die Ortsgrenzen werden NICHT an die Zoomstufe gekoppelt.
+map.createPane('maurBorders');
 
-  Das bedeutet:
-  - herauszoomen = Grenze bleibt vorhanden
-  - hineinzoomen = Grenze bleibt vorhanden
-  - keine automatische map.setView()
-  - kein fitBounds()
-*/
+map.getPane('maurBorders').style.zIndex=640;
 
+map.createPane('maurLabels');
 
-async function loadOneOrtBoundary(ort){
-
-  try{
-
-    const url=
-      NOMINATIM+
-      '?format=jsonv2' +
-      '&polygon_geojson=1' +
-      '&limit=1' +
-      '&q='+
-      encodeURIComponent(ort.query);
-
-    const response=await fetch(url,{
-      headers:{
-        'Accept':'application/json'
-      }
-    });
-
-    if(!response.ok){
-      throw new Error('Nominatim '+response.status);
-    }
-
-    const data=await response.json();
-
-    if(!data || !data.length){
-      console.warn('Keine Grenze gefunden:',ort.name);
-      return;
-    }
-
-    const result=data[0];
-
-    if(!result.geojson){
-      console.warn('Keine Geometrie:',ort.name);
-      return;
-    }
-
-    const type=result.geojson.type;
-
-    if(type!=='Polygon' && type!=='MultiPolygon'){
-      console.warn('Keine Polygon-Grenze:',ort.name,type);
-      return;
-    }
+map.getPane('maurLabels').style.zIndex=650;
 
 
-    const layer=L.geoJSON(
-      result.geojson,
-      {
-        style:{
-          color:'#2563eb',
-          weight:3,
-          opacity:0.95,
-          dashArray:'8 7',
-          fillColor:'#2563eb',
-          fillOpacity:0.035
-        }
-      }
-    );
+/* =========================================================
+   KARTE START
+   ========================================================= */
+
+map.whenReady(async()=>{
+
+  await loadBorders();
+
+  startGPS();
+
+  restoreSettings();
+
+  loadPoints();
+
+  renderPoints();
+
+  toast('Maur Strassendienst V14 geladen.');
+
+});
 
 
-    /*
-      Mittelpunkt der Grenze für Beschriftung
-    */
-
-    try{
-
-      const center=layer.getBounds().getCenter();
-
-      const label=L.marker(
-        center,
-        {
-          interactive:false,
-          icon:L.divIcon({
-            className:'ort-label',
-            html:ort.name,
-            iconSize:null
-          })
-        }
-      );
-
-      borderLayerGroup.addLayer(layer);
-      borderLayerGroup.addLayer(label);
-
-      ortBoundaryLayers.push({
-        name:ort.name,
-        boundary:layer,
-        label:label
-      });
-
-    }catch(e){
-
-      borderLayerGroup.addLayer(layer);
-
-      ortBoundaryLayers.push({
-        name:ort.name,
-        boundary:layer,
-        label:null
-      });
-    }
-
-  }catch(e){
-
-    console.warn('Grenze '+ort.name+':',e);
-  }
-}
-
-
-async function loadBorders(){
-
-  borderLayerGroup.clearLayers();
-
-  ortBoundaryLayers=[];
-
-  /*
-    Nominatim möchte nicht mit vielen parallelen
-    Anfragen belastet werden.
-
-    Deshalb ca. 1 Sekunde Abstand.
-  */
-
-  for(const ort of ORTSCHAFTEN){
-
-    await loadOneOrtBoundary(ort);
-
-    await new Promise(resolve=>{
-      setTimeout(resolve,1050);
-    });
-  }
-
-  if(ortBoundaryLayers.length){
-
-    toast(
-      ortBoundaryLayers.length+
-      ' Ortsgrenzen geladen.',
-      2500
-    );
-
-  }else{
-
-    showMapMsg(
-      'Die Ortsgrenzen konnten momentan nicht geladen werden.'
-    );
-  }
-
-}
-
-
-function toggleBorders(){
-
-  const on=
-    document.getElementById('toggleBorders').checked;
-
-  localStorage.setItem(
-    'toggleBorders',
-    on
-  );
-
-  if(on){
-
-    if(!map.hasLayer(borderLayerGroup)){
-      borderLayerGroup.addTo(map);
-    }
-
-  }else{
-
-    if(map.hasLayer(borderLayerGroup)){
-      map.removeLayer(borderLayerGroup);
-    }
-
-  }
-
-}
-
-
-/* ---------------------------------------------------------
+/* =========================================================
    KARTENANSICHT
---------------------------------------------------------- */
+   ========================================================= */
 
-function changeView(v){
+function changeView(view){
 
   localStorage.setItem(
     'maurMapView',
-    v
+    view
   );
 
   document
     .querySelectorAll('[data-view]')
-    .forEach(b=>{
-      b.classList.toggle(
+    .forEach(button=>{
+      button.classList.toggle(
         'active',
-        b.dataset.view===v
+        button.dataset.view===view
       );
     });
 
 
-  if(v==='normal'){
+  if(view==='normal'){
 
     if(!map.hasLayer(osm)){
       osm.addTo(map);
@@ -825,7 +731,8 @@ function changeView(v){
 
   }
 
-  else if(v==='satellite'){
+
+  else if(view==='satellite'){
 
     if(map.hasLayer(osm)){
       map.removeLayer(osm);
@@ -836,6 +743,7 @@ function changeView(v){
     }
 
   }
+
 
   else{
 
@@ -848,52 +756,367 @@ function changeView(v){
     }
 
     osm.setOpacity(.48);
+
   }
 
-  toggleMapLabels();
 }
 
 
-/* ---------------------------------------------------------
-   EINSTELLUNGEN
---------------------------------------------------------- */
+/* =========================================================
+   EINSTELLUNGEN WIEDERHERSTELLEN
+   ========================================================= */
 
 function restoreSettings(){
 
   changeView(
-    localStorage.getItem('maurMapView') ||
-    'normal'
+    localStorage.getItem('maurMapView') || 'normal'
   );
 
 
-  for(
-    const id of [
-      'toggleBorders',
-      'toggleStreetNames',
-      'toggleHouseNumbers',
-      'toggleBuildings',
-      'toggleRoads'
-    ]
-  ){
+  [
+    'toggleBorders',
+    'toggleStreetNames',
+    'toggleHouseNumbers',
+    'toggleBuildings',
+    'toggleRoads'
+  ].forEach(id=>{
 
-    const v=localStorage.getItem(id);
+    const value=localStorage.getItem(id);
 
-    if(v!==null){
+    if(value!==null){
 
-      document.getElementById(id).checked=
-        v==='true';
+      document.getElementById(id).checked =
+        value==='true';
+
+    }
+
+  });
+
+
+  toggleBorders();
+
+  toggleMapLabels();
+
+  status('ONLINE • V14');
+
+}
+
+
+/* =========================================================
+   GRENZEN LADEN
+   ========================================================= */
+
+async function loadBorders(){
+
+  if(borderLayer){
+
+    map.removeLayer(borderLayer);
+
+    borderLayer=null;
+
+  }
+
+
+  borderLayer=L.layerGroup().addTo(map);
+
+
+  /*
+   * Zuerst die einzelnen Ortschaften.
+   */
+
+  for(const ort of ORTSCHAFTEN){
+
+    try{
+
+      const url=
+        NOMINATIM+
+        '?format=jsonv2'+
+        '&polygon_geojson=1'+
+        '&limit=1'+
+        '&q='+
+        encodeURIComponent(ort.query);
+
+
+      const response=
+        await fetch(
+          url,
+          {
+            cache:'no-store',
+            headers:{
+              'Accept':'application/json'
+            }
+          }
+        );
+
+
+      if(!response.ok){
+        continue;
+      }
+
+
+      const data=
+        await response.json();
+
+
+      if(!data.length){
+        continue;
+      }
+
+
+      const geo=data[0].geojson;
+
+
+      if(
+        !geo ||
+        !(
+          geo.type==='Polygon' ||
+          geo.type==='MultiPolygon'
+        )
+      ){
+        continue;
+      }
+
+
+      /*
+       * Weisser Rand unter der blauen Linie.
+       * Dadurch bleibt die Grenze auch auf
+       * Satellitenkarten sehr gut sichtbar.
+       */
+
+      const casing=
+        L.geoJSON(
+          geo,
+          {
+            pane:'maurBorderCasing',
+
+            interactive:false,
+
+            style:{
+              color:'#ffffff',
+              weight:10,
+              opacity:1,
+              fill:false
+            }
+          }
+        );
+
+
+      /*
+       * Hauptgrenze.
+       */
+
+      const line=
+        L.geoJSON(
+          geo,
+          {
+            pane:'maurBorders',
+
+            interactive:false,
+
+            style:{
+              color:'#1d4ed8',
+              weight:5,
+              opacity:1,
+              dashArray:'12 7',
+              fillColor:'#2563eb',
+              fillOpacity:.035
+            }
+          }
+        );
+
+
+      /*
+       * Label in der Mitte der jeweiligen Fläche.
+       */
+
+      let center=null;
+
+      try{
+
+        center=line.getBounds().getCenter();
+
+      }catch(e){}
+
+
+      borderLayer.addLayer(casing);
+
+      borderLayer.addLayer(line);
+
+
+      if(center){
+
+        const label=
+          L.marker(
+            center,
+            {
+              pane:'maurLabels',
+              interactive:false,
+              icon:L.divIcon({
+                className:'',
+                html:
+                  '<div class="maur-label">'+
+                  esc(ort.name)+
+                  '</div>',
+                iconSize:null
+              })
+            }
+          );
+
+        borderLayer.addLayer(label);
+
+      }
+
+
+      /*
+       * Kleine Pause zwischen Nominatim-Abfragen.
+       */
+
+      await new Promise(
+        resolve=>setTimeout(resolve,1100)
+      );
+
+
+    }catch(error){
+
+      console.warn(
+        'Grenze '+ort.name+':',
+        error
+      );
 
     }
 
   }
 
 
-  toggleBorders();
-  toggleMapLabels();
+  /*
+   * Zusätzlich versuchen wir die eigentliche
+   * Gemeinde Maur zu finden.
+   */
 
-  status('ONLINE • V13');
+  try{
+
+    const municipalityUrl=
+      NOMINATIM+
+      '?format=jsonv2'+
+      '&polygon_geojson=1'+
+      '&limit=1'+
+      '&q='+
+      encodeURIComponent(
+        'Gemeinde Maur, Zürich, Schweiz'
+      );
+
+
+    const response=
+      await fetch(
+        municipalityUrl,
+        {
+          cache:'no-store',
+          headers:{
+            'Accept':'application/json'
+          }
+        }
+      );
+
+
+    if(response.ok){
+
+      const data=
+        await response.json();
+
+
+      if(
+        data.length &&
+        data[0].geojson &&
+        (
+          data[0].geojson.type==='Polygon' ||
+          data[0].geojson.type==='MultiPolygon'
+        )
+      ){
+
+        const municipality=
+          L.geoJSON(
+            data[0].geojson,
+            {
+              pane:'maurBorders',
+
+              interactive:false,
+
+              style:{
+                color:'#111827',
+                weight:4,
+                opacity:.9,
+                dashArray:'18 8',
+                fill:false
+              }
+            }
+          );
+
+
+        borderLayer.addLayer(
+          municipality
+        );
+
+      }
+
+    }
+
+  }catch(error){
+
+    console.warn(
+      'Gemeindegrenze:',
+      error
+    );
+
+  }
+
+
+  toast(
+    'Grenzen von Binz, Aesch, Forch, Maur und Uessikon geladen.',
+    3500
+  );
+
 }
 
+
+/* =========================================================
+   GRENZEN EIN/AUS
+   ========================================================= */
+
+function toggleBorders(){
+
+  const enabled=
+    document.getElementById(
+      'toggleBorders'
+    ).checked;
+
+
+  localStorage.setItem(
+    'toggleBorders',
+    enabled
+  );
+
+
+  if(!borderLayer){
+    return;
+  }
+
+
+  if(enabled){
+
+    borderLayer.addTo(map);
+
+  }else{
+
+    map.removeLayer(borderLayer);
+
+  }
+
+}
+
+
+/* =========================================================
+   STRASSEN / HAUSNUMMERN
+   ========================================================= */
 
 function toggleMapLabels(){
 
@@ -901,6 +1124,7 @@ function toggleMapLabels(){
     document.getElementById(
       'toggleStreetNames'
     ).checked;
+
 
   const houses=
     document.getElementById(
@@ -912,6 +1136,7 @@ function toggleMapLabels(){
     'toggleStreetNames',
     streets
   );
+
 
   localStorage.setItem(
     'toggleHouseNumbers',
@@ -953,50 +1178,35 @@ function toggleMapLabels(){
 
 function toggleOptional(){
 
-  const b=
+  const buildings=
     document.getElementById(
       'toggleBuildings'
     ).checked;
 
-  const r=
+
+  const roads=
     document.getElementById(
       'toggleRoads'
     ).checked;
 
+
   localStorage.setItem(
     'toggleBuildings',
-    b
+    buildings
   );
+
 
   localStorage.setItem(
     'toggleRoads',
-    r
+    roads
   );
 
-  /*
-    Gebäude und Strassen sind bereits
-    Bestandteil der OSM-Grundkarte.
-  */
 }
 
 
-function showMapMsg(t){
-
-  const e=document.getElementById('mapmsg');
-
-  e.textContent=t;
-
-  e.style.display='block';
-
-  setTimeout(()=>{
-    e.style.display='none';
-  },5000);
-}
-
-
-/* ---------------------------------------------------------
+/* =========================================================
    GPS
---------------------------------------------------------- */
+   ========================================================= */
 
 function startGPS(){
 
@@ -1005,15 +1215,25 @@ function startGPS(){
     status('GPS nicht verfügbar');
 
     return;
+
   }
 
 
   navigator.geolocation.watchPosition(
+
     updateGPS,
 
-    e=>{
-      console.warn(e);
-      status('ONLINE • GPS wartet');
+    error=>{
+
+      console.warn(
+        'GPS:',
+        error
+      );
+
+      status(
+        'ONLINE • GPS wartet'
+      );
+
     },
 
     {
@@ -1021,27 +1241,31 @@ function startGPS(){
       maximumAge:5000,
       timeout:15000
     }
+
   );
+
 }
 
 
-function updateGPS(p){
+function updateGPS(position){
 
   currentPosition={
-    lat:p.coords.latitude,
-    lng:p.coords.longitude,
-    accuracy:p.coords.accuracy
+    lat:position.coords.latitude,
+    lng:position.coords.longitude,
+    accuracy:position.coords.accuracy
   };
 
 
   status(
     'ONLINE • GPS '+
-    Math.round(currentPosition.accuracy)+
+    Math.round(
+      currentPosition.accuracy
+    )+
     ' m'
   );
 
 
-  const ll=[
+  const latLng=[
     currentPosition.lat,
     currentPosition.lng
   ];
@@ -1051,7 +1275,7 @@ function updateGPS(p){
 
     userMarker=
       L.circleMarker(
-        ll,
+        latLng,
         {
           radius:8,
           color:'#fff',
@@ -1063,39 +1287,45 @@ function updateGPS(p){
 
   }else{
 
-    userMarker.setLatLng(ll);
+    userMarker.setLatLng(
+      latLng
+    );
 
   }
 
 
   /*
-    WICHTIG:
-
-    Nur wenn "Folgen" aktiv ist,
-    darf GPS die Karte bewegen.
-
-    Dadurch kannst du sonst beliebig
-    herauszoomen.
-  */
+   * Nur wenn "Folgen" eingeschaltet ist,
+   * wird die Karte automatisch verschoben.
+   *
+   * Manuelles Zoomen bleibt dadurch erhalten.
+   */
 
   if(followEnabled){
 
-    const bounds=map.getBounds();
-
-    if(!bounds.contains(ll)){
+    if(
+      !map
+        .getBounds()
+        .pad(-.2)
+        .contains(latLng)
+    ){
 
       map.setView(
-        ll,
-        Math.max(map.getZoom(),16),
-        {
-          animate:true
-        }
+        latLng,
+        Math.max(
+          map.getZoom(),
+          16
+        )
       );
 
     }
 
   }
 
+
+  /*
+   * Navigation automatisch neu berechnen.
+   */
 
   if(
     navigationActive &&
@@ -1109,10 +1339,15 @@ function updateGPS(p){
       destination,
       false
     );
+
   }
 
 }
 
+
+/* =========================================================
+   GPS ZENTRIEREN
+   ========================================================= */
 
 function goToLocation(){
 
@@ -1123,6 +1358,7 @@ function goToLocation(){
     );
 
     return;
+
   }
 
 
@@ -1141,12 +1377,13 @@ function goToLocation(){
   toast(
     'Standort angezeigt.'
   );
+
 }
 
 
-/* ---------------------------------------------------------
+/* =========================================================
    SUCHE
---------------------------------------------------------- */
+   ========================================================= */
 
 const search=
   document.getElementById('search');
@@ -1154,35 +1391,46 @@ const search=
 const results=
   document.getElementById('results');
 
-let timer;
+let searchTimer;
 
 
 search.addEventListener(
   'input',
   ()=>{
-    
-    clearTimeout(timer);
 
-    const q=
+    clearTimeout(
+      searchTimer
+    );
+
+
+    const query=
       search.value.trim();
 
-    if(q.length<3){
+
+    if(query.length<3){
 
       results.innerHTML='';
 
       return;
+
     }
 
-    timer=setTimeout(
-      ()=>doSearch(q),
-      350
-    );
+
+    searchTimer=
+      setTimeout(
+        ()=>doSearch(query),
+        350
+      );
 
   }
 );
 
 
-async function doSearch(q){
+/* =========================================================
+   SUCHE AUSFÜHREN
+   ========================================================= */
+
+async function doSearch(query){
 
   results.innerHTML=
     '<div class="result">Suche …</div>';
@@ -1190,154 +1438,54 @@ async function doSearch(q){
 
   try{
 
-    /*
-      Zuerst GeoAdmin.
-    */
-
-    const geoUrl=
-      'https://api3.geo.admin.ch/rest/services/ech/SearchServer' +
-      '?searchText='+
-      encodeURIComponent(q) +
-      '&type=locations' +
-      '&origins=address' +
-      '&limit=8' +
-      '&sr=4326';
-
-
-    const geoResponse=
-      await fetch(geoUrl);
-
-    const geoData=
-      await geoResponse.json();
-
-
-    if(
-      geoData &&
-      geoData.results &&
-      geoData.results.length
-    ){
-
-      results.innerHTML=
-        geoData.results.map(
-          (x,i)=>{
-
-            const attrs=x.attrs||{};
-
-            const label=
-              attrs.label ||
-              attrs.origin ||
-              q;
-
-            return `
-              <div
-                class="result"
-                data-i="${i}"
-              >
-                <b>${esc(label)}</b>
-                <small>Schweizer Adresse</small>
-              </div>
-            `;
-          }
-        ).join('');
-
-
-      [
-        ...results.children
-      ].forEach(
-        (e,i)=>{
-
-          e.onclick=()=>{
-
-            const x=
-              geoData.results[i];
-
-            const attrs=
-              x.attrs||{};
-
-            const lat=
-              Number(
-                attrs.lat ||
-                x.geom_st_box?.[1]
-              );
-
-            const lon=
-              Number(
-                attrs.lon ||
-                x.geom_st_box?.[0]
-              );
-
-
-            if(
-              Number.isFinite(lat) &&
-              Number.isFinite(lon)
-            ){
-
-              selectSearch({
-                lat,
-                lon,
-                display_name:
-                  attrs.label||q
-              });
-
-            }
-
-          };
-
-        }
-      );
-
-      return;
-    }
-
-
-    /*
-      Fallback Nominatim
-    */
-
-    const u=
+    const url=
       NOMINATIM+
-      '?format=jsonv2' +
-      '&limit=6' +
-      '&countrycodes=ch' +
+      '?format=jsonv2'+
+      '&limit=6'+
+      '&countrycodes=ch'+
       '&q='+
       encodeURIComponent(
-        q+', Schweiz'
+        query+', Schweiz'
       );
 
 
-    const r=
-      await fetch(u,{
-        headers:{
-          Accept:'application/json'
+    const response=
+      await fetch(
+        url,
+        {
+          headers:{
+            Accept:'application/json'
+          }
         }
-      });
+      );
 
 
-    const d=
-      await r.json();
+    const data=
+      await response.json();
 
 
-    if(!d.length){
+    if(!data.length){
 
       results.innerHTML=
         '<div class="result">Nichts gefunden.</div>';
 
       return;
+
     }
 
 
     results.innerHTML=
-      d.map(
-        (x,i)=>`
+      data.map(
+        (item,index)=>`
 
           <div
             class="result"
-            data-i="${i}"
+            data-index="${index}"
           >
 
             <b>
               ${esc(
-                x.display_name
+                item.display_name
                   .split(',')
                   .slice(0,2)
                   .join(', ')
@@ -1345,7 +1493,9 @@ async function doSearch(q){
             </b>
 
             <small>
-              ${esc(x.display_name)}
+              ${esc(
+                item.display_name
+              )}
             </small>
 
           </div>
@@ -1357,15 +1507,26 @@ async function doSearch(q){
     [
       ...results.children
     ].forEach(
-      (e,i)=>
-        e.onclick=
-          ()=>selectSearch(d[i])
+      (element,index)=>{
+
+        element.onclick=
+          ()=>{
+            selectSearch(
+              data[index]
+            );
+          };
+
+      }
     );
 
 
-  }catch(e){
+  }catch(error){
 
-    console.warn(e);
+    console.warn(
+      'Suche:',
+      error
+    );
+
 
     results.innerHTML=
       '<div class="result">Suche nicht verfügbar.</div>';
@@ -1375,19 +1536,23 @@ async function doSearch(q){
 }
 
 
-function selectSearch(x){
+/* =========================================================
+   SUCHERGEBNIS AUSWÄHLEN
+   ========================================================= */
+
+function selectSearch(item){
 
   setFollow(false);
 
 
-  const c=[
-    Number(x.lat),
-    Number(x.lon)
+  const coords=[
+    Number(item.lat),
+    Number(item.lon)
   ];
 
 
   search.value=
-    x.display_name
+    item.display_name
       ?.split(',')
       .slice(0,2)
       .join(', ') ||
@@ -1398,8 +1563,8 @@ function selectSearch(x){
 
 
   destination=[
-    c[1],
-    c[0]
+    coords[1],
+    coords[0]
   ];
 
 
@@ -1408,18 +1573,21 @@ function selectSearch(x){
     map.removeLayer(
       destMarker
     );
+
   }
 
 
   destMarker=
-    L.marker(c)
-      .addTo(map)
-      .bindPopup('Ziel')
-      .openPopup();
+    L.marker(
+      coords
+    )
+    .addTo(map)
+    .bindPopup('Ziel')
+    .openPopup();
 
 
   map.setView(
-    c,
+    coords,
     16
   );
 
@@ -1432,9 +1600,9 @@ function selectSearch(x){
 }
 
 
-/* ---------------------------------------------------------
+/* =========================================================
    ROUTING
---------------------------------------------------------- */
+   ========================================================= */
 
 async function routeTo(
   coords,
@@ -1448,6 +1616,7 @@ async function routeTo(
     );
 
     return;
+
   }
 
 
@@ -1459,34 +1628,47 @@ async function routeTo(
 
   try{
 
-    const r=
-      await fetch(
-        OSRM+
-        from.join(',')+
-        ';'+
-        coords.join(',')+
-        '?overview=full&geometries=geojson&steps=true'
+    const url=
+      OSRM+
+      from.join(',')+
+      ';'+
+      coords.join(',')+
+      '?overview=full'+
+      '&geometries=geojson'+
+      '&steps=true';
+
+
+    const response=
+      await fetch(url);
+
+
+    if(!response.ok){
+
+      throw Error(
+        response.status
       );
 
-
-    if(!r.ok){
-      throw Error(r.status);
     }
 
 
-    const d=
-      await r.json();
+    const data=
+      await response.json();
 
 
-    if(!d.routes?.length){
+    if(
+      !data.routes ||
+      !data.routes.length
+    ){
+
       throw Error(
         'Keine Route'
       );
+
     }
 
 
-    const rt=
-      d.routes[0];
+    const route=
+      data.routes[0];
 
 
     if(routeLayer){
@@ -1500,7 +1682,7 @@ async function routeTo(
 
     routeLayer=
       L.geoJSON(
-        rt.geometry,
+        route.geometry,
         {
           style:{
             color:'#2563eb',
@@ -1515,21 +1697,26 @@ async function routeTo(
 
 
     /*
-      Nur beim Start einer Route
-      wird die Route einmal passend
-      angezeigt.
-
-      Danach darf der Benutzer
-      wieder selber zoomen.
-    */
+     * Nur bei einer neuen Route automatisch
+     * auf die komplette Strecke zoomen.
+     * Bei GPS-Rerouting nicht ständig springen.
+     */
 
     if(announce){
 
       map.fitBounds(
         routeLayer.getBounds(),
         {
-          paddingTopLeft:[30,90],
-          paddingBottomRight:[30,150],
+          paddingTopLeft:[
+            30,
+            90
+          ],
+
+          paddingBottomRight:[
+            30,
+            150
+          ],
+
           maxZoom:16
         }
       );
@@ -1550,9 +1737,13 @@ async function routeTo(
       )
       .textContent=
         'Route: '+
-        fmtDist(rt.distance)+
+        formatDistance(
+          route.distance
+        )+
         ' • '+
-        fmtTime(rt.duration);
+        formatTime(
+          route.duration
+        );
 
 
     document
@@ -1567,18 +1758,26 @@ async function routeTo(
 
       speak(
         'Route berechnet. '+
-        fmtDist(rt.distance)+
+        formatDistance(
+          route.distance
+        )+
         ', etwa '+
-        fmtTime(rt.duration)+
+        formatTime(
+          route.duration
+        )+
         '.'
       );
 
     }
 
 
-  }catch(e){
+  }catch(error){
 
-    console.warn(e);
+    console.warn(
+      'Routing:',
+      error
+    );
+
 
     toast(
       'Route konnte nicht berechnet werden.'
@@ -1589,33 +1788,61 @@ async function routeTo(
 }
 
 
-function fmtDist(m){
+/* =========================================================
+   DISTANZ / ZEIT
+   ========================================================= */
 
-  return m<1000
-    ? Math.round(m)+' m'
-    : (m/1000).toFixed(1)+' km';
+function formatDistance(meters){
+
+  if(meters<1000){
+
+    return Math.round(
+      meters
+    )+
+    ' m';
+
+  }
+
+
+  return (
+    meters/1000
+  ).toFixed(1)+
+  ' km';
 
 }
 
 
-function fmtTime(s){
+function formatTime(seconds){
 
-  const m=
-    Math.round(s/60);
+  const minutes=
+    Math.round(
+      seconds/60
+    );
 
-  return m<60
-    ? m+' min'
-    : Math.floor(m/60)+
-      ' h '+
-      (m%60)+
+
+  if(minutes<60){
+
+    return minutes+
       ' min';
 
+  }
+
+
+  return Math.floor(
+    minutes/60
+  )+
+  ' h '+
+  (
+    minutes%60
+  )+
+  ' min';
+
 }
 
 
-/* ---------------------------------------------------------
-   NAVIGATION
---------------------------------------------------------- */
+/* =========================================================
+   NAVIGATION STOPPEN
+   ========================================================= */
 
 function stopNav(){
 
@@ -1640,7 +1867,9 @@ function stopNav(){
     .getElementById(
       'navInfo'
     )
-    .classList.remove('show');
+    .classList.remove(
+      'show'
+    );
 
 
   if(destMarker){
@@ -1650,6 +1879,7 @@ function stopNav(){
     );
 
     destMarker=null;
+
   }
 
 
@@ -1660,26 +1890,37 @@ function stopNav(){
 }
 
 
-function speak(t){
+/* =========================================================
+   SPRACHE
+   ========================================================= */
+
+function speak(text){
 
   if(
     !voiceEnabled ||
-    !speechSynthesis
+    !window.speechSynthesis
   ){
 
     return;
+
   }
 
 
   speechSynthesis.cancel();
 
 
-  const u=
-    new SpeechSynthesisUtterance(t);
+  const utterance=
+    new SpeechSynthesisUtterance(
+      text
+    );
 
-  u.lang='de-CH';
 
-  speechSynthesis.speak(u);
+  utterance.lang='de-CH';
+
+
+  speechSynthesis.speak(
+    utterance
+  );
 
 }
 
@@ -1690,19 +1931,19 @@ function toggleVoice(){
     !voiceEnabled;
 
 
-  const b=
+  const button=
     document.getElementById(
       'voiceBtn'
     );
 
 
-  b.textContent=
+  button.textContent=
     voiceEnabled
       ? '🔊 Sprache an'
       : '🔇 Sprache aus';
 
 
-  b.classList.toggle(
+  button.classList.toggle(
     'off',
     !voiceEnabled
   );
@@ -1710,24 +1951,29 @@ function toggleVoice(){
 }
 
 
-function setFollow(on){
+/* =========================================================
+   FOLLOW
+   ========================================================= */
 
-  followEnabled=!!on;
+function setFollow(enabled){
+
+  followEnabled=
+    !!enabled;
 
 
-  const b=
+  const button=
     document.getElementById(
       'followBtn'
     );
 
 
-  b.textContent=
+  button.textContent=
     followEnabled
       ? '📍 Folgen an'
       : '📍 Folgen aus';
 
 
-  b.classList.toggle(
+  button.classList.toggle(
     'off',
     !followEnabled
   );
@@ -1761,15 +2007,14 @@ function toggleFollow(){
 
 
 /*
-  Wenn während der Navigation
-  die Karte mit dem Finger verschoben
-  wird, wird Folgen automatisch ausgeschaltet.
-*/
+ * Sobald der Benutzer während der Navigation
+ * die Karte verschiebt, geht "Folgen" automatisch aus.
+ */
 
 map.on(
   'dragstart',
   ()=>{
-    
+
     if(
       navigationActive &&
       followEnabled
@@ -1777,20 +2022,15 @@ map.on(
 
       setFollow(false);
 
-      toast(
-        'Folgen ausgeschaltet – Karte frei beweglich.',
-        1800
-      );
-
     }
 
   }
 );
 
 
-/* ---------------------------------------------------------
+/* =========================================================
    EIGENE PUNKTE
---------------------------------------------------------- */
+   ========================================================= */
 
 function loadPoints(){
 
@@ -1799,12 +2039,12 @@ function loadPoints(){
     ownPoints=
       JSON.parse(
         localStorage.getItem(
-          'maurOwnPointsV13'
+          'maurOwnPointsV14'
         ) ||
         '[]'
       );
 
-  }catch(e){
+  }catch(error){
 
     ownPoints=[];
 
@@ -1816,7 +2056,7 @@ function loadPoints(){
 function savePoints(){
 
   localStorage.setItem(
-    'maurOwnPointsV13',
+    'maurOwnPointsV14',
     JSON.stringify(
       ownPoints
     )
@@ -1834,25 +2074,37 @@ function addPoint(){
     );
 
     return;
+
   }
 
 
-  const n=
+  const name=
     prompt(
       'Name für den Punkt:',
       'Punkt '+
-      (ownPoints.length+1)
+      (
+        ownPoints.length+1
+      )
     );
 
 
-  if(!n)return;
+  if(!name){
+
+    return;
+
+  }
 
 
   ownPoints.push({
+
     id:Date.now(),
-    name:n,
+
+    name:name,
+
     lat:currentPosition.lat,
+
     lng:currentPosition.lng
+
   });
 
 
@@ -1873,7 +2125,11 @@ function addPoint(){
 function renderPoints(){
 
   ownMarkers.forEach(
-    m=>map.removeLayer(m)
+    marker=>{
+      map.removeLayer(
+        marker
+      );
+    }
   );
 
 
@@ -1881,15 +2137,23 @@ function renderPoints(){
 
 
   ownPoints.forEach(
-    p=>{
+    point=>{
+
+      const marker=
+        L.marker(
+          [
+            point.lat,
+            point.lng
+          ]
+        )
+        .addTo(map)
+        .bindTooltip(
+          point.name
+        );
+
 
       ownMarkers.push(
-        L.marker([
-          p.lat,
-          p.lng
-        ])
-        .addTo(map)
-        .bindTooltip(p.name)
+        marker
       );
 
     }
@@ -1900,7 +2164,7 @@ function renderPoints(){
 
 function updatePointsList(){
 
-  const e=
+  const element=
     document.getElementById(
       'pointsList'
     );
@@ -1908,38 +2172,41 @@ function updatePointsList(){
 
   if(!ownPoints.length){
 
-    e.innerHTML=
+    element.innerHTML=
       '<p class="hint">Noch keine eigenen Punkte gespeichert.</p>';
 
     return;
+
   }
 
 
-  e.innerHTML=
+  element.innerHTML=
     ownPoints.map(
-      p=>`
+      point=>`
 
         <div class="point-item">
 
-          <b>${esc(p.name)}</b>
+          <b>
+            ${esc(point.name)}
+          </b>
 
           <div class="hint">
-            ${p.lat.toFixed(5)},
-            ${p.lng.toFixed(5)}
+            ${point.lat.toFixed(5)},
+            ${point.lng.toFixed(5)}
           </div>
 
           <div class="point-actions">
 
             <button
               class="smallbtn primary"
-              onclick="showPoint(${p.id})"
+              onclick="showPoint(${point.id})"
             >
               Anzeigen
             </button>
 
             <button
               class="smallbtn danger"
-              onclick="deletePoint(${p.id})"
+              onclick="deletePoint(${point.id})"
             >
               Löschen
             </button>
@@ -1956,29 +2223,36 @@ function updatePointsList(){
 
 function showPoint(id){
 
-  const p=
+  const point=
     ownPoints.find(
       x=>x.id===id
     );
 
 
-  if(!p)return;
+  if(!point){
+
+    return;
+
+  }
 
 
   closePanels();
 
 
+  setFollow(false);
+
+
   map.setView(
     [
-      p.lat,
-      p.lng
+      point.lat,
+      point.lng
     ],
     16
   );
 
 
   toast(
-    p.name
+    point.name
   );
 
 }
@@ -1988,7 +2262,7 @@ function deletePoint(id){
 
   ownPoints=
     ownPoints.filter(
-      x=>x.id!==id
+      point=>point.id!==id
     );
 
 
@@ -2001,26 +2275,34 @@ function deletePoint(id){
 }
 
 
-/* ---------------------------------------------------------
+/* =========================================================
    PANELS
---------------------------------------------------------- */
+   ========================================================= */
 
 function openPanel(id){
 
   document
     .querySelectorAll('.panel')
     .forEach(
-      x=>x.classList.remove('open')
+      panel=>{
+        panel.classList.remove(
+          'open'
+        );
+      }
     );
 
 
   document
     .getElementById(id)
-    .classList.add('open');
+    .classList.add(
+      'open'
+    );
 
 
   document
-    .getElementById('searchWrap')
+    .getElementById(
+      'searchWrap'
+    )
     .style.display='none';
 
 }
@@ -2031,12 +2313,18 @@ function closePanels(){
   document
     .querySelectorAll('.panel')
     .forEach(
-      x=>x.classList.remove('open')
+      panel=>{
+        panel.classList.remove(
+          'open'
+        );
+      }
     );
 
 
   document
-    .getElementById('searchWrap')
+    .getElementById(
+      'searchWrap'
+    )
     .style.display='block';
 
 
@@ -2050,73 +2338,100 @@ function closePanels(){
 }
 
 
-/* ---------------------------------------------------------
+/* =========================================================
    BUTTONS
---------------------------------------------------------- */
+   ========================================================= */
 
 document
-  .getElementById('settingsBtn')
+  .getElementById(
+    'settingsBtn'
+  )
   .onclick=
-    ()=>openPanel(
-      'settingsPanel'
-    );
+    ()=>{
+      openPanel(
+        'settingsPanel'
+      );
+    };
 
 
 document
-  .getElementById('closeSettings')
+  .getElementById(
+    'closeSettings'
+  )
   .onclick=
     closePanels;
 
 
 document
-  .getElementById('closePoints')
+  .getElementById(
+    'closePoints'
+  )
   .onclick=
     closePanels;
 
 
 document
-  .querySelectorAll('[data-view]')
+  .querySelectorAll(
+    '[data-view]'
+  )
   .forEach(
-    b=>
-      b.onclick=
-        ()=>changeView(
-          b.dataset.view
-        )
+    button=>{
+
+      button.onclick=
+        ()=>{
+          changeView(
+            button.dataset.view
+          );
+        };
+
+    }
   );
 
 
 document
-  .getElementById('toggleBorders')
+  .getElementById(
+    'toggleBorders'
+  )
   .onchange=
     toggleBorders;
 
 
 document
-  .getElementById('toggleStreetNames')
+  .getElementById(
+    'toggleStreetNames'
+  )
   .onchange=
     toggleMapLabels;
 
 
 document
-  .getElementById('toggleHouseNumbers')
+  .getElementById(
+    'toggleHouseNumbers'
+  )
   .onchange=
     toggleMapLabels;
 
 
 document
-  .getElementById('toggleBuildings')
+  .getElementById(
+    'toggleBuildings'
+  )
   .onchange=
     toggleOptional;
 
 
 document
-  .getElementById('toggleRoads')
+  .getElementById(
+    'toggleRoads'
+  )
   .onchange=
     toggleOptional;
 
 
 document
-  .getElementById('locateBtn')
+  .getElementById(
+    'locateBtn'
+  )
   .onclick=
     ()=>{
       closePanels();
@@ -2125,31 +2440,41 @@ document
 
 
 document
-  .getElementById('addPointBtn')
+  .getElementById(
+    'addPointBtn'
+  )
   .onclick=
     addPoint;
 
 
 document
-  .getElementById('voiceBtn')
+  .getElementById(
+    'voiceBtn'
+  )
   .onclick=
     toggleVoice;
 
 
 document
-  .getElementById('followBtn')
+  .getElementById(
+    'followBtn'
+  )
   .onclick=
     toggleFollow;
 
 
 document
-  .getElementById('stopNavBtn')
+  .getElementById(
+    'stopNavBtn'
+  )
   .onclick=
     stopNav;
 
 
 document
-  .getElementById('navTab')
+  .getElementById(
+    'navTab'
+  )
   .onclick=
     ()=>{
       closePanels();
@@ -2158,7 +2483,9 @@ document
 
 
 document
-  .getElementById('gpsTab')
+  .getElementById(
+    'gpsTab'
+  )
   .onclick=
     ()=>{
       closePanels();
@@ -2167,19 +2494,22 @@ document
 
 
 document
-  .getElementById('pointsTab')
+  .getElementById(
+    'pointsTab'
+  )
   .onclick=
     ()=>{
       openPanel(
         'pointsPanel'
       );
-
       updatePointsList();
     };
 
 
 document
-  .getElementById('mapTab')
+  .getElementById(
+    'mapTab'
+  )
   .onclick=
     ()=>{
       closePanels();
@@ -2187,46 +2517,17 @@ document
     };
 
 
-/* ---------------------------------------------------------
-   KARTENFEHLER / START
---------------------------------------------------------- */
+/* =========================================================
+   FEHLER / ONLINE STATUS
+   ========================================================= */
 
 map.on(
   'tileerror',
-  e=>{
+  event=>{
     console.warn(
       'Kartenkachel konnte nicht geladen werden',
-      e
+      event
     );
-  }
-);
-
-
-map.whenReady(
-  async ()=>{
-
-    restoreSettings();
-
-    loadPoints();
-
-    renderPoints();
-
-    updatePointsList();
-
-    startGPS();
-
-    /*
-      Ortsgrenzen laden, ohne die
-      aktuelle Kartenposition zu verändern.
-    */
-
-    await loadBorders();
-
-    toast(
-      'Maur Strassendienst V13 geladen.',
-      2500
-    );
-
   }
 );
 
@@ -2242,7 +2543,9 @@ window.addEventListener(
 window.addEventListener(
   'online',
   ()=>{
-    status('ONLINE • V13');
+    status(
+      'ONLINE • V14'
+    );
   }
 );
 
@@ -2250,7 +2553,9 @@ window.addEventListener(
 window.addEventListener(
   'offline',
   ()=>{
-    status('OFFLINE • V13');
+    status(
+      'OFFLINE • V14'
+    );
   }
 );
 
