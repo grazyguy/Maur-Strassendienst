@@ -1,1228 +1,4961 @@
 <!DOCTYPE html>
 <html lang="de-CH">
-
 <head>
+<meta charset="UTF-8">
 
-    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
-    >
+<meta name="theme-color" content="#111827">
 
-    <meta
-        name="theme-color"
-        content="#111827"
-    >
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <meta
-        name="apple-mobile-web-app-capable"
-        content="yes"
-    >
+<title>Maur Strassendienst V6</title>
 
-    <meta
-        name="apple-mobile-web-app-status-bar-style"
-        content="black-translucent"
-    >
+<link rel="manifest" href="./manifest.json">
 
-    <title>Maur Strassendienst</title>
+<link rel="stylesheet"
+      href="https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.css">
 
+<script src="https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/pmtiles@4.5.0/dist/pmtiles.js"></script>
 
-    <!-- PWA -->
+<style>
 
-    <link
-        rel="manifest"
-        href="./manifest.json"
-    >
+* {
+    box-sizing: border-box;
+}
 
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
 
-    <!-- MapLibre CSS -->
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
 
-    <link
-        rel="stylesheet"
-        href="https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.css"
-    >
+    background: #111827;
+}
 
+#map {
+    position: absolute;
+    top: 64px;
+    bottom: 72px;
+    left: 0;
+    right: 0;
+    z-index: 1;
+}
 
-    <!-- MapLibre JS -->
+.topbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
 
-    <script
-        src="https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.js"
-    ></script>
+    height: 64px;
 
+    z-index: 1000;
 
-    <!-- PMTiles -->
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
-    <script
-        src="https://unpkg.com/pmtiles@4.5.0/dist/pmtiles.js"
-    ></script>
+    padding: 8px 14px;
 
+    background: rgba(17,24,39,.97);
 
-    <style>
+    color: white;
+}
 
-        * {
-            box-sizing: border-box;
-        }
+.title {
+    display: flex;
+    flex-direction: column;
+}
 
+.title strong {
+    font-size: 18px;
+    letter-spacing: .6px;
+}
 
-        html,
-        body {
+.title span {
+    font-size: 11px;
+    opacity: .75;
+}
 
-            margin: 0;
-            padding: 0;
+.iconButton {
+    width: 46px;
+    height: 46px;
 
-            width: 100%;
-            height: 100%;
+    border: 0;
+    border-radius: 50%;
 
-            overflow: hidden;
+    background: white;
+    color: #111827;
 
-            font-family:
-                -apple-system,
-                BlinkMacSystemFont,
-                "Segoe UI",
-                sans-serif;
+    font-size: 21px;
+}
 
-            background: #111827;
+.searchBox {
+    position: absolute;
 
-        }
+    top: 74px;
+    left: 10px;
+    right: 10px;
 
+    z-index: 1500;
 
-        /* =========================
-           KARTE
-        ========================= */
+    display: flex;
 
-        #map {
+    background: white;
 
-            position: absolute;
+    border-radius: 14px;
 
-            top: 64px;
+    box-shadow:
+        0 4px 20px rgba(0,0,0,.25);
 
-            bottom: 72px;
+    overflow: hidden;
+}
 
-            left: 0;
+.searchBox input {
+    flex: 1;
 
-            right: 0;
+    height: 50px;
 
-            z-index: 1;
+    border: 0;
+    outline: 0;
 
-        }
+    padding: 0 14px;
 
+    font-size: 16px;
+}
 
-        /* =========================
-           OBERE LEISTE
-        ========================= */
+.searchBox button {
+    width: 55px;
 
-        .topbar {
+    border: 0;
 
-            position: absolute;
+    background: white;
 
-            top: 0;
+    font-size: 20px;
+}
 
-            left: 0;
+#searchResults {
+    position: absolute;
 
-            right: 0;
+    top: 130px;
+    left: 10px;
+    right: 10px;
 
-            height: 64px;
+    z-index: 2500;
 
-            z-index: 1000;
+    background: white;
 
-            display: flex;
+    border-radius: 12px;
 
-            align-items: center;
+    overflow: hidden;
 
-            justify-content: space-between;
+    display: none;
 
-            padding: 8px 14px;
+    box-shadow:
+        0 5px 20px rgba(0,0,0,.25);
 
-            background:
-                rgba(17,24,39,.97);
+    max-height: 55vh;
 
-            color: white;
+    overflow-y: auto;
+}
 
-        }
+.result {
+    padding: 14px;
 
+    border-bottom: 1px solid #ddd;
 
-        .title {
+    cursor: pointer;
+}
 
-            display: flex;
+.result:last-child {
+    border-bottom: 0;
+}
 
-            flex-direction: column;
+.result strong {
+    display: block;
 
-        }
+    font-size: 15px;
 
+    margin-bottom: 4px;
+}
 
-        .title strong {
+.result small {
+    color: #666;
+}
 
-            font-size: 19px;
+#navigationInfo {
+    position: absolute;
 
-            letter-spacing: .7px;
+    top: 132px;
 
-        }
+    left: 10px;
+    right: 10px;
 
+    z-index: 1400;
 
-        .title span {
+    background: rgba(17,24,39,.96);
 
-            font-size: 11px;
+    color: white;
 
-            opacity: .7;
+    border-radius: 16px;
 
-        }
+    padding: 12px 14px;
 
+    box-shadow:
+        0 5px 20px rgba(0,0,0,.3);
 
-        .iconButton {
+    display: none;
+}
 
-            width: 46px;
+#navigationInfo.active {
+    display: block;
+}
 
-            height: 46px;
+#navigationInstruction {
+    font-size: 16px;
 
-            border: 0;
+    font-weight: 700;
 
-            border-radius: 50%;
+    margin-bottom: 8px;
+}
 
-            background: white;
+.navStats {
+    display: flex;
 
-            color: #111827;
+    justify-content: space-between;
 
-            font-size: 21px;
+    gap: 8px;
+}
 
-        }
+.navStat {
+    flex: 1;
 
+    background:
+        rgba(255,255,255,.08);
 
-        /* =========================
-           SUCHE
-        ========================= */
+    border-radius: 10px;
 
-        .searchBox {
+    padding: 8px;
 
-            position: absolute;
+    text-align: center;
+}
 
-            top: 74px;
+.navStat strong {
+    display: block;
 
-            left: 10px;
+    font-size: 15px;
+}
 
-            right: 10px;
+.navStat span {
+    display: block;
 
-            z-index: 1001;
+    font-size: 10px;
 
-            display: flex;
+    opacity: .7;
 
-            background: white;
+    margin-top: 2px;
+}
 
-            border-radius: 14px;
+.bottomPanel {
+    position: absolute;
 
-            box-shadow:
-                0 4px 20px rgba(0,0,0,.25);
+    bottom: 0;
 
-            overflow: hidden;
+    left: 0;
+    right: 0;
 
-        }
+    height: 72px;
 
+    z-index: 1000;
 
-        .searchBox input {
+    display: flex;
 
-            flex: 1;
+    justify-content: space-around;
 
-            height: 50px;
+    align-items: center;
 
-            border: 0;
+    background: rgba(17,24,39,.98);
 
-            outline: 0;
+    padding-bottom:
+        env(safe-area-inset-bottom);
+}
 
-            padding: 0 14px;
+.bottomPanel button {
+    background: transparent;
 
-            font-size: 16px;
+    color: white;
 
-        }
+    border: 0;
 
+    font-size: 22px;
 
-        .searchBox button {
+    display: flex;
 
-            width: 55px;
+    flex-direction: column;
 
-            border: 0;
+    align-items: center;
 
-            background: white;
+    gap: 3px;
+}
 
-            font-size: 20px;
+.bottomPanel span {
+    font-size: 10px;
 
-        }
+    opacity: .8;
+}
 
+.panel {
+    position: absolute;
 
-        /* =========================
-           SUCHERGEBNISSE
-        ========================= */
+    z-index: 3000;
 
-        #searchResults {
+    left: 10px;
+    right: 10px;
 
-            position: absolute;
+    bottom: 82px;
 
-            top: 130px;
+    max-height: 75vh;
 
-            left: 10px;
+    overflow-y: auto;
 
-            right: 10px;
+    background: white;
 
-            z-index: 2500;
+    border-radius: 18px;
 
-            background: white;
+    padding: 20px;
 
-            border-radius: 12px;
+    box-shadow:
+        0 8px 30px rgba(0,0,0,.35);
+}
 
-            overflow: hidden;
+.hidden {
+    display: none !important;
+}
 
-            display: none;
+.panel h2 {
+    margin-top: 0;
+}
 
-            box-shadow:
-                0 5px 20px rgba(0,0,0,.25);
+.panel label {
+    display: block;
 
-            max-height: 55vh;
+    padding: 14px 0;
 
-            overflow-y: auto;
+    border-bottom: 1px solid #eee;
 
-        }
+    font-size: 16px;
+}
 
+.panel label input {
+    margin-right: 10px;
 
-        .result {
+    transform: scale(1.2);
+}
 
-            padding: 14px;
+.close {
+    float: right;
 
-            border-bottom:
-                1px solid #ddd;
+    border: 0;
 
-            cursor: pointer;
+    background: #eee;
 
-        }
+    border-radius: 50%;
 
+    width: 34px;
+    height: 34px;
 
-        .result:last-child {
+    font-size: 20px;
+}
 
-            border-bottom: 0;
+.mainButton {
+    width: 100%;
 
-        }
+    padding: 15px;
 
+    border: 0;
 
-        .result strong {
+    border-radius: 12px;
 
-            display: block;
+    background: #111827;
 
-            font-size: 15px;
+    color: white;
 
-            margin-bottom: 4px;
+    font-size: 16px;
 
-        }
+    margin-top: 10px;
+}
 
+.successButton {
+    background: #047857;
+}
 
-        .result small {
+.dangerButton {
+    background: #b91c1c;
+}
 
-            color: #666;
+.infoText {
+    background: #f3f4f6;
 
-        }
+    padding: 12px;
 
+    border-radius: 10px;
 
-        /* =========================
-           NAVIGATION INFO OBEN
-        ========================= */
+    margin: 10px 0;
+}
 
-        #navigationInfo {
+.gps-marker {
+    width: 22px;
+    height: 22px;
 
-            position: absolute;
+    border-radius: 50%;
 
-            top: 132px;
+    background: #2563eb;
 
-            left: 10px;
+    border: 4px solid white;
 
-            right: 10px;
+    box-shadow:
+        0 0 0 5px rgba(37,99,235,.25),
+        0 2px 8px rgba(0,0,0,.4);
+}
 
-            z-index: 1500;
+.destination-marker {
+    width: 32px;
+    height: 32px;
 
-            background:
-                rgba(17,24,39,.96);
+    border-radius: 50%;
 
-            color: white;
+    background: #dc2626;
 
-            border-radius: 16px;
+    border: 4px solid white;
 
-            padding: 12px 14px;
+    box-shadow:
+        0 2px 8px rgba(0,0,0,.4);
 
-            box-shadow:
-                0 5px 20px rgba(0,0,0,.3);
+    display: flex;
 
-            display: none;
+    align-items: center;
+    justify-content: center;
 
-        }
+    color: white;
 
+    font-size: 14px;
+}
 
-        #navigationInfo.active {
+.own-marker {
+    width: 26px;
+    height: 26px;
 
-            display: block;
+    border-radius: 50%;
 
-        }
+    background: #7c3aed;
 
+    border: 4px solid white;
 
-        #navigationInstruction {
+    box-shadow:
+        0 2px 8px rgba(0,0,0,.4);
+}
 
-            font-size: 16px;
+.pointRow {
+    display: flex;
 
-            font-weight: 700;
+    gap: 8px;
 
-            margin-bottom: 8px;
+    margin-top: 10px;
+}
 
-        }
+.pointRow button {
+    flex: 1;
 
+    padding: 12px;
 
-        .navStats {
+    border: 0;
 
-            display: flex;
+    border-radius: 10px;
 
-            justify-content: space-between;
+    font-size: 14px;
+}
 
-            gap: 8px;
+.pointShow {
+    background: #111827;
 
-        }
+    color: white;
+}
 
+.pointDelete {
+    background: #fee2e2;
 
-        .navStat {
+    color: #991b1b;
+}
 
-            flex: 1;
+#toast {
+    position: fixed;
 
-            background:
-                rgba(255,255,255,.08);
+    left: 50%;
 
-            border-radius: 10px;
+    bottom: 92px;
 
-            padding: 8px;
+    transform:
+        translateX(-50%);
 
-            text-align: center;
+    z-index: 9999;
 
-        }
+    background:
+        rgba(17,24,39,.96);
 
+    color: white;
 
-        .navStat strong {
+    padding: 11px 16px;
 
-            display: block;
+    border-radius: 12px;
 
-            font-size: 15px;
+    font-size: 14px;
 
-        }
+    display: none;
 
+    max-width: 90%;
 
-        .navStat span {
+    text-align: center;
+}
 
-            display: block;
+.maplibregl-ctrl-bottom-right {
+    bottom: 8px;
+}
 
-            font-size: 10px;
-
-            opacity: .7;
-
-            margin-top: 2px;
-
-        }
-
-
-        /* =========================
-           UNTERE LEISTE
-        ========================= */
-
-        .bottomPanel {
-
-            position: absolute;
-
-            bottom: 0;
-
-            left: 0;
-
-            right: 0;
-
-            height: 72px;
-
-            z-index: 1000;
-
-            display: flex;
-
-            justify-content: space-around;
-
-            align-items: center;
-
-            background:
-                rgba(17,24,39,.98);
-
-            padding-bottom:
-                env(safe-area-inset-bottom);
-
-        }
-
-
-        .bottomPanel button {
-
-            background: transparent;
-
-            color: white;
-
-            border: 0;
-
-            font-size: 22px;
-
-            display: flex;
-
-            flex-direction: column;
-
-            align-items: center;
-
-            gap: 3px;
-
-        }
-
-
-        .bottomPanel span {
-
-            font-size: 10px;
-
-            opacity: .8;
-
-        }
-
-
-        /* =========================
-           PANELS
-        ========================= */
-
-        .panel {
-
-            position: absolute;
-
-            z-index: 3000;
-
-            left: 10px;
-
-            right: 10px;
-
-            bottom: 82px;
-
-            max-height: 75vh;
-
-            overflow-y: auto;
-
-            background: white;
-
-            border-radius: 18px;
-
-            padding: 20px;
-
-            box-shadow:
-                0 8px 30px rgba(0,0,0,.35);
-
-        }
-
-
-        .hidden {
-
-            display: none !important;
-
-        }
-
-
-        .panel h2 {
-
-            margin-top: 0;
-
-        }
-
-
-        .panel label {
-
-            display: block;
-
-            padding: 14px 0;
-
-            border-bottom:
-                1px solid #eee;
-
-            font-size: 16px;
-
-        }
-
-
-        .panel label input {
-
-            margin-right: 10px;
-
-            transform: scale(1.2);
-
-        }
-
-
-        .close {
-
-            float: right;
-
-            border: 0;
-
-            background: #eee;
-
-            border-radius: 50%;
-
-            width: 34px;
-
-            height: 34px;
-
-            font-size: 20px;
-
-        }
-
-
-        .mainButton {
-
-            width: 100%;
-
-            padding: 15px;
-
-            border: 0;
-
-            border-radius: 12px;
-
-            background: #111827;
-
-            color: white;
-
-            font-size: 16px;
-
-            margin-top: 10px;
-
-        }
-
-
-        .successButton {
-
-            background: #047857;
-
-        }
-
-
-        .dangerButton {
-
-            background: #b91c1c;
-
-        }
-
-
-        .infoText {
-
-            background: #f3f4f6;
-
-            padding: 12px;
-
-            border-radius: 10px;
-
-            margin: 10px 0;
-
-        }
-
-
-        /* =========================
-           GPS PUNKT
-        ========================= */
-
-        .gps-marker {
-
-            width: 22px;
-
-            height: 22px;
-
-            border-radius: 50%;
-
-            background: #2563eb;
-
-            border: 4px solid white;
-
-            box-shadow:
-
-                0 0 0 5px
-                rgba(37,99,235,.25),
-
-                0 2px 8px
-                rgba(0,0,0,.4);
-
-        }
-
-
-        /* =========================
-           ZIEL PUNKT
-        ========================= */
-
-        .destination-marker {
-
-            width: 30px;
-
-            height: 30px;
-
-            border-radius: 50%;
-
-            background: #dc2626;
-
-            border: 4px solid white;
-
-            box-shadow:
-                0 2px 8px rgba(0,0,0,.4);
-
-            display: flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            color: white;
-
-            font-size: 13px;
-
-        }
-
-
-        /* =========================
-           TOAST
-        ========================= */
-
-        #toast {
-
-            position: fixed;
-
-            left: 50%;
-
-            bottom: 92px;
-
-            transform:
-                translateX(-50%);
-
-            z-index: 9999;
-
-            background:
-                rgba(17,24,39,.96);
-
-            color: white;
-
-            padding: 11px 16px;
-
-            border-radius: 12px;
-
-            font-size: 14px;
-
-            display: none;
-
-            max-width: 90%;
-
-            text-align: center;
-
-        }
-
-
-        /* =========================
-           MAPLIBRE
-        ========================= */
-
-        .maplibregl-ctrl-bottom-right {
-
-            bottom: 8px;
-
-        }
-
-    </style>
-
+</style>
 </head>
 
 
 <body>
 
 
-    <!-- ==================================================
-         OBERE LEISTE
-    ================================================== -->
+<!-- =====================================================
+     TOPBAR
+===================================================== -->
 
-    <div class="topbar">
+<div class="topbar">
 
-        <div class="title">
+    <div class="title">
 
-            <strong>
-                MAUR STRASSENDIENST
-            </strong>
+        <strong>
+            MAUR STRASSENDIENST
+        </strong>
 
-            <span id="connectionStatus">
-                Online
-            </span>
-
-        </div>
-
-
-        <button
-            class="iconButton"
-            onclick="openPanel('settingsPanel')"
-        >
-            ⚙️
-        </button>
+        <span id="connectionStatus">
+            ONLINE • V6
+        </span>
 
     </div>
 
+    <button
+        class="iconButton"
+        onclick="openPanel('settingsPanel')">
+
+        ⚙️
+
+    </button>
+
+</div>
 
 
-    <!-- ==================================================
-         SUCHE
-    ================================================== -->
+<!-- =====================================================
+     SUCHE
+===================================================== -->
 
-    <div class="searchBox">
+<div class="searchBox">
 
-        <input
-            id="searchInput"
-            type="search"
-            placeholder="Ort, Strasse oder Adresse suchen..."
-            autocomplete="off"
-        >
-
-
-        <button
-            onclick="searchLocation()"
-        >
-            🔎
-        </button>
-
-    </div>
-
-
-    <div id="searchResults"></div>
-
-
-
-    <!-- ==================================================
-         NAVIGATION INFO
-    ================================================== -->
-
-    <div id="navigationInfo">
-
-        <div id="navigationInstruction">
-
-            Navigation wird vorbereitet...
-
-        </div>
-
-
-        <div class="navStats">
-
-
-            <div class="navStat">
-
-                <strong
-                    id="remainingDistance"
-                >
-                    –
-                </strong>
-
-                <span>
-                    Reststrecke
-                </span>
-
-            </div>
-
-
-            <div class="navStat">
-
-                <strong
-                    id="remainingTime"
-                >
-                    –
-                </strong>
-
-                <span>
-                    Restzeit
-                </span>
-
-            </div>
-
-
-            <div class="navStat">
-
-                <strong
-                    id="gpsAccuracy"
-                >
-                    –
-                </strong>
-
-                <span>
-                    GPS
-                </span>
-
-            </div>
-
-
-        </div>
-
-    </div>
-
-
-
-    <!-- ==================================================
-         KARTE
-    ================================================== -->
-
-    <div id="map"></div>
-
-
-
-    <!-- ==================================================
-         NAVIGATION PANEL
-    ================================================== -->
-
-    <div
-        id="navigationPanel"
-        class="panel hidden"
+    <input
+        id="searchInput"
+        type="search"
+        placeholder="Ort, Strasse oder Adresse suchen..."
+        autocomplete="off"
     >
 
+    <button onclick="searchLocation()">
 
-        <button
-            class="close"
-            onclick="closePanel('navigationPanel')"
-        >
-            ×
-        </button>
+        🔎
 
+    </button>
 
-        <h2>
-            🧭 Navigation
-        </h2>
+</div>
 
 
-        <div class="infoText">
+<div id="searchResults"></div>
 
-            <strong>
-                🏁 Ziel
+
+<!-- =====================================================
+     NAVIGATION INFO
+===================================================== -->
+
+<div id="navigationInfo">
+
+    <div id="navigationInstruction">
+
+        Navigation wird vorbereitet...
+
+    </div>
+
+    <div class="navStats">
+
+        <div class="navStat">
+
+            <strong id="remainingDistance">
+                –
             </strong>
-
-            <div
-                id="navigationDestination"
-            >
-                Noch kein Ziel ausgewählt.
-            </div>
-
-        </div>
-
-
-        <div class="infoText">
-
-            <strong>
-                📍 Standort
-            </strong>
-
-            <div id="gpsStatus">
-
-                GPS wird noch nicht verwendet.
-
-            </div>
-
-        </div>
-
-
-        <label>
-
-            <input
-                type="checkbox"
-                id="voiceNavigation"
-                checked
-                onchange="toggleVoice(this.checked)"
-            >
-
-            🔊 Sprachansagen
-
-        </label>
-
-
-        <label>
-
-            <input
-                type="checkbox"
-                id="followNavigation"
-                checked
-                onchange="toggleNavigationFollow(this.checked)"
-            >
-
-            🧭 Karte automatisch folgen
-
-        </label>
-
-
-        <button
-            class="mainButton successButton"
-            onclick="startNavigation()"
-        >
-            🧭 Navigation starten
-        </button>
-
-
-        <button
-            class="mainButton"
-            onclick="recenterNavigation()"
-        >
-            📍 Zu meiner Position
-        </button>
-
-
-        <button
-            class="mainButton dangerButton"
-            onclick="stopNavigation()"
-        >
-            🛑 Navigation beenden
-        </button>
-
-
-    </div>
-
-
-
-    <!-- ==================================================
-         EINSTELLUNGEN
-    ================================================== -->
-
-    <div
-        id="settingsPanel"
-        class="panel hidden"
-    >
-
-
-        <button
-            class="close"
-            onclick="closePanel('settingsPanel')"
-        >
-            ×
-        </button>
-
-
-        <h2>
-            ⚙️ Einstellungen
-        </h2>
-
-
-        <label>
-
-            <input
-                type="radio"
-                name="mapView"
-                value="normal"
-                checked
-                onchange="changeView('normal')"
-            >
-
-            🗺️ Normale Karte
-
-        </label>
-
-
-        <label>
-
-            <input
-                type="radio"
-                name="mapView"
-                value="satellite"
-                onchange="changeView('satellite')"
-            >
-
-            🛰️ Satellit
-
-        </label>
-
-
-        <label>
-
-            <input
-                type="radio"
-                name="mapView"
-                value="hybrid"
-                onchange="changeView('hybrid')"
-            >
-
-            🔀 Hybrid
-
-        </label>
-
-
-        <label>
-
-            <input
-                type="checkbox"
-                id="ortsgrenzen"
-                checked
-                onchange="toggleOrtsgrenzen(this.checked)"
-            >
-
-            🔴 Ortschaftsgrenzen
-
-        </label>
-
-
-        <label>
-
-            <input
-                type="checkbox"
-                id="buildings"
-                checked
-                onchange="toggleLayer('buildings', this.checked)"
-            >
-
-            🏠 Gebäude
-
-        </label>
-
-
-        <label>
-
-            <input
-                type="checkbox"
-                id="roads"
-                checked
-                onchange="toggleLayer('roads', this.checked)"
-            >
-
-            🛣️ Strassen
-
-        </label>
-
-
-        <label>
-
-            <input
-                type="checkbox"
-                id="streetLabels"
-                checked
-                onchange="toggleLayer('street-labels', this.checked)"
-            >
-
-            🏷️ Strassennamen
-
-        </label>
-
-
-        <button
-            class="mainButton"
-            onclick="openNavigationPanel()"
-        >
-            🧭 Navigation öffnen
-        </button>
-
-
-    </div>
-
-
-
-    <!-- ==================================================
-         EIGENE PUNKTE
-    ================================================== -->
-
-    <div
-        id="pointsPanel"
-        class="panel hidden"
-    >
-
-
-        <button
-            class="close"
-            onclick="closePanel('pointsPanel')"
-        >
-            ×
-        </button>
-
-
-        <h2>
-            📌 Eigene Punkte
-        </h2>
-
-
-        <button
-            class="mainButton"
-            onclick="addOwnPoint()"
-        >
-            📍 Punkt an meiner Position speichern
-        </button>
-
-
-        <div id="ownPointsList"></div>
-
-
-    </div>
-
-
-
-    <!-- ==================================================
-         UNTERE NAVIGATION
-    ================================================== -->
-
-    <div class="bottomPanel">
-
-
-        <button
-            onclick="openNavigationPanel()"
-        >
-
-            🧭
 
             <span>
-                Navi
+                Reststrecke
             </span>
 
-        </button>
+        </div>
 
 
-        <button
-            onclick="goToLocation()"
-        >
+        <div class="navStat">
 
-            📍
+            <strong id="remainingTime">
+                –
+            </strong>
+
+            <span>
+                Restzeit
+            </span>
+
+        </div>
+
+
+        <div class="navStat">
+
+            <strong id="gpsAccuracy">
+                –
+            </strong>
 
             <span>
                 GPS
             </span>
 
-        </button>
+        </div>
+
+    </div>
+
+</div>
 
 
-        <button
-            onclick="openPanel('pointsPanel')"
-        >
+<!-- =====================================================
+     KARTE
+===================================================== -->
 
-            📌
-
-            <span>
-                Punkte
-            </span>
-
-        </button>
+<div id="map"></div>
 
 
-        <button
-            onclick="openPanel('settingsPanel')"
-        >
+<!-- =====================================================
+     NAVIGATION PANEL
+===================================================== -->
 
-            ⚙️
+<div
+    id="navigationPanel"
+    class="panel hidden"
+>
 
-            <span>
-                Karte
-            </span>
+    <button
+        class="close"
+        onclick="closePanel('navigationPanel')">
 
-        </button>
+        ×
 
+    </button>
+
+
+    <h2>
+        🧭 Navigation
+    </h2>
+
+
+    <div class="infoText">
+
+        <strong>
+            🏁 Ziel
+        </strong>
+
+        <div id="navigationDestination">
+
+            Noch kein Ziel ausgewählt.
+
+        </div>
 
     </div>
 
 
+    <div class="infoText">
 
-    <!-- ==================================================
-         TOAST
-    ================================================== -->
+        <strong>
+            📍 Standort
+        </strong>
 
-    <div id="toast"></div>
+        <div id="gpsStatus">
+
+            GPS wird noch nicht verwendet.
+
+        </div>
+
+    </div>
 
 
+    <label>
 
-    <!-- ==================================================
-         APP.JS
-    ================================================== -->
+        <input
+            type="checkbox"
+            id="voiceNavigation"
+            checked
+            onchange="toggleVoice(this.checked)"
+        >
 
-    <script src="./app.js"></script>
+        🔊 Sprachansagen
 
+    </label>
+
+
+    <label>
+
+        <input
+            type="checkbox"
+            id="followNavigation"
+            checked
+            onchange="toggleNavigationFollow(this.checked)"
+        >
+
+        🧭 Karte automatisch folgen
+
+    </label>
+
+
+    <button
+        class="mainButton successButton"
+        onclick="startNavigation()">
+
+        🧭 Navigation starten
+
+    </button>
+
+
+    <button
+        class="mainButton"
+        onclick="recenterNavigation()">
+
+        📍 Zu meiner Position
+
+    </button>
+
+
+    <button
+        class="mainButton dangerButton"
+        onclick="stopNavigation()">
+
+        🛑 Navigation beenden
+
+    </button>
+
+</div>
+
+
+<!-- =====================================================
+     EINSTELLUNGEN
+===================================================== -->
+
+<div
+    id="settingsPanel"
+    class="panel hidden"
+>
+
+    <button
+        class="close"
+        onclick="closePanel('settingsPanel')">
+
+        ×
+
+    </button>
+
+
+    <h2>
+        ⚙️ Einstellungen
+    </h2>
+
+
+    <div class="infoText">
+
+        <strong>
+            MAUR STRASSENDIENST V6
+        </strong>
+
+        <br>
+
+        Karten- und Navigationssystem
+
+    </div>
+
+
+    <label>
+
+        <input
+            type="radio"
+            name="mapView"
+            value="normal"
+            checked
+            onchange="changeView('normal')"
+        >
+
+        🗺️ Normale Karte
+
+    </label>
+
+
+    <label>
+
+        <input
+            type="radio"
+            name="mapView"
+            value="satellite"
+            onchange="changeView('satellite')"
+        >
+
+        🛰️ Satellit
+
+    </label>
+
+
+    <label>
+
+        <input
+            type="radio"
+            name="mapView"
+            value="hybrid"
+            onchange="changeView('hybrid')"
+        >
+
+        🔀 Hybrid
+
+    </label>
+
+
+    <label>
+
+        <input
+            type="checkbox"
+            id="ortsgrenzen"
+            checked
+            onchange="toggleOrtsgrenzen(this.checked)"
+        >
+
+        🔴 Ortschaftsgrenzen
+
+    </label>
+
+
+    <label>
+
+        <input
+            type="checkbox"
+            id="buildings"
+            checked
+            onchange="toggleLayer('buildings', this.checked)"
+        >
+
+        🏠 Gebäude
+
+    </label>
+
+
+    <label>
+
+        <input
+            type="checkbox"
+            id="roads"
+            checked
+            onchange="toggleLayer('roads', this.checked)"
+        >
+
+        🛣️ Strassen
+
+    </label>
+
+
+    <label>
+
+        <input
+            type="checkbox"
+            id="streetLabels"
+            checked
+            onchange="toggleLayer('street-labels', this.checked)"
+        >
+
+        🏷️ Strassennamen
+
+    </label>
+
+
+    <button
+        class="mainButton"
+        onclick="openNavigationPanel()">
+
+        🧭 Navigation öffnen
+
+    </button>
+
+</div>
+
+
+<!-- =====================================================
+     EIGENE PUNKTE
+===================================================== -->
+
+<div
+    id="pointsPanel"
+    class="panel hidden"
+>
+
+    <button
+        class="close"
+        onclick="closePanel('pointsPanel')">
+
+        ×
+
+    </button>
+
+
+    <h2>
+        📌 Eigene Punkte
+    </h2>
+
+
+    <button
+        class="mainButton"
+        onclick="addOwnPoint()">
+
+        📍 Punkt an meiner Position speichern
+
+    </button>
+
+
+    <div id="ownPointsList"></div>
+
+</div>
+
+
+<!-- =====================================================
+     BOTTOM NAVIGATION
+===================================================== -->
+
+<div class="bottomPanel">
+
+    <button
+        onclick="openNavigationPanel()">
+
+        🧭
+
+        <span>
+            Navi
+        </span>
+
+    </button>
+
+
+    <button
+        onclick="goToLocation()">
+
+        📍
+
+        <span>
+            GPS
+        </span>
+
+    </button>
+
+
+    <button
+        onclick="openPanel('pointsPanel')">
+
+        📌
+
+        <span>
+            Punkte
+        </span>
+
+    </button>
+
+
+    <button
+        onclick="openPanel('settingsPanel')">
+
+        ⚙️
+
+        <span>
+            Karte
+        </span>
+
+    </button>
+
+</div>
+
+
+<div id="toast"></div>
+
+
+<script>
+
+/* =====================================================
+   MAUR STRASSENDIENST V6
+   ALLES IN EINER EINZIGEN HTML-DATEI
+===================================================== */
+
+
+/* =====================================================
+   KONFIGURATION
+===================================================== */
+
+const PMTILES_URL = "./maur.pmtiles";
+
+const DEFAULT_CENTER = [
+    8.667,
+    47.337
+];
+
+const DEFAULT_ZOOM = 13;
+
+const OSRM_URL =
+    "https://router.project-osrm.org/route/v1/driving/";
+
+
+const ORTSCHAFTEN = [
+    "FORCH",
+    "AESCH",
+    "BINZ",
+    "MAUR",
+    "UESSIKON"
+];
+
+
+/* =====================================================
+   VARIABLEN
+===================================================== */
+
+let map = null;
+
+let gpsMarker = null;
+
+let destinationMarker = null;
+
+let currentPosition = null;
+
+let destination = null;
+
+let destinationName = "";
+
+let currentRoute = null;
+
+let navigationActive = false;
+
+let navigationWatchId = null;
+
+let voiceEnabled = true;
+
+let followNavigation = true;
+
+let lastRouteUpdate = 0;
+
+let lastSpokenInstruction = "";
+
+let ownPoints = [];
+
+let ownPointMarkers = [];
+
+let lastGPSUpdate = 0;
+
+
+/* =====================================================
+   PMTILES
+===================================================== */
+
+const protocol =
+    new pmtiles.Protocol({
+        metadata: true
+    });
+
+maplibregl.addProtocol(
+    "pmtiles",
+    protocol.tile
+);
+
+
+/* =====================================================
+   KARTE ERSTELLEN
+===================================================== */
+
+map = new maplibregl.Map({
+
+    container: "map",
+
+    center:
+        DEFAULT_CENTER,
+
+    zoom:
+        DEFAULT_ZOOM,
+
+    style: {
+
+        version: 8,
+
+        sources: {
+
+            maur: {
+
+                type: "vector",
+
+                url:
+                    "pmtiles://./maur.pmtiles"
+
+            },
+
+            satellite: {
+
+                type: "raster",
+
+                tiles: [
+
+                    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+
+                ],
+
+                tileSize: 256,
+
+                attribution:
+                    "Esri World Imagery"
+
+            }
+
+        },
+
+        layers: [
+
+            {
+                id:
+                    "background",
+
+                type:
+                    "background",
+
+                paint: {
+
+                    "background-color":
+                        "#e5e7eb"
+
+                }
+
+            },
+
+
+            {
+                id:
+                    "land",
+
+                type:
+                    "fill",
+
+                source:
+                    "maur",
+
+                "source-layer":
+                    "land",
+
+                paint: {
+
+                    "fill-color":
+                        "#f3f4f6"
+
+                }
+
+            },
+
+
+            {
+                id:
+                    "water",
+
+                type:
+                    "fill",
+
+                source:
+                    "maur",
+
+                "source-layer":
+                    "water",
+
+                paint: {
+
+                    "fill-color":
+                        "#bfdbfe"
+
+                }
+
+            },
+
+
+            {
+                id:
+                    "water-lines",
+
+                type:
+                    "line",
+
+                source:
+                    "maur",
+
+                "source-layer":
+                    "water",
+
+                paint: {
+
+                    "line-color":
+                        "#60a5fa",
+
+                    "line-width":
+                        1
+
+                }
+
+            },
+
+
+            {
+                id:
+                    "buildings",
+
+                type:
+                    "fill",
+
+                source:
+                    "maur",
+
+                "source-layer":
+                    "buildings",
+
+                paint: {
+
+                    "fill-color":
+                        "#d1d5db",
+
+                    "fill-opacity":
+                        .8,
+
+                    "fill-outline-color":
+                        "#9ca3af"
+
+                }
+
+            },
+
+
+            {
+                id:
+                    "roads",
+
+                type:
+                    "line",
+
+                source:
+                    "maur",
+
+                "source-layer":
+                    "roads",
+
+                paint: {
+
+                    "line-color":
+                        "#ffffff",
+
+                    "line-width": [
+
+                        "interpolate",
+
+                        ["linear"],
+
+                        ["zoom"],
+
+                        9,
+                        .7,
+
+                        12,
+                        1.2,
+
+                        14,
+                        2,
+
+                        17,
+                        5,
+
+                        19,
+                        8
+
+                    ]
+
+                }
+
+            },
+
+
+            {
+                id:
+                    "street-labels",
+
+                type:
+                    "symbol",
+
+                source:
+                    "maur",
+
+                "source-layer":
+                    "roads",
+
+                layout: {
+
+                    "text-field": [
+
+                        "coalesce",
+
+                        ["get", "name"],
+
+                        ["get", "ref"],
+
+                        ""
+
+                    ],
+
+                    "text-size": [
+
+                        "interpolate",
+
+                        ["linear"],
+
+                        ["zoom"],
+
+                        10,
+                        9,
+
+                        13,
+                        11,
+
+                        16,
+                        14,
+
+                        19,
+                        17
+
+                    ],
+
+                    "text-font":
+                        ["Open Sans Regular"],
+
+                    "symbol-placement":
+                        "line",
+
+                    "text-allow-overlap":
+                        false
+
+                },
+
+                paint: {
+
+                    "text-color":
+                        "#374151",
+
+                    "text-halo-color":
+                        "#ffffff",
+
+                    "text-halo-width":
+                        1.5
+
+                }
+
+            }
+
+        ]
+
+    },
+
+    attributionControl:
+        true
+
+});
+
+
+/* =====================================================
+   MAP LOAD
+===================================================== */
+
+map.on(
+    "load",
+    async () => {
+
+        addSatelliteLayer();
+
+        createRouteLayer();
+
+        createOrtschaftsgrenzenLayers();
+
+        await loadOrtschaftsgrenzen();
+
+        restoreSettings();
+
+        loadOwnPoints();
+
+        renderOwnPointMarkers();
+
+        updateOwnPointsList();
+
+        showToast(
+            "Maur Strassendienst V6 geladen."
+        );
+
+    }
+);
+
+
+/* =====================================================
+   SATELLITEN-LAYER
+===================================================== */
+
+function addSatelliteLayer() {
+
+    if (
+        map.getLayer(
+            "satellite-layer"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    map.addLayer({
+
+        id:
+            "satellite-layer",
+
+        type:
+            "raster",
+
+        source:
+            "satellite",
+
+        layout: {
+
+            visibility:
+                "none"
+
+        },
+
+        paint: {
+
+            "raster-opacity":
+                1
+
+        }
+
+    });
+
+}
+
+
+/* =====================================================
+   ROUTE LAYER
+===================================================== */
+
+function createRouteLayer() {
+
+    if (
+        map.getSource(
+            "route-source"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    map.addSource(
+
+        "route-source",
+
+        {
+
+            type:
+                "geojson",
+
+            data: {
+
+                type:
+                    "FeatureCollection",
+
+                features: []
+
+            }
+
+        }
+
+    );
+
+
+    map.addLayer({
+
+        id:
+            "route-line",
+
+        type:
+            "line",
+
+        source:
+            "route-source",
+
+        layout: {
+
+            "line-cap":
+                "round",
+
+            "line-join":
+                "round"
+
+        },
+
+        paint: {
+
+            "line-color":
+                "#2563eb",
+
+            "line-width":
+                6,
+
+            "line-opacity":
+                .92
+
+        }
+
+    });
+
+}
+
+
+/* =====================================================
+   ORTSCHAFTSGRENZEN
+===================================================== */
+
+function createOrtschaftsgrenzenLayers() {
+
+    if (
+        map.getSource(
+            "ortsgrenzen-source"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    map.addSource(
+
+        "ortsgrenzen-source",
+
+        {
+
+            type:
+                "geojson",
+
+            data: {
+
+                type:
+                    "FeatureCollection",
+
+                features: []
+
+            }
+
+        }
+
+    );
+
+
+    map.addSource(
+
+        "ortsgrenzen-label-source",
+
+        {
+
+            type:
+                "geojson",
+
+            data: {
+
+                type:
+                    "FeatureCollection",
+
+                features: []
+
+            }
+
+        }
+
+    );
+
+
+    map.addLayer({
+
+        id:
+            "ortsgrenzen-fill",
+
+        type:
+            "fill",
+
+        source:
+            "ortsgrenzen-source",
+
+        paint: {
+
+            "fill-color":
+                "#ef4444",
+
+            "fill-opacity":
+                .025
+
+        }
+
+    });
+
+
+    map.addLayer({
+
+        id:
+            "ortsgrenzen-line",
+
+        type:
+            "line",
+
+        source:
+            "ortsgrenzen-source",
+
+        paint: {
+
+            "line-color":
+                "#dc2626",
+
+            "line-width":
+                2.5,
+
+            "line-opacity":
+                .95
+
+        }
+
+    });
+
+
+    map.addLayer({
+
+        id:
+            "ortsgrenzen-labels",
+
+        type:
+            "symbol",
+
+        source:
+            "ortsgrenzen-label-source",
+
+        layout: {
+
+            "text-field":
+                ["get", "name"],
+
+            "text-size": [
+
+                "interpolate",
+
+                ["linear"],
+
+                ["zoom"],
+
+                10,
+                11,
+
+                13,
+                15,
+
+                16,
+                19
+
+            ],
+
+            "text-font":
+                ["Open Sans Bold"],
+
+            "text-letter-spacing":
+                .05,
+
+            "text-allow-overlap":
+                false
+
+        },
+
+        paint: {
+
+            "text-color":
+                "#b91c1c",
+
+            "text-halo-color":
+                "#ffffff",
+
+            "text-halo-width":
+                2.5
+
+        }
+
+    });
+
+}
+
+
+/* =====================================================
+   ORTSCHAFTSNAME AUSLESEN
+===================================================== */
+
+function getOrtschaftName(
+    feature
+) {
+
+    const p =
+        feature.properties || {};
+
+
+    return (
+
+        p.ortschaftsname ||
+
+        p.ORTSCHAFTSNAME ||
+
+        p.Ortschaftsname ||
+
+        p.name ||
+
+        p.NAME ||
+
+        ""
+
+    );
+
+}
+
+
+/* =====================================================
+   POLYGON CENTROID
+===================================================== */
+
+function ringCentroid(
+    ring
+) {
+
+    if (
+        !ring ||
+        ring.length < 3
+    ) {
+
+        return null;
+
+    }
+
+
+    let area = 0;
+
+    let cx = 0;
+
+    let cy = 0;
+
+
+    for (
+        let i = 0;
+        i < ring.length - 1;
+        i++
+    ) {
+
+        const x1 =
+            ring[i][0];
+
+        const y1 =
+            ring[i][1];
+
+        const x2 =
+            ring[i + 1][0];
+
+        const y2 =
+            ring[i + 1][1];
+
+
+        const factor =
+            x1 * y2 -
+            x2 * y1;
+
+
+        area +=
+            factor;
+
+
+        cx +=
+            (x1 + x2) *
+            factor;
+
+
+        cy +=
+            (y1 + y2) *
+            factor;
+
+    }
+
+
+    area *= .5;
+
+
+    if (
+        Math.abs(area) < 0.000000001
+    ) {
+
+        let x = 0;
+
+        let y = 0;
+
+
+        ring.forEach(
+            point => {
+
+                x +=
+                    point[0];
+
+                y +=
+                    point[1];
+
+            }
+        );
+
+
+        return [
+
+            x / ring.length,
+
+            y / ring.length
+
+        ];
+
+    }
+
+
+    return [
+
+        cx / (6 * area),
+
+        cy / (6 * area)
+
+    ];
+
+}
+
+
+/* =====================================================
+   FEATURE CENTROID
+===================================================== */
+
+function featureCentroid(
+    feature
+) {
+
+    if (
+        !feature ||
+        !feature.geometry
+    ) {
+
+        return null;
+
+    }
+
+
+    const geometry =
+        feature.geometry;
+
+
+    if (
+        geometry.type ===
+        "Polygon"
+    ) {
+
+        return ringCentroid(
+            geometry.coordinates[0]
+        );
+
+    }
+
+
+    if (
+        geometry.type ===
+        "MultiPolygon"
+    ) {
+
+        let largest =
+            null;
+
+        let largestArea =
+            -1;
+
+
+        geometry.coordinates.forEach(
+            polygon => {
+
+                const ring =
+                    polygon[0];
+
+
+                const center =
+                    ringCentroid(
+                        ring
+                    );
+
+
+                if (!center) {
+
+                    return;
+
+                }
+
+
+                const area =
+                    Math.abs(
+                        polygonArea(
+                            ring
+                        )
+                    );
+
+
+                if (
+                    area >
+                    largestArea
+                ) {
+
+                    largestArea =
+                        area;
+
+                    largest =
+                        center;
+
+                }
+
+            }
+        );
+
+
+        return largest;
+
+    }
+
+
+    return null;
+
+}
+
+
+/* =====================================================
+   POLYGON AREA
+===================================================== */
+
+function polygonArea(
+    ring
+) {
+
+    let area = 0;
+
+
+    for (
+        let i = 0;
+        i < ring.length - 1;
+        i++
+    ) {
+
+        area +=
+
+            ring[i][0] *
+            ring[i + 1][1]
+
+            -
+
+            ring[i + 1][0] *
+            ring[i][1];
+
+    }
+
+
+    return area / 2;
+
+}
+
+
+/* =====================================================
+   ORTSCHAFTSGRENZEN LADEN
+===================================================== */
+
+async function loadOrtschaftsgrenzen() {
+
+    const bbox =
+        "8.55,47.25,8.75,47.42";
+
+
+    const typeNames = [
+
+        "ms:ogd-0268_arv_basis_av_plz_ortschaften_f",
+
+        "av_plz_ortschaften_f"
+
+    ];
+
+
+    let data = null;
+
+
+    for (
+        const typeName
+        of typeNames
+    ) {
+
+        try {
+
+            const url =
+
+                "https://maps.zh.ch/wfs/OGDZHWFS" +
+
+                "?service=WFS" +
+
+                "&version=2.0.0" +
+
+                "&request=GetFeature" +
+
+                "&typeNames=" +
+
+                encodeURIComponent(
+                    typeName
+                ) +
+
+                "&outputFormat=application/json" +
+
+                "&srsName=EPSG:4326" +
+
+                "&bbox=" +
+
+                bbox +
+
+                ",EPSG:4326";
+
+
+            const response =
+                await fetch(url);
+
+
+            if (
+                !response.ok
+            ) {
+
+                continue;
+
+            }
+
+
+            const json =
+                await response.json();
+
+
+            if (
+                json &&
+                Array.isArray(
+                    json.features
+                )
+            ) {
+
+                data =
+                    json;
+
+                break;
+
+            }
+
+        }
+
+        catch (error) {
+
+            console.warn(
+                "Grenzen:",
+                error
+            );
+
+        }
+
+    }
+
+
+    if (!data) {
+
+        console.warn(
+            "Keine Ortschaftsgrenzen verfügbar."
+        );
+
+        return;
+
+    }
+
+
+    const features =
+
+        data.features.filter(
+            feature => {
+
+                const name =
+                    getOrtschaftName(
+                        feature
+                    );
+
+
+                return ORTSCHAFTEN.includes(
+
+                    String(name)
+                        .trim()
+                        .toUpperCase()
+
+                );
+
+            }
+        );
+
+
+    const boundarySource =
+        map.getSource(
+            "ortsgrenzen-source"
+        );
+
+
+    if (boundarySource) {
+
+        boundarySource.setData({
+
+            type:
+                "FeatureCollection",
+
+            features:
+                features
+
+        });
+
+    }
+
+
+    const labelFeatures = [];
+
+
+    features.forEach(
+        feature => {
+
+            const center =
+                featureCentroid(
+                    feature
+                );
+
+
+            const name =
+                getOrtschaftName(
+                    feature
+                );
+
+
+            if (
+                center &&
+                name
+            ) {
+
+                labelFeatures.push({
+
+                    type:
+                        "Feature",
+
+                    geometry: {
+
+                        type:
+                            "Point",
+
+                        coordinates:
+                            center
+
+                    },
+
+                    properties: {
+
+                        name:
+                            String(name)
+                                .trim()
+
+                    }
+
+                });
+
+            }
+
+        }
+    );
+
+
+    const labelSource =
+        map.getSource(
+            "ortsgrenzen-label-source"
+        );
+
+
+    if (labelSource) {
+
+        labelSource.setData({
+
+            type:
+                "FeatureCollection",
+
+            features:
+                labelFeatures
+
+        });
+
+    }
+
+
+    updateOrtschaftsgrenzenVisibility();
+
+}
+
+
+/* =====================================================
+   ORTSCHAFTSGRENZEN EIN/AUS
+===================================================== */
+
+function toggleOrtsgrenzen(
+    visible
+) {
+
+    localStorage.setItem(
+        "maurOrtsgrenzen",
+        visible
+            ? "true"
+            : "false"
+    );
+
+
+    updateOrtschaftsgrenzenVisibility();
+
+}
+
+
+function updateOrtschaftsgrenzenVisibility() {
+
+    const visible =
+
+        localStorage.getItem(
+            "maurOrtsgrenzen"
+        ) !== "false";
+
+
+    const value =
+        visible
+            ? "visible"
+            : "none";
+
+
+    [
+
+        "ortsgrenzen-fill",
+
+        "ortsgrenzen-line",
+
+        "ortsgrenzen-labels"
+
+    ].forEach(
+        id => {
+
+            if (
+                map.getLayer(id)
+            ) {
+
+                map.setLayoutProperty(
+
+                    id,
+
+                    "visibility",
+
+                    value
+
+                );
+
+            }
+
+        }
+    );
+
+
+    const checkbox =
+        document.getElementById(
+            "ortsgrenzen"
+        );
+
+
+    if (checkbox) {
+
+        checkbox.checked =
+            visible;
+
+    }
+
+}
+
+
+/* =====================================================
+   KARTENANSICHT
+===================================================== */
+
+function changeView(
+    view
+) {
+
+    localStorage.setItem(
+        "maurMapView",
+        view
+    );
+
+
+    if (
+        !map ||
+        !map.getLayer(
+            "satellite-layer"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        view === "normal"
+    ) {
+
+        map.setLayoutProperty(
+
+            "satellite-layer",
+
+            "visibility",
+
+            "none"
+
+        );
+
+
+        setBaseMapLayers(
+            true
+        );
+
+    }
+
+
+    if (
+        view === "satellite"
+    ) {
+
+        map.setLayoutProperty(
+
+            "satellite-layer",
+
+            "visibility",
+
+            "visible"
+
+        );
+
+
+        setBaseMapLayers(
+            false
+        );
+
+    }
+
+
+    if (
+        view === "hybrid"
+    ) {
+
+        map.setLayoutProperty(
+
+            "satellite-layer",
+
+            "visibility",
+
+            "visible"
+
+        );
+
+
+        setBaseMapLayers(
+            true
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   BASISLAYER
+===================================================== */
+
+function setBaseMapLayers(
+    visible
+) {
+
+    [
+
+        "land",
+
+        "water",
+
+        "water-lines",
+
+        "buildings"
+
+    ].forEach(
+        id => {
+
+            if (
+                map.getLayer(id)
+            ) {
+
+                map.setLayoutProperty(
+
+                    id,
+
+                    "visibility",
+
+                    visible
+                        ? "visible"
+                        : "none"
+
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   LAYER EIN/AUS
+===================================================== */
+
+function toggleLayer(
+    layerId,
+    visible
+) {
+
+    if (
+        !map.getLayer(
+            layerId
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    map.setLayoutProperty(
+
+        layerId,
+
+        "visibility",
+
+        visible
+            ? "visible"
+            : "none"
+
+    );
+
+
+    localStorage.setItem(
+
+        "maurLayer_" +
+        layerId,
+
+        visible
+            ? "true"
+            : "false"
+
+    );
+
+}
+
+
+/* =====================================================
+   EINSTELLUNGEN WIEDERHERSTELLEN
+===================================================== */
+
+function restoreSettings() {
+
+    const view =
+        localStorage.getItem(
+            "maurMapView"
+        ) ||
+        "normal";
+
+
+    const radio =
+        document.querySelector(
+
+            'input[name="mapView"][value="' +
+            view +
+            '"]'
+
+        );
+
+
+    if (radio) {
+
+        radio.checked =
+            true;
+
+    }
+
+
+    changeView(
+        view
+    );
+
+
+    const ort =
+        localStorage.getItem(
+            "maurOrtsgrenzen"
+        );
+
+
+    if (
+        ort === "false"
+    ) {
+
+        toggleOrtsgrenzen(
+            false
+        );
+
+    }
+
+
+    [
+
+        "buildings",
+
+        "roads",
+
+        "street-labels"
+
+    ].forEach(
+        layerId => {
+
+            const saved =
+                localStorage.getItem(
+
+                    "maurLayer_" +
+                    layerId
+
+                );
+
+
+            if (
+                saved === "false"
+            ) {
+
+                toggleLayer(
+                    layerId,
+                    false
+                );
+
+
+                const checkbox =
+                    document.querySelector(
+
+                        '[onchange*="' +
+                        layerId +
+                        '"]'
+
+                    );
+
+
+                if (checkbox) {
+
+                    checkbox.checked =
+                        false;
+
+                }
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   PANELS
+===================================================== */
+
+function openPanel(
+    id
+) {
+
+    document.querySelectorAll(
+        ".panel"
+    ).forEach(
+        panel => {
+
+            panel.classList.add(
+                "hidden"
+            );
+
+        }
+    );
+
+
+    const panel =
+        document.getElementById(
+            id
+        );
+
+
+    if (panel) {
+
+        panel.classList.remove(
+            "hidden"
+        );
+
+    }
+
+}
+
+
+function closePanel(
+    id
+) {
+
+    const panel =
+        document.getElementById(
+            id
+        );
+
+
+    if (panel) {
+
+        panel.classList.add(
+            "hidden"
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   NAVIGATION PANEL
+===================================================== */
+
+function openNavigationPanel() {
+
+    openPanel(
+        "navigationPanel"
+    );
+
+}
+
+
+/* =====================================================
+   GPS EINMALIG
+===================================================== */
+
+function goToLocation() {
+
+    if (
+        !navigator.geolocation
+    ) {
+
+        showToast(
+            "GPS wird nicht unterstützt."
+        );
+
+        return;
+
+    }
+
+
+    navigator.geolocation.getCurrentPosition(
+
+        position => {
+
+            updateGPS(
+                position
+            );
+
+
+            map.flyTo({
+
+                center: [
+
+                    position.coords.longitude,
+
+                    position.coords.latitude
+
+                ],
+
+                zoom:
+                    17,
+
+                duration:
+                    1000
+
+            });
+
+
+            showToast(
+                "GPS-Position gefunden."
+            );
+
+        },
+
+        error => {
+
+            console.warn(
+                error
+            );
+
+
+            showToast(
+                "GPS konnte nicht abgerufen werden."
+            );
+
+        },
+
+        {
+
+            enableHighAccuracy:
+                true,
+
+            timeout:
+                15000,
+
+            maximumAge:
+                5000
+
+        }
+
+    );
+
+}
+
+
+/* =====================================================
+   GPS LIVE
+===================================================== */
+
+function startGPSWatch() {
+
+    if (
+        !navigator.geolocation
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        navigationWatchId !== null
+    ) {
+
+        return;
+
+    }
+
+
+    navigationWatchId =
+
+        navigator.geolocation.watchPosition(
+
+            position => {
+
+                updateGPS(
+                    position
+                );
+
+            },
+
+            error => {
+
+                console.warn(
+                    "GPS Fehler:",
+                    error
+                );
+
+                const status =
+                    document.getElementById(
+                        "gpsStatus"
+                    );
+
+
+                if (status) {
+
+                    status.textContent =
+                        "GPS nicht verfügbar.";
+
+                }
+
+            },
+
+            {
+
+                enableHighAccuracy:
+                    true,
+
+                maximumAge:
+                    3000,
+
+                timeout:
+                    15000
+
+            }
+
+        );
+
+}
+
+
+startGPSWatch();
+
+
+/* =====================================================
+   GPS UPDATE
+===================================================== */
+
+function updateGPS(
+    position
+) {
+
+    currentPosition = [
+
+        position.coords.longitude,
+
+        position.coords.latitude
+
+    ];
+
+
+    lastGPSUpdate =
+        Date.now();
+
+
+    const accuracy =
+        Math.round(
+            position.coords.accuracy
+        );
+
+
+    const gpsStatus =
+        document.getElementById(
+            "gpsStatus"
+        );
+
+
+    if (gpsStatus) {
+
+        gpsStatus.textContent =
+
+            "GPS Genauigkeit: " +
+            accuracy +
+            " m";
+
+    }
+
+
+    const gpsAccuracy =
+        document.getElementById(
+            "gpsAccuracy"
+        );
+
+
+    if (gpsAccuracy) {
+
+        gpsAccuracy.textContent =
+            accuracy + " m";
+
+    }
+
+
+    if (!gpsMarker) {
+
+        const element =
+            document.createElement(
+                "div"
+            );
+
+
+        element.className =
+            "gps-marker";
+
+
+        gpsMarker =
+
+            new maplibregl.Marker({
+                element:
+                    element
+            })
+
+            .setLngLat(
+                currentPosition
+            )
+
+            .addTo(map);
+
+    }
+
+    else {
+
+        gpsMarker.setLngLat(
+            currentPosition
+        );
+
+    }
+
+
+    if (
+        navigationActive &&
+        currentRoute
+    ) {
+
+        updateNavigationProgress();
+
+    }
+
+}
+
+
+/* =====================================================
+   NAVIGATION START
+===================================================== */
+
+async function startNavigation() {
+
+    if (!destination) {
+
+        showToast(
+            "Bitte zuerst ein Ziel suchen."
+        );
+
+        return;
+
+    }
+
+
+    if (!currentPosition) {
+
+        showToast(
+            "GPS wird gesucht..."
+        );
+
+
+        goToLocation();
+
+        return;
+
+    }
+
+
+    navigationActive =
+        true;
+
+
+    document.getElementById(
+        "navigationInfo"
+    ).classList.add(
+        "active"
+    );
+
+
+    lastSpokenInstruction =
+        "";
+
+
+    openNavigationPanel();
+
+
+    await calculateRoute();
+
+}
+
+
+/* =====================================================
+   ROUTE BERECHNEN
+===================================================== */
+
+async function calculateRoute() {
+
+    if (
+        !currentPosition ||
+        !destination
+    ) {
+
+        return;
+
+    }
+
+
+    const coordinateString =
+
+        currentPosition.join(",") +
+
+        ";" +
+
+        destination.join(",");
+
+
+    const url =
+
+        OSRM_URL +
+
+        coordinateString +
+
+        "?overview=full" +
+
+        "&geometries=geojson" +
+
+        "&steps=true";
+
+
+    try {
+
+        showToast(
+            "Route wird berechnet..."
+        );
+
+
+        const response =
+            await fetch(url);
+
+
+        if (
+            !response.ok
+        ) {
+
+            throw new Error(
+                "OSRM HTTP Fehler"
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            data.code !== "Ok" ||
+            !data.routes ||
+            !data.routes.length
+        ) {
+
+            throw new Error(
+                "Keine Route gefunden."
+            );
+
+        }
+
+
+        currentRoute =
+            data.routes[0];
+
+
+        const routeSource =
+            map.getSource(
+                "route-source"
+            );
+
+
+        if (routeSource) {
+
+            routeSource.setData({
+
+                type:
+                    "Feature",
+
+                geometry:
+                    currentRoute.geometry,
+
+                properties: {}
+
+            });
+
+        }
+
+
+        updateNavigationInfo();
+
+
+        const coordinates =
+            currentRoute.geometry.coordinates;
+
+
+        if (
+            coordinates &&
+            coordinates.length > 1
+        ) {
+
+            const bounds =
+                new maplibregl.LngLatBounds();
+
+
+            coordinates.forEach(
+                coord => {
+
+                    bounds.extend(
+                        coord
+                    );
+
+                }
+            );
+
+
+            map.fitBounds(
+
+                bounds,
+
+                {
+
+                    padding:
+                        80,
+
+                    duration:
+                        800
+
+                }
+
+            );
+
+        }
+
+
+        const firstInstruction =
+            getNextInstruction();
+
+
+        if (
+            firstInstruction
+        ) {
+
+            document.getElementById(
+                "navigationInstruction"
+            ).textContent =
+                firstInstruction.text;
+
+
+            speakInstruction(
+                firstInstruction.text
+            );
+
+        }
+
+
+        showToast(
+            "Route bereit."
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+
+        navigationActive =
+            false;
+
+
+        showToast(
+            "Route konnte nicht berechnet werden."
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   NAVIGATION PROGRESS
+===================================================== */
+
+function updateNavigationProgress() {
+
+    if (
+        !currentRoute ||
+        !currentPosition ||
+        !destination
+    ) {
+
+        return;
+
+    }
+
+
+    const remainingDirect =
+        distanceBetween(
+
+            currentPosition[1],
+
+            currentPosition[0],
+
+            destination[1],
+
+            destination[0]
+
+        );
+
+
+    let remaining =
+        remainingDirect;
+
+
+    if (
+        currentRoute.distance
+    ) {
+
+        const ratio =
+
+            Math.min(
+
+                1,
+
+                Math.max(
+
+                    0,
+
+                    remainingDirect /
+                    currentRoute.distance
+
+                )
+
+            );
+
+
+        remaining =
+
+            currentRoute.distance *
+            ratio;
+
+    }
+
+
+    document.getElementById(
+        "remainingDistance"
+    ).textContent =
+
+        formatDistance(
+            remaining
+        );
+
+
+    let remainingSeconds = 0;
+
+
+    if (
+        currentRoute.duration
+    ) {
+
+        remainingSeconds =
+
+            currentRoute.duration *
+
+            (
+
+                remaining /
+                currentRoute.distance
+
+            );
+
+    }
+
+
+    document.getElementById(
+        "remainingTime"
+    ).textContent =
+
+        formatTime(
+            remainingSeconds
+        );
+
+
+    if (
+        followNavigation
+    ) {
+
+        map.easeTo({
+
+            center:
+                currentPosition,
+
+            duration:
+                600,
+
+            essential:
+                true
+
+        });
+
+    }
+
+
+    const instruction =
+        getNextInstruction();
+
+
+    if (instruction) {
+
+        document.getElementById(
+            "navigationInstruction"
+        ).textContent =
+            instruction.text;
+
+
+        if (
+            instruction.text !==
+            lastSpokenInstruction
+        ) {
+
+            speakInstruction(
+                instruction.text
+            );
+
+        }
+
+    }
+
+
+    if (
+        remainingDirect < 30
+    ) {
+
+        document.getElementById(
+            "navigationInstruction"
+        ).textContent =
+            "🏁 Ziel erreicht!";
+
+
+        speak(
+            "Sie haben Ihr Ziel erreicht."
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   NÄCHSTE NAVIGATION ANWEISUNG
+===================================================== */
+
+function getNextInstruction() {
+
+    if (
+        !currentRoute ||
+        !currentRoute.legs ||
+        !currentRoute.legs.length
+    ) {
+
+        return {
+
+            text:
+                "🧭 Weiter zum Ziel"
+
+        };
+
+    }
+
+
+    const steps =
+        currentRoute.legs[0].steps || [];
+
+
+    if (!steps.length) {
+
+        return {
+
+            text:
+                "🧭 Weiter zum Ziel"
+
+        };
+
+    }
+
+
+    let nearestStep =
+        steps[0];
+
+    let nearestDistance =
+        Infinity;
+
+
+    steps.forEach(
+        step => {
+
+            if (
+                !step.maneuver ||
+                !step.maneuver.location
+            ) {
+
+                return;
+
+            }
+
+
+            const location =
+                step.maneuver.location;
+
+
+            const distance =
+                distanceBetween(
+
+                    currentPosition[1],
+
+                    currentPosition[0],
+
+                    location[1],
+
+                    location[0]
+
+                );
+
+
+            if (
+                distance <
+                nearestDistance
+            ) {
+
+                nearestDistance =
+                    distance;
+
+                nearestStep =
+                    step;
+
+            }
+
+        }
+    );
+
+
+    const text =
+        createInstruction(
+            nearestStep,
+            nearestDistance
+        );
+
+
+    return {
+
+        text:
+            text,
+
+        distance:
+            nearestDistance
+
+    };
+
+}
+
+
+/* =====================================================
+   NAVIGATION TEXT
+===================================================== */
+
+function createInstruction(
+    step,
+    distance
+) {
+
+    if (!step) {
+
+        return "🧭 Weiter zum Ziel";
+
+    }
+
+
+    const maneuver =
+        step.maneuver || {};
+
+
+    const type =
+        maneuver.type || "";
+
+
+    const modifier =
+        maneuver.modifier || "";
+
+
+    const road =
+        step.name ||
+        "";
+
+
+    let text = "";
+
+
+    if (
+        type === "depart"
+    ) {
+
+        text =
+            "🚗 Losfahren";
+
+    }
+
+    else if (
+        type === "arrive"
+    ) {
+
+        text =
+            "🏁 Ziel erreichen";
+
+    }
+
+    else if (
+        type === "roundabout" ||
+        type === "rotary"
+    ) {
+
+        text =
+            "🔄 Im Kreisverkehr fahren";
+
+    }
+
+    else if (
+        modifier.includes(
+            "left"
+        )
+    ) {
+
+        text =
+            "↰ Links abbiegen";
+
+    }
+
+    else if (
+        modifier.includes(
+            "right"
+        )
+    ) {
+
+        text =
+            "↱ Rechts abbiegen";
+
+    }
+
+    else if (
+        type === "continue"
+    ) {
+
+        text =
+            "⬆️ Geradeaus weiterfahren";
+
+    }
+
+    else {
+
+        text =
+            "🧭 Weiterfahren";
+
+    }
+
+
+    if (
+        road
+    ) {
+
+        text +=
+            " auf " +
+            road;
+
+    }
+
+
+    if (
+        distance !== undefined &&
+        distance !== Infinity
+    ) {
+
+        text +=
+
+            " in " +
+
+            formatDistance(
+                distance
+            );
+
+    }
+
+
+    return text;
+
+}
+
+
+/* =====================================================
+   SPRACHANSAGE
+===================================================== */
+
+function speakInstruction(
+    text
+) {
+
+    if (
+        text ===
+        lastSpokenInstruction
+    ) {
+
+        return;
+
+    }
+
+
+    lastSpokenInstruction =
+        text;
+
+
+    speak(
+        text
+    );
+
+}
+
+
+function speak(
+    text
+) {
+
+    if (
+        !voiceEnabled
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        !("speechSynthesis" in window)
+    ) {
+
+        return;
+
+    }
+
+
+    window.speechSynthesis.cancel();
+
+
+    const utterance =
+        new SpeechSynthesisUtterance(
+            text
+        );
+
+
+    utterance.lang =
+        "de-CH";
+
+
+    utterance.rate =
+        .95;
+
+
+    utterance.pitch =
+        1;
+
+
+    window.speechSynthesis.speak(
+        utterance
+    );
+
+}
+
+
+/* =====================================================
+   VOICE
+===================================================== */
+
+function toggleVoice(
+    enabled
+) {
+
+    voiceEnabled =
+        enabled;
+
+
+    if (!enabled) {
+
+        if (
+            "speechSynthesis" in window
+        ) {
+
+            window.speechSynthesis.cancel();
+
+        }
+
+    }
+
+}
+
+
+/* =====================================================
+   FOLLOW
+===================================================== */
+
+function toggleNavigationFollow(
+    enabled
+) {
+
+    followNavigation =
+        enabled;
+
+}
+
+
+/* =====================================================
+   NAVIGATION STOPPEN
+===================================================== */
+
+function stopNavigation() {
+
+    navigationActive =
+        false;
+
+
+    currentRoute =
+        null;
+
+
+    const routeSource =
+        map.getSource(
+            "route-source"
+        );
+
+
+    if (routeSource) {
+
+        routeSource.setData({
+
+            type:
+                "FeatureCollection",
+
+            features: []
+
+        });
+
+    }
+
+
+    document.getElementById(
+        "navigationInfo"
+    ).classList.remove(
+        "active"
+    );
+
+
+    if (
+        "speechSynthesis" in window
+    ) {
+
+        window.speechSynthesis.cancel();
+
+    }
+
+
+    showToast(
+        "Navigation beendet."
+    );
+
+}
+
+
+/* =====================================================
+   RECENTER
+===================================================== */
+
+function recenterNavigation() {
+
+    if (!currentPosition) {
+
+        goToLocation();
+
+        return;
+
+    }
+
+
+    map.flyTo({
+
+        center:
+            currentPosition,
+
+        zoom:
+            17,
+
+        duration:
+            700
+
+    });
+
+}
+
+
+/* =====================================================
+   NAVIGATION INFO
+===================================================== */
+
+function updateNavigationInfo() {
+
+    if (!currentRoute) {
+
+        return;
+
+    }
+
+
+    document.getElementById(
+        "remainingDistance"
+    ).textContent =
+
+        formatDistance(
+            currentRoute.distance
+        );
+
+
+    document.getElementById(
+        "remainingTime"
+    ).textContent =
+
+        formatTime(
+            currentRoute.duration
+        );
+
+}
+
+
+/* =====================================================
+   ZIEL SUCHEN
+===================================================== */
+
+async function searchLocation() {
+
+    const input =
+        document.getElementById(
+            "searchInput"
+        );
+
+
+    const query =
+        input.value.trim();
+
+
+    if (!query) {
+
+        return;
+
+    }
+
+
+    const results =
+        document.getElementById(
+            "searchResults"
+        );
+
+
+    results.style.display =
+        "block";
+
+
+    results.innerHTML =
+
+        "<div class='result'>" +
+        "🔎 Suche läuft..." +
+        "</div>";
+
+
+    try {
+
+        const url =
+
+            "https://nominatim.openstreetmap.org/search" +
+
+            "?format=jsonv2" +
+
+            "&limit=8" +
+
+            "&countrycodes=ch" +
+
+            "&accept-language=de" +
+
+            "&q=" +
+
+            encodeURIComponent(
+                query
+            );
+
+
+        const response =
+            await fetch(url);
+
+
+        if (
+            !response.ok
+        ) {
+
+            throw new Error(
+                "Suchfehler"
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        results.innerHTML =
+            "";
+
+
+        if (
+            !data.length
+        ) {
+
+            results.innerHTML =
+
+                "<div class='result'>" +
+
+                "Keine Ergebnisse gefunden." +
+
+                "</div>";
+
+            return;
+
+        }
+
+
+        data.forEach(
+            item => {
+
+                const div =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                div.className =
+                    "result";
+
+
+                const strong =
+                    document.createElement(
+                        "strong"
+                    );
+
+
+                strong.textContent =
+                    item.display_name;
+
+
+                const small =
+                    document.createElement(
+                        "small"
+                    );
+
+
+                small.textContent =
+                    "📍 Ziel auswählen";
+
+
+                div.appendChild(
+                    strong
+                );
+
+
+                div.appendChild(
+                    small
+                );
+
+
+                div.onclick = () => {
+
+                    const lng =
+                        parseFloat(
+                            item.lon
+                        );
+
+
+                    const lat =
+                        parseFloat(
+                            item.lat
+                        );
+
+
+                    destination = [
+
+                        lng,
+
+                        lat
+
+                    ];
+
+
+                    destinationName =
+                        item.display_name;
+
+
+                    setDestinationMarker(
+                        destination
+                    );
+
+
+                    document.getElementById(
+                        "navigationDestination"
+                    ).textContent =
+                        destinationName;
+
+
+                    map.flyTo({
+
+                        center:
+                            destination,
+
+                        zoom:
+                            16,
+
+                        duration:
+                            800
+
+                    });
+
+
+                    results.style.display =
+                        "none";
+
+
+                    showToast(
+                        "Ziel ausgewählt."
+                    );
+
+
+                    if (
+                        navigationActive &&
+                        currentPosition
+                    ) {
+
+                        calculateRoute();
+
+                    }
+
+                };
+
+
+                results.appendChild(
+                    div
+                );
+
+            }
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+
+        results.innerHTML =
+
+            "<div class='result'>" +
+
+            "Suche momentan nicht verfügbar." +
+
+            "</div>";
+
+    }
+
+}
+
+
+/* =====================================================
+   ENTER BEI SUCHE
+===================================================== */
+
+document.getElementById(
+    "searchInput"
+).addEventListener(
+
+    "keydown",
+
+    event => {
+
+        if (
+            event.key ===
+            "Enter"
+        ) {
+
+            searchLocation();
+
+        }
+
+    }
+
+);
+
+
+/* =====================================================
+   ZIEL MARKER
+===================================================== */
+
+function setDestinationMarker(
+    position
+) {
+
+    if (
+        destinationMarker
+    ) {
+
+        destinationMarker.remove();
+
+    }
+
+
+    const element =
+        document.createElement(
+            "div"
+        );
+
+
+    element.className =
+        "destination-marker";
+
+
+    element.textContent =
+        "🏁";
+
+
+    destinationMarker =
+
+        new maplibregl.Marker({
+            element:
+                element
+        })
+
+        .setLngLat(
+            position
+        )
+
+        .addTo(map);
+
+}
+
+
+/* =====================================================
+   EIGENE PUNKTE
+===================================================== */
+
+function addOwnPoint() {
+
+    if (!currentPosition) {
+
+        showToast(
+            "GPS wird zuerst benötigt."
+        );
+
+
+        goToLocation();
+
+        return;
+
+    }
+
+
+    const name =
+        prompt(
+            "Name für den Punkt:"
+        );
+
+
+    if (!name) {
+
+        return;
+
+    }
+
+
+    ownPoints.push({
+
+        id:
+            Date.now(),
+
+        name:
+            name,
+
+        coordinates:
+            currentPosition.slice()
+
+    });
+
+
+    saveOwnPoints();
+
+    renderOwnPointMarkers();
+
+    updateOwnPointsList();
+
+
+    showToast(
+        "Punkt gespeichert."
+    );
+
+}
+
+
+/* =====================================================
+   PUNKTE SPEICHERN
+===================================================== */
+
+function saveOwnPoints() {
+
+    localStorage.setItem(
+
+        "maurOwnPoints",
+
+        JSON.stringify(
+            ownPoints
+        )
+
+    );
+
+}
+
+
+/* =====================================================
+   PUNKTE LADEN
+===================================================== */
+
+function loadOwnPoints() {
+
+    try {
+
+        const saved =
+            localStorage.getItem(
+                "maurOwnPoints"
+            );
+
+
+        if (
+            saved
+        ) {
+
+            const parsed =
+                JSON.parse(
+                    saved
+                );
+
+
+            if (
+                Array.isArray(parsed)
+            ) {
+
+                ownPoints =
+                    parsed;
+
+            }
+
+        }
+
+    }
+
+    catch (error) {
+
+        ownPoints =
+            [];
+
+    }
+
+}
+
+
+/* =====================================================
+   PUNKT MARKER
+===================================================== */
+
+function renderOwnPointMarkers() {
+
+    ownPointMarkers.forEach(
+        marker => {
+
+            marker.remove();
+
+        }
+    );
+
+
+    ownPointMarkers =
+        [];
+
+
+    ownPoints.forEach(
+        point => {
+
+            if (
+                !point.coordinates
+            ) {
+
+                return;
+
+            }
+
+
+            const element =
+                document.createElement(
+                    "div"
+                );
+
+
+            element.className =
+                "own-marker";
+
+
+            const marker =
+
+                new maplibregl.Marker({
+                    element:
+                        element
+                })
+
+                .setLngLat(
+                    point.coordinates
+                )
+
+                .setPopup(
+
+                    new maplibregl.Popup({
+                        offset:
+                            20
+                    })
+
+                    .setText(
+                        point.name
+                    )
+
+                )
+
+                .addTo(map);
+
+
+            ownPointMarkers.push(
+                marker
+            );
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   PUNKTE LISTE
+===================================================== */
+
+function updateOwnPointsList() {
+
+    const list =
+        document.getElementById(
+            "ownPointsList"
+        );
+
+
+    list.innerHTML =
+        "";
+
+
+    if (
+        !ownPoints.length
+    ) {
+
+        list.innerHTML =
+
+            "<div class='infoText'>" +
+
+            "Noch keine eigenen Punkte gespeichert." +
+
+            "</div>";
+
+        return;
+
+    }
+
+
+    ownPoints.forEach(
+        (point, index) => {
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+
+            row.className =
+                "pointRow";
+
+
+            const showButton =
+                document.createElement(
+                    "button"
+                );
+
+
+            showButton.className =
+                "pointShow";
+
+
+            showButton.textContent =
+                "📍 " +
+                point.name;
+
+
+            showButton.onclick =
+                () => {
+
+                    map.flyTo({
+
+                        center:
+                            point.coordinates,
+
+                        zoom:
+                            17,
+
+                        duration:
+                            700
+
+                    });
+
+                };
+
+
+            const deleteButton =
+                document.createElement(
+                    "button"
+                );
+
+
+            deleteButton.className =
+                "pointDelete";
+
+
+            deleteButton.textContent =
+                "Löschen";
+
+
+            deleteButton.onclick =
+                () => {
+
+                    if (
+                        confirm(
+                            "Diesen Punkt löschen?"
+                        )
+                    ) {
+
+                        ownPoints.splice(
+                            index,
+                            1
+                        );
+
+
+                        saveOwnPoints();
+
+                        renderOwnPointMarkers();
+
+                        updateOwnPointsList();
+
+                    }
+
+                };
+
+
+            row.appendChild(
+                showButton
+            );
+
+
+            row.appendChild(
+                deleteButton
+            );
+
+
+            list.appendChild(
+                row
+            );
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   DISTANZ BERECHNEN
+===================================================== */
+
+function distanceBetween(
+    lat1,
+    lon1,
+    lat2,
+    lon2
+) {
+
+    const R =
+        6371000;
+
+
+    const p1 =
+        lat1 *
+        Math.PI /
+        180;
+
+
+    const p2 =
+        lat2 *
+        Math.PI /
+        180;
+
+
+    const dLat =
+        (lat2 - lat1) *
+        Math.PI /
+        180;
+
+
+    const dLon =
+        (lon2 - lon1) *
+        Math.PI /
+        180;
+
+
+    const a =
+
+        Math.sin(dLat / 2) *
+        Math.sin(dLat / 2)
+
+        +
+
+        Math.cos(p1) *
+        Math.cos(p2) *
+
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+
+
+    const c =
+
+        2 *
+        Math.atan2(
+
+            Math.sqrt(a),
+
+            Math.sqrt(1 - a)
+
+        );
+
+
+    return R * c;
+
+}
+
+
+/* =====================================================
+   DISTANZ FORMATIEREN
+===================================================== */
+
+function formatDistance(
+    meters
+) {
+
+    if (
+        meters < 1000
+    ) {
+
+        return (
+
+            Math.round(
+                meters
+            ) +
+
+            " m"
+
+        );
+
+    }
+
+
+    return (
+
+        (meters / 1000)
+            .toFixed(1) +
+
+        " km"
+
+    );
+
+}
+
+
+/* =====================================================
+   ZEIT FORMATIEREN
+===================================================== */
+
+function formatTime(
+    seconds
+) {
+
+    if (
+        !isFinite(seconds)
+    ) {
+
+        return "–";
+
+    }
+
+
+    const minutes =
+        Math.max(
+            0,
+            Math.round(
+                seconds / 60
+            )
+        );
+
+
+    if (
+        minutes < 60
+    ) {
+
+        return (
+            minutes +
+            " min"
+        );
+
+    }
+
+
+    const hours =
+        Math.floor(
+            minutes / 60
+        );
+
+
+    const rest =
+        minutes % 60;
+
+
+    return (
+
+        hours +
+        " h " +
+        rest +
+        " min"
+
+    );
+
+}
+
+
+/* =====================================================
+   HTML SICHER
+===================================================== */
+
+function escapeHTML(
+    text
+) {
+
+    return String(text)
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+/* =====================================================
+   TOAST
+===================================================== */
+
+let toastTimer = null;
+
+
+function showToast(
+    message
+) {
+
+    const toast =
+        document.getElementById(
+            "toast"
+        );
+
+
+    toast.textContent =
+        message;
+
+
+    toast.style.display =
+        "block";
+
+
+    clearTimeout(
+        toastTimer
+    );
+
+
+    toastTimer =
+
+        setTimeout(
+            () => {
+
+                toast.style.display =
+                    "none";
+
+            },
+
+            3000
+
+        );
+
+}
+
+
+/* =====================================================
+   ONLINE / OFFLINE
+===================================================== */
+
+function updateConnectionStatus() {
+
+    const element =
+        document.getElementById(
+            "connectionStatus"
+        );
+
+
+    if (
+        navigator.onLine
+    ) {
+
+        element.textContent =
+            "ONLINE • V6";
+
+    }
+
+    else {
+
+        element.textContent =
+            "OFFLINE • V6";
+
+    }
+
+}
+
+
+window.addEventListener(
+    "online",
+    updateConnectionStatus
+);
+
+
+window.addEventListener(
+    "offline",
+    updateConnectionStatus
+);
+
+
+updateConnectionStatus();
+
+
+/* =====================================================
+   KLICK AUSSERHALB DER SUCHE
+===================================================== */
+
+document.addEventListener(
+    "click",
+    event => {
+
+        const searchBox =
+            document.querySelector(
+                ".searchBox"
+            );
+
+
+        const results =
+            document.getElementById(
+                "searchResults"
+            );
+
+
+        if (
+            results &&
+            searchBox &&
+            !searchBox.contains(
+                event.target
+            ) &&
+            !results.contains(
+                event.target
+            )
+        ) {
+
+            results.style.display =
+                "none";
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   AUTOMATISCHES REROUTING
+===================================================== */
+
+setInterval(
+    () => {
+
+        if (
+            !navigationActive ||
+            !destination ||
+            !currentPosition ||
+            !currentRoute
+        ) {
+
+            return;
+
+        }
+
+
+        const distance =
+            distanceBetween(
+
+                currentPosition[1],
+
+                currentPosition[0],
+
+                destination[1],
+
+                destination[0]
+
+            );
+
+
+        if (
+            distance < 30
+        ) {
+
+            return;
+
+        }
+
+
+        const now =
+            Date.now();
+
+
+        if (
+            now -
+            lastRouteUpdate <
+            15000
+        ) {
+
+            return;
+
+        }
+
+
+        lastRouteUpdate =
+            now;
+
+
+        calculateRoute();
+
+    },
+
+    10000
+
+);
+
+
+/* =====================================================
+   ENDE
+===================================================== */
+
+console.log(
+    "Maur Strassendienst V6 gestartet."
+);
+
+</script>
 
 </body>
-
 </html>
