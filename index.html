@@ -2,22 +2,27 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
 
-<title>Maur Strassendienst V18</title>
+<title>Maur Strassendienst V19</title>
 
 <link rel="manifest" href="./manifest.json">
 
 <link rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.3/papaparse.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
 <style>
 
-*{
-  box-sizing:border-box
-}
+*{box-sizing:border-box}
 
 html,body{
   margin:0;
@@ -29,35 +34,26 @@ html,body{
   color:#111827
 }
 
-button,
-input,
-textarea,
-select{
-  font:inherit
-}
+button,input,textarea,select{font:inherit}
 
 button{
   border:0;
   cursor:pointer
 }
 
-/* =========================
-   TOP
-========================= */
-
 .topbar{
   position:absolute;
-  z-index:2000;
+  z-index:3000;
   top:0;
   left:0;
   right:0;
   height:64px;
-  background:#111827;
-  color:white;
+  padding:0 14px;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:0 14px
+  background:#111827;
+  color:white
 }
 
 .brand{
@@ -80,10 +76,6 @@ button{
   font-size:20px
 }
 
-/* =========================
-   MAP
-========================= */
-
 #map{
   position:absolute;
   z-index:1;
@@ -96,57 +88,14 @@ button{
 .leaflet-pane.maur-mask-pane{z-index:350}
 .leaflet-pane.route-pane{z-index:450}
 .leaflet-pane.label-pane{z-index:500}
-.leaflet-pane.ort-pane{z-index:600}
 .leaflet-pane.boundary-pane{z-index:700}
 .leaflet-pane.work-pane{z-index:750}
 .leaflet-pane.track-pane{z-index:760}
-
-.gps-icon{
-  width:18px;
-  height:18px;
-  border-radius:50%;
-  background:#2563eb;
-  border:3px solid white;
-  box-shadow:0 1px 8px #0008
-}
-
-.work-icon{
-  width:36px;
-  height:36px;
-  border-radius:50%;
-  background:white;
-  border:3px solid #111827;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:19px;
-  box-shadow:0 3px 10px #0006
-}
-
-.work-icon.done{
-  opacity:.45;
-  filter:grayscale(1)
-}
-
-.work-icon.high{
-  border-color:#dc2626
-}
-
-.work-icon.medium{
-  border-color:#ea580c
-}
-
-.work-icon.low{
-  border-color:#16a34a
-}
-
-/* =========================
-   SEARCH
-========================= */
+.leaflet-pane.closure-pane{z-index:770}
 
 .searchwrap{
   position:absolute;
-  z-index:1800;
+  z-index:2500;
   top:76px;
   left:12px;
   right:12px
@@ -181,13 +130,9 @@ button{
   color:#6b7280
 }
 
-/* =========================
-   PANELS
-========================= */
-
 .panel{
   position:absolute;
-  z-index:3000;
+  z-index:4000;
   top:76px;
   left:10px;
   right:10px;
@@ -200,9 +145,7 @@ button{
   display:none
 }
 
-.panel.open{
-  display:block
-}
+.panel.open{display:block}
 
 .close{
   float:right;
@@ -222,45 +165,46 @@ button{
   font-size:14px
 }
 
-/* =========================
-   BUTTONS
-========================= */
-
-.primary{
+.primary,
+.secondary,
+.green,
+.red,
+.orange,
+.dark{
   width:100%;
   padding:12px;
   border-radius:11px;
-  background:#2563eb;
-  color:white;
   font-weight:700
 }
 
+.primary{
+  background:#2563eb;
+  color:white
+}
+
 .secondary{
-  width:100%;
-  padding:12px;
-  border-radius:11px;
   background:#e5e7eb;
   color:#111827
 }
 
 .green{
-  background:#16a34a !important;
-  color:white !important
+  background:#16a34a;
+  color:white
 }
 
 .red{
-  background:#dc2626 !important;
-  color:white !important
+  background:#dc2626;
+  color:white
 }
 
 .orange{
-  background:#ea580c !important;
-  color:white !important
+  background:#ea580c;
+  color:white
 }
 
 .dark{
-  background:#111827 !important;
-  color:white !important
+  background:#111827;
+  color:white
 }
 
 .smallbtn{
@@ -274,10 +218,6 @@ button{
   background:#fee2e2;
   color:#991b1b
 }
-
-/* =========================
-   DASHBOARD
-========================= */
 
 .dashboard{
   display:grid;
@@ -340,10 +280,6 @@ button{
   color:#6b7280
 }
 
-/* =========================
-   FORM
-========================= */
-
 .form-label{
   display:block;
   margin:11px 0 5px;
@@ -376,10 +312,6 @@ button{
   border-radius:12px
 }
 
-/* =========================
-   PRIORITY
-========================= */
-
 .priority-grid{
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -407,11 +339,27 @@ button{
   color:white
 }
 
-/* =========================
-   LISTS
-========================= */
+.checkgrid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:7px
+}
 
-.point-item{
+.checkitem{
+  padding:10px;
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+  background:#f9fafb
+}
+
+.checkitem input{
+  margin-right:6px
+}
+
+.point-item,
+.tour-item,
+.stop-item,
+.closure-item{
   padding:13px 0;
   border-bottom:1px solid #e5e7eb
 }
@@ -425,6 +373,7 @@ button{
 .badge{
   display:inline-block;
   padding:4px 7px;
+  margin:2px;
   border-radius:7px;
   font-size:10px;
   font-weight:900;
@@ -469,13 +418,22 @@ button{
   line-height:1.45
 }
 
-/* =========================
-   NAVIGATION
-========================= */
+.track-info{
+  padding:12px;
+  border:1px solid #bfdbfe;
+  background:#eff6ff;
+  border-radius:12px
+}
+
+.track-row{
+  display:flex;
+  justify-content:space-between;
+  margin:5px 0
+}
 
 .navinfo{
   position:absolute;
-  z-index:1900;
+  z-index:2600;
   left:12px;
   right:12px;
   bottom:88px;
@@ -486,9 +444,7 @@ button{
   display:none
 }
 
-.navinfo.show{
-  display:block
-}
+.navinfo.show{display:block}
 
 .navmain{
   font-weight:900
@@ -519,39 +475,9 @@ button{
   color:#111827
 }
 
-/* =========================
-   TRACK
-========================= */
-
-.track-info{
-  padding:12px;
-  border:1px solid #bfdbfe;
-  background:#eff6ff;
-  border-radius:12px
-}
-
-.track-row{
-  display:flex;
-  justify-content:space-between;
-  margin:5px 0
-}
-
-/* =========================
-   TOURS
-========================= */
-
-.tour-item{
-  padding:12px 0;
-  border-bottom:1px solid #e5e7eb
-}
-
-/* =========================
-   BOTTOM
-========================= */
-
 .bottom{
   position:absolute;
-  z-index:2000;
+  z-index:3000;
   left:0;
   right:0;
   bottom:0;
@@ -580,13 +506,9 @@ button{
   font-size:20px
 }
 
-/* =========================
-   TOAST
-========================= */
-
 .toast{
   position:absolute;
-  z-index:5000;
+  z-index:6000;
   left:50%;
   bottom:94px;
   transform:translateX(-50%);
@@ -600,13 +522,11 @@ button{
   box-shadow:0 5px 20px #0004
 }
 
-.toast.show{
-  display:block
-}
+.toast.show{display:block}
 
 .mapmsg{
   position:absolute;
-  z-index:1700;
+  z-index:2400;
   top:132px;
   left:12px;
   right:12px;
@@ -615,6 +535,51 @@ button{
   color:#991b1b;
   background:#fee2e2;
   border-radius:12px
+}
+
+.gps-icon{
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:#2563eb;
+  border:3px solid white;
+  box-shadow:0 1px 8px #0008
+}
+
+.work-icon{
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  background:white;
+  border:3px solid #111827;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:19px;
+  box-shadow:0 3px 10px #0006
+}
+
+.work-icon.done{
+  opacity:.45;
+  filter:grayscale(1)
+}
+
+.work-icon.high{border-color:#dc2626}
+.work-icon.medium{border-color:#ea580c}
+.work-icon.low{border-color:#16a34a}
+
+.closure-icon{
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#dc2626;
+  color:white;
+  border:3px solid white;
+  box-shadow:0 3px 10px #0007;
+  font-size:20px
 }
 
 .maur-label{
@@ -626,556 +591,699 @@ button{
   font-weight:900
 }
 
+.loading{
+  padding:12px;
+  background:#eff6ff;
+  border:1px solid #bfdbfe;
+  border-radius:12px
+}
+
+.route-summary{
+  padding:12px;
+  margin:10px 0;
+  background:#eff6ff;
+  border:1px solid #bfdbfe;
+  border-radius:12px
+}
+
+.route-option{
+  padding:12px;
+  margin-top:8px;
+  border:1px solid #e5e7eb;
+  border-radius:12px
+}
+
+.route-option.active{
+  border:2px solid #2563eb;
+  background:#eff6ff
+}
+
+.number{
+  display:inline-flex;
+  width:28px;
+  height:28px;
+  align-items:center;
+  justify-content:center;
+  margin-right:6px;
+  border-radius:50%;
+  background:#2563eb;
+  color:white;
+  font-weight:900
+}
+
 </style>
 </head>
 
 <body>
 
 <header class="topbar">
-
   <div>
     <div class="brand">MAUR STRASSENDIENST</div>
-    <div class="status" id="status">
-      ONLINE • V18
-    </div>
+    <div class="status" id="status">ONLINE • V19</div>
   </div>
-
-  <button class="iconbtn" id="settingsBtn">
-    ⚙️
-  </button>
-
+  <button class="iconbtn" id="settingsBtn">⚙️</button>
 </header>
 
 <div class="searchwrap" id="searchWrap">
-
   <input
     id="search"
     class="search"
     placeholder="Strasse, Ort oder Adresse suchen …"
-    autocomplete="off"
-  >
-
+    autocomplete="off">
   <div id="results" class="results"></div>
-
 </div>
 
 <div id="mapmsg" class="mapmsg"></div>
-
 <div id="map"></div>
 
-<!-- =========================
-     NAVIGATION
-========================= -->
-
 <section id="navInfo" class="navinfo">
-
-  <div id="navMain" class="navmain">
-    Keine Navigation
-  </div>
-
+  <div id="navMain" class="navmain">Keine Navigation</div>
   <div id="navSub" class="navsub"></div>
 
   <div class="navbuttons">
-
-    <button id="voiceBtn">
-      🔊 Sprache an
-    </button>
-
-    <button id="followBtn">
-      📍 Folgen aus
-    </button>
-
-    <button id="stopNavBtn">
-      ✕ Stop
-    </button>
-
+    <button id="voiceBtn">🔊 Sprache an</button>
+    <button id="followBtn">📍 Folgen aus</button>
+    <button id="stopNavBtn">✕ Stop</button>
   </div>
-
 </section>
 
-<!-- =========================
-     DASHBOARD
-========================= -->
+<!-- WERKDIENST -->
 
 <section id="dashboardPanel" class="panel">
 
-  <button class="close" id="closeDashboard">
-    ✕
-  </button>
+<button class="close" id="closeDashboard">✕</button>
 
-  <h2>🚜 Werkdienst</h2>
+<h2>🚜 Werkdienst V19</h2>
 
-  <div class="dashboard">
-
-    <div class="stat">
-      <span>Aufgaben</span>
-      <strong id="dashTotal">0</strong>
-    </div>
-
-    <div class="stat">
-      <span>Erledigt</span>
-      <strong id="dashDone">0</strong>
-    </div>
-
-    <div class="stat">
-      <span>Offen</span>
-      <strong id="dashOpen">0</strong>
-    </div>
-
-    <div class="stat">
-      <span>Tour km</span>
-      <strong id="dashKm">0.0</strong>
-    </div>
-
-    <div class="stat">
-      <span>Arbeitszeit</span>
-      <strong id="dashTime">00:00</strong>
-    </div>
-
-    <div class="stat">
-      <span>Pausen</span>
-      <strong id="dashPause">00:00</strong>
-    </div>
-
+<div class="dashboard">
+  <div class="stat">
+    <span>Aufgaben</span>
+    <strong id="dashTotal">0</strong>
   </div>
 
-  <div class="progress">
-    <div class="progressbar" id="dashProgress"></div>
+  <div class="stat">
+    <span>Erledigt</span>
+    <strong id="dashDone">0</strong>
   </div>
 
-  <div id="dashProgressText" class="hint">
-    0 / 0 erledigt
+  <div class="stat">
+    <span>Offen</span>
+    <strong id="dashOpen">0</strong>
   </div>
 
-  <br>
-
-  <button class="primary" id="startTourBtn">
-    ▶️ Tour starten
-  </button>
-
-  <div style="height:8px"></div>
-
-  <button class="secondary" id="nextTaskBtn">
-    🧭 Nächste Aufgabe
-  </button>
-
-  <h3>Kategorie</h3>
-
-  <div class="category-grid">
-
-    <button class="category-btn" data-category="abfall">
-      🗑️
-      <b>Abfallkübel</b>
-      <small>Entleerung</small>
-    </button>
-
-    <button class="category-btn" data-category="schaden">
-      🚧
-      <b>Schaden</b>
-      <small>Strasse / Weg</small>
-    </button>
-
-    <button class="category-btn" data-category="schacht">
-      🕳️
-      <b>Schacht</b>
-      <small>Kontrolle</small>
-    </button>
-
-    <button class="category-btn" data-category="licht">
-      💡
-      <b>Beleuchtung</b>
-      <small>Störung</small>
-    </button>
-
-    <button class="category-btn" data-category="baum">
-      🌳
-      <b>Grünanlage</b>
-      <small>Pflege</small>
-    </button>
-
-    <button class="category-btn" data-category="brunnen">
-      💧
-      <b>Brunnen</b>
-      <small>Kontrolle</small>
-    </button>
-
-    <button class="category-btn" data-category="sonstiges">
-      📍
-      <b>Sonstiges</b>
-      <small>Werkdienst</small>
-    </button>
-
+  <div class="stat">
+    <span>Tour km</span>
+    <strong id="dashKm">0.0</strong>
   </div>
 
-  <h3>GPS-Tour</h3>
-
-  <div class="track-info">
-
-    <div class="track-row">
-      <span>Status</span>
-      <b id="trackStatus">Nicht aktiv</b>
-    </div>
-
-    <div class="track-row">
-      <span>Zeit</span>
-      <b id="trackTime">00:00:00</b>
-    </div>
-
-    <div class="track-row">
-      <span>Distanz</span>
-      <b id="trackDistance">0.00 km</b>
-    </div>
-
-    <div class="track-row">
-      <span>Geschwindigkeit</span>
-      <b id="trackSpeed">0.0 km/h</b>
-    </div>
-
-    <div class="track-row">
-      <span>Höhe</span>
-      <b id="trackAltitude">–</b>
-    </div>
-
+  <div class="stat">
+    <span>Dringend</span>
+    <strong id="dashUrgent">0</strong>
   </div>
 
-  <br>
+  <div class="stat">
+    <span>Tourzeit</span>
+    <strong id="dashTime">00:00</strong>
+  </div>
+</div>
 
-  <button class="primary" id="trackBtn">
-    ▶️ GPS-Spur starten
-  </button>
+<div class="progress">
+  <div id="dashProgress" class="progressbar"></div>
+</div>
 
-  <div style="height:8px"></div>
+<div id="dashProgressText" class="hint">0 / 0 erledigt</div>
 
-  <button class="secondary" id="pauseBtn">
-    ⏸️ Pause
-  </button>
+<br>
 
-  <div style="height:8px"></div>
+<button class="primary" id="openTourBtn">
+  🗺️ Tour planen
+</button>
 
-  <button class="secondary" id="saveTourBtn">
-    💾 Tour speichern
-  </button>
+<div style="height:8px"></div>
 
-  <h3>Gespeicherte Touren</h3>
+<button class="secondary" id="startTourBtn">
+  ▶️ Optimierte Tour starten
+</button>
 
-  <div id="tourList"></div>
+<div style="height:8px"></div>
+
+<button class="secondary" id="nextTaskBtn">
+  🧭 Nächste Aufgabe
+</button>
+
+<h3>Auftrag manuell erfassen</h3>
+
+<div class="category-grid">
+
+<button class="category-btn" data-category="abfall">
+  🗑️ <b>Abfallkübel</b>
+  <small>Entleerung</small>
+</button>
+
+<button class="category-btn" data-category="robidog">
+  🐕 <b>Robidog</b>
+  <small>Entleerung</small>
+</button>
+
+<button class="category-btn" data-category="schacht">
+  🕳️ <b>Schacht</b>
+  <small>Saugen / Kontrolle</small>
+</button>
+
+<button class="category-btn" data-category="vitaparcours">
+  🏃 <b>Vitaparcours</b>
+  <small>Kontrolle / Schaden</small>
+</button>
+
+<button class="category-btn" data-category="blumentopf">
+  🌺 <b>Blumentopf</b>
+  <small>Giessen</small>
+</button>
+
+<button class="category-btn" data-category="licht">
+  💡 <b>Beleuchtung</b>
+  <small>Störung</small>
+</button>
+
+<button class="category-btn" data-category="schaden">
+  🚧 <b>Strassenschaden</b>
+  <small>Strasse / Weg</small>
+</button>
+
+<button class="category-btn" data-category="signal">
+  🪧 <b>Signalisation</b>
+  <small>Schild / Pfosten</small>
+</button>
+
+<button class="category-btn" data-category="baum">
+  🌳 <b>Grünanlage</b>
+  <small>Pflege</small>
+</button>
+
+<button class="category-btn" data-category="neophyten">
+  🌿 <b>Neophyten</b>
+  <small>Entfernen</small>
+</button>
+
+<button class="category-btn" data-category="brunnen">
+  💧 <b>Brunnen</b>
+  <small>Kontrolle</small>
+</button>
+
+<button class="category-btn" data-category="bach">
+  🌊 <b>Bach / Gewässer</b>
+  <small>Unterhalt</small>
+</button>
+
+<button class="category-btn" data-category="spielplatz">
+  🛝 <b>Spielplatz</b>
+  <small>Kontrolle</small>
+</button>
+
+<button class="category-btn" data-category="bank">
+  🪑 <b>Sitzbank</b>
+  <small>Unterhalt</small>
+</button>
+
+<button class="category-btn" data-category="reinigung">
+  🧹 <b>Reinigung</b>
+  <small>Öffentliche Anlage</small>
+</button>
+
+<button class="category-btn" data-category="winter">
+  ❄️ <b>Winterdienst</b>
+  <small>Kontrolle</small>
+</button>
+
+<button class="category-btn" data-category="sonstiges">
+  📍 <b>Sonstiger Auftrag</b>
+  <small>Werkdienst</small>
+</button>
+
+</div>
+
+<h3>GPS-Spur</h3>
+
+<div class="track-info">
+
+<div class="track-row">
+<span>Status</span>
+<b id="trackStatus">Nicht aktiv</b>
+</div>
+
+<div class="track-row">
+<span>Zeit</span>
+<b id="trackTime">00:00:00</b>
+</div>
+
+<div class="track-row">
+<span>Distanz</span>
+<b id="trackDistance">0.00 km</b>
+</div>
+
+<div class="track-row">
+<span>Geschwindigkeit</span>
+<b id="trackSpeed">0.0 km/h</b>
+</div>
+
+</div>
+
+<br>
+
+<button class="secondary" id="trackBtn">
+▶️ GPS-Spur starten
+</button>
+
+<div style="height:8px"></div>
+
+<button class="secondary" id="pauseBtn">
+⏸️ Pause
+</button>
 
 </section>
 
-<!-- =========================
-     AUFGABE
-========================= -->
+<!-- AUFGABE -->
 
 <section id="workPointPanel" class="panel">
 
-  <button class="close" id="closeWorkPoint">
-    ✕
-  </button>
+<button class="close" id="closeWorkPoint">✕</button>
 
-  <h2>🚜 Werkdienst-Aufgabe</h2>
+<h2>🚜 Auftrag erfassen</h2>
 
-  <label class="form-label">
-    Kategorie
-  </label>
+<label class="form-label">Kategorie</label>
 
-  <select id="pointCategory" class="form-select">
+<select id="pointCategory" class="form-select">
 
-    <option value="abfall">
-      🗑️ Abfallkübel
-    </option>
+<option value="abfall">🗑️ Abfallkübel</option>
+<option value="robidog">🐕 Robidog</option>
+<option value="schacht">🕳️ Schacht</option>
+<option value="vitaparcours">🏃 Vitaparcours</option>
+<option value="blumentopf">🌺 Blumentopf</option>
+<option value="licht">💡 Beleuchtung</option>
+<option value="schaden">🚧 Strassenschaden</option>
+<option value="signal">🪧 Signalisation</option>
+<option value="baum">🌳 Grünanlage</option>
+<option value="neophyten">🌿 Neophyten</option>
+<option value="brunnen">💧 Brunnen</option>
+<option value="bach">🌊 Bach / Gewässer</option>
+<option value="spielplatz">🛝 Spielplatz</option>
+<option value="bank">🪑 Sitzbank</option>
+<option value="reinigung">🧹 Reinigung</option>
+<option value="winter">❄️ Winterdienst</option>
+<option value="sonstiges">📍 Sonstiger Auftrag</option>
 
-    <option value="schaden">
-      🚧 Schaden
-    </option>
+</select>
 
-    <option value="schacht">
-      🕳️ Schacht
-    </option>
+<label class="form-label">Bezeichnung</label>
 
-    <option value="licht">
-      💡 Beleuchtung
-    </option>
+<input
+ id="pointName"
+ class="form-input"
+ placeholder="Bezeichnung">
 
-    <option value="baum">
-      🌳 Grünanlage
-    </option>
+<label class="form-label">Priorität</label>
 
-    <option value="brunnen">
-      💧 Brunnen
-    </option>
+<div class="priority-grid">
 
-    <option value="sonstiges">
-      📍 Sonstiges
-    </option>
+<button class="priority high" data-priority="high">
+🔴 Dringend
+</button>
 
-  </select>
+<button class="priority medium" data-priority="medium">
+🟠 Normal
+</button>
 
-  <label class="form-label">
-    Bezeichnung
-  </label>
+<button class="priority low" data-priority="low">
+🟢 Später
+</button>
 
-  <input
-    id="pointName"
-    class="form-input"
-    placeholder="z.B. Abfallkübel Bahnhofstrasse"
-  >
+</div>
 
-  <label class="form-label">
-    Priorität
-  </label>
+<div id="categoryExtra"></div>
 
-  <div class="priority-grid">
+<label class="form-label">Bemerkung</label>
 
-    <button
-      class="priority high"
-      data-priority="high">
-      🔴 Dringend
-    </button>
+<textarea
+ id="pointNote"
+ class="form-textarea"
+ placeholder="Bemerkung …"></textarea>
 
-    <button
-      class="priority medium"
-      data-priority="medium">
-      🟠 Normal
-    </button>
+<label class="form-label">Foto</label>
 
-    <button
-      class="priority low"
-      data-priority="low">
-      🟢 Später
-    </button>
+<input
+ type="file"
+ id="beforePhoto"
+ accept="image/*"
+ capture="environment"
+ class="form-input">
 
-  </div>
+<img
+ id="beforePreview"
+ class="photo-preview">
 
-  <label class="form-label">
-    Bemerkung
-  </label>
+<br>
 
-  <textarea
-    id="pointNote"
-    class="form-textarea"
-    placeholder="Beschreibung …">
-  </textarea>
-
-  <label class="form-label">
-    Vorher-Foto
-  </label>
-
-  <input
-    type="file"
-    id="beforePhoto"
-    accept="image/*"
-    capture="environment"
-    class="form-input"
-  >
-
-  <img
-    id="beforePreview"
-    class="photo-preview"
-    alt="Vorher"
-  >
-
-  <p class="hint">
-    Der Standort wird automatisch über GPS übernommen.
-  </p>
-
-  <button class="primary" id="saveWorkPointBtn">
-    💾 Aufgabe speichern
-  </button>
+<button class="primary" id="saveWorkPointBtn">
+💾 Auftrag speichern
+</button>
 
 </section>
 
-<!-- =========================
-     PUNKTE
-========================= -->
+<!-- TOUR -->
+
+<section id="tourPanel" class="panel">
+
+<button class="close" id="closeTour">✕</button>
+
+<h2>🗺️ Tour planen</h2>
+
+<p class="hint">
+Touren können aus Foto, Datei oder manuell erstellt werden.
+Die App versucht Adressen und Koordinaten zu erkennen.
+</p>
+
+<h3>1. Tour importieren</h3>
+
+<label class="form-label">Foto / Screenshot / Datei</label>
+
+<input
+ type="file"
+ id="tourFile"
+ class="form-input"
+ accept=".csv,.txt,.json,.geojson,.gpx,.xlsx,.xls,.kml,.kmz,image/*">
+
+<div style="height:8px"></div>
+
+<button class="primary" id="importTourBtn">
+📥 Tour analysieren
+</button>
+
+<div id="importProgress"></div>
+
+<h3>2. Auftrag manuell hinzufügen</h3>
+
+<button class="secondary" id="manualTourPointBtn">
+＋ Punkt auf Karte / GPS hinzufügen
+</button>
+
+<h3>3. Vorhandene offene Aufgaben</h3>
+
+<button class="secondary" id="loadOpenTasksBtn">
+📋 Alle offenen Aufgaben in Tour übernehmen
+</button>
+
+<h3>Touroptionen</h3>
+
+<label class="form-label">Start</label>
+
+<select id="tourStartMode" class="form-select">
+<option value="gps">📍 Aktueller GPS-Standort</option>
+<option value="first">Erster Punkt</option>
+<option value="depot">🏢 Werkhof / Depot</option>
+</select>
+
+<label class="form-label">Rückkehr zum Start</label>
+
+<select id="tourRoundtrip" class="form-select">
+<option value="false">Nein</option>
+<option value="true">Ja</option>
+</select>
+
+<div style="height:8px"></div>
+
+<button class="primary" id="optimizeTourBtn">
+⚡ Schnellste Tour berechnen
+</button>
+
+<div id="tourSummary"></div>
+
+<div id="tourStops"></div>
+
+<div style="height:8px"></div>
+
+<button class="green" id="startPlannedTourBtn">
+▶️ Geplante Tour starten
+</button>
+
+<div style="height:8px"></div>
+
+<button class="secondary" id="clearPlannedTourBtn">
+🗑️ Planung löschen
+</button>
+
+</section>
+
+<!-- VITAPARCOURS SPEZIAL -->
+
+<section id="vitaPanel" class="panel">
+
+<button class="close" id="closeVita">✕</button>
+
+<h2>🏃 Vitaparcours</h2>
+
+<p class="hint">
+Vitaparcours-Stationen können einzeln oder als kompletter Parcours erfasst werden.
+</p>
+
+<button class="primary" id="newVitaBtn">
+＋ Station erfassen
+</button>
+
+<h3>Untergrund</h3>
+
+<div class="checkgrid">
+
+<label class="checkitem">
+<input type="checkbox" value="Holzschnitzel auffüllen" class="vitaTask">
+🪵 Holzschnitzel auffüllen
+</label>
+
+<label class="checkitem">
+<input type="checkbox" value="Kies auffüllen" class="vitaTask">
+🪨 Kies auffüllen
+</label>
+
+</div>
+
+<h3>Unterhalt</h3>
+
+<div class="checkgrid">
+
+<label class="checkitem">
+<input type="checkbox" value="Verschmutzung" class="vitaTask">
+🧹 Verschmutzung
+</label>
+
+<label class="checkitem">
+<input type="checkbox" value="Jäten / Unkraut entfernen" class="vitaTask">
+🌱 Jäten / Unkraut
+</label>
+
+<label class="checkitem">
+<input type="checkbox" value="Verschmutzung und Jäten" class="vitaTask">
+🧹🌱 Verschmutzung + Jäten
+</label>
+
+<label class="checkitem">
+<input type="checkbox" value="Laub / Grünabfall" class="vitaTask">
+🍂 Laub / Grünabfall
+</label>
+
+<label class="checkitem">
+<input type="checkbox" value="Zurückschneiden" class="vitaTask">
+✂️ Zurückschneiden
+</label>
+
+</div>
+
+<h3>Station / Schaden</h3>
+
+<div class="checkgrid">
+
+<label class="checkitem">
+<input type="checkbox" value="Holz beschädigt" class="vitaTask">
+🪵 Holz beschädigt
+</label>
+
+<label class="checkitem">
+<input type="checkbox" value="Befestigung / Schrauben" class="vitaTask">
+🔩 Befestigung
+</label>
+
+<label class="checkitem">
+<input type="checkbox" value="Tafel beschädigt" class="vitaTask">
+🪧 Tafel beschädigt
+</label>
+
+<label class="checkitem">
+<input type="checkbox" value="Station beschädigt" class="vitaTask">
+🏋️ Station beschädigt
+</label>
+
+<label class="checkitem">
+<input type="checkbox" value="Sonstiger Schaden" class="vitaTask">
+⚠️ Sonstiger Schaden
+</label>
+
+</div>
+
+<p class="hint">
+Die Auswahl wird beim nächsten Vitaparcours-Auftrag übernommen.
+</p>
+
+</section>
+
+<!-- AUFGABEN -->
 
 <section id="pointsPanel" class="panel">
 
-  <button class="close" id="closePoints">
-    ✕
-  </button>
+<button class="close" id="closePoints">✕</button>
 
-  <h2>📋 Werkdienst-Aufgaben</h2>
+<h2>📋 Aufgaben</h2>
 
-  <div class="dashboard">
+<div class="dashboard">
 
-    <div class="stat">
-      <span>Gesamt</span>
-      <strong id="pointsTotal">0</strong>
-    </div>
+<div class="stat">
+<span>Gesamt</span>
+<strong id="pointsTotal">0</strong>
+</div>
 
-    <div class="stat">
-      <span>Offen</span>
-      <strong id="pointsOpen">0</strong>
-    </div>
+<div class="stat">
+<span>Offen</span>
+<strong id="pointsOpen">0</strong>
+</div>
 
-    <div class="stat">
-      <span>Erledigt</span>
-      <strong id="pointsDone">0</strong>
-    </div>
+<div class="stat">
+<span>Erledigt</span>
+<strong id="pointsDone">0</strong>
+</div>
 
-    <div class="stat">
-      <span>Dringend</span>
-      <strong id="pointsUrgent">0</strong>
-    </div>
+<div class="stat">
+<span>Dringend</span>
+<strong id="pointsUrgent">0</strong>
+</div>
 
-  </div>
+</div>
 
-  <br>
+<br>
 
-  <button
-    class="secondary"
-    id="filterOpenBtn">
-    🔴 Nur offene
-  </button>
+<button class="secondary" id="filterOpenBtn">
+🔴 Nur offene
+</button>
 
-  <div style="height:8px"></div>
+<div style="height:8px"></div>
 
-  <button
-    class="secondary"
-    id="filterAllBtn">
-    📋 Alle Aufgaben
-  </button>
+<button class="secondary" id="filterAllBtn">
+📋 Alle
+</button>
 
-  <div id="pointsList"></div>
+<div id="pointsList"></div>
 
 </section>
 
-<!-- =========================
-     SETTINGS
-========================= -->
+<!-- SPERRUNGEN -->
+
+<section id="closurePanel" class="panel">
+
+<button class="close" id="closeClosure">✕</button>
+
+<h2>🚧 Baustellen / Sperrungen</h2>
+
+<p class="hint">
+Tippe auf die Karte, um eine Baustelle oder gesperrte Strasse zu markieren.
+Die Route prüft danach Alternativen, soweit der Routingdienst eine alternative Strecke liefert.
+</p>
+
+<button class="primary" id="addClosureBtn">
+🚧 Sperrung auf Karte setzen
+</button>
+
+<div id="closureList"></div>
+
+</section>
+
+<!-- SETTINGS -->
 
 <section id="settingsPanel" class="panel">
 
-  <button class="close" id="closeSettings">
-    ✕
-  </button>
+<button class="close" id="closeSettings">✕</button>
 
-  <h2>⚙️ Einstellungen</h2>
+<h2>⚙️ Einstellungen</h2>
 
-  <h3>Karte</h3>
+<h3>Kartenansicht</h3>
 
-  <div class="priority-grid">
+<div class="priority-grid">
 
-    <button data-view="normal">
-      Normal
-    </button>
+<button data-view="normal">Normal</button>
+<button data-view="satellite">🛰️ Satellit</button>
+<button data-view="hybrid">Hybrid</button>
 
-    <button data-view="satellite">
-      🛰️ Satellit
-    </button>
+</div>
 
-    <button data-view="hybrid">
-      Hybrid
-    </button>
+<h3>GPS</h3>
 
-  </div>
+<button class="primary" id="locateBtn">
+📍 Meinen Standort
+</button>
 
-  <div class="setting-row">
-    <span>Gemeindegrenze Maur</span>
-    <input
-      type="checkbox"
-      id="toggleBorders"
-      checked
-    >
-  </div>
+<h3>Daten</h3>
 
-  <div class="setting-row">
-    <span>Strassennamen</span>
-    <input
-      type="checkbox"
-      id="toggleStreetNames"
-      checked
-    >
-  </div>
+<button class="secondary" id="exportBtn">
+📤 Alle Daten exportieren
+</button>
 
-  <div class="setting-row">
-    <span>Hausnummern</span>
-    <input
-      type="checkbox"
-      id="toggleHouseNumbers"
-      checked
-    >
-  </div>
+<div style="height:8px"></div>
 
-  <h3>GPS</h3>
+<button class="secondary" id="importDataBtn">
+📥 Daten importieren
+</button>
 
-  <button
-    class="primary"
-    id="locateBtn">
-    📍 Meinen Standort
-  </button>
+<input
+ type="file"
+ id="dataFile"
+ accept=".json"
+ style="display:none">
 
-  <h3>Daten</h3>
+<div style="height:8px"></div>
 
-  <button
-    class="secondary"
-    id="exportBtn">
-    📤 Daten exportieren
-  </button>
+<button class="secondary" id="openClosureBtn">
+🚧 Baustellen / Sperrungen
+</button>
 
-  <div style="height:8px"></div>
+<div style="height:8px"></div>
 
-  <button
-    class="secondary"
-    id="importBtn">
-    📥 Daten importieren
-  </button>
-
-  <input
-    type="file"
-    id="importFile"
-    accept=".json,application/json"
-    style="display:none"
-  >
-
-  <div style="height:8px"></div>
-
-  <button
-    class="secondary"
-    id="clearDataBtn">
-    🗑️ Alle Daten löschen
-  </button>
-
-  <p class="hint">
-    Aufgaben, Fotos und Touren werden auf diesem Gerät gespeichert.
-    Die App funktioniert dadurch auch ohne Server-Verbindung,
-    soweit die benötigten Kartendaten bereits geladen wurden.
-  </p>
+<button class="secondary" id="clearDataBtn">
+🗑️ Alle Daten löschen
+</button>
 
 </section>
 
-<!-- =========================
-     BOTTOM NAV
-========================= -->
-
 <nav class="bottom">
 
-  <button
-    id="dashboardTab"
-    class="active">
-    <span>🚜</span>
-    Werkdienst
-  </button>
+<button id="dashboardTab" class="active">
+<span>🚜</span>
+Werkdienst
+</button>
 
-  <button id="navTab">
-    <span>🧭</span>
-    Navi
-  </button>
+<button id="tourTab">
+<span>🗺️</span>
+Tour
+</button>
 
-  <button id="gpsTab">
-    <span>📍</span>
-    GPS
-  </button>
+<button id="navTab">
+<span>🧭</span>
+Navi
+</button>
 
-  <button id="pointsTab">
-    <span>📋</span>
-    Aufgaben
-  </button>
+<button id="pointsTab">
+<span>📋</span>
+Aufträge
+</button>
 
-  <button id="mapTab">
-    <span>🗺️</span>
-    Karte
-  </button>
+<button id="mapTab">
+<span>📍</span>
+Karte
+</button>
 
 </nav>
 
@@ -1183,34 +1291,32 @@ button{
 
 <script>
 
-/* =====================================================
-   MAUR STRASSENDIENST V18
-===================================================== */
+/* =========================================================
+   MAUR STRASSENDIENST V19
+========================================================= */
 
-const CENTER=[
-  47.337,
-  8.667
-];
+const CENTER=[47.337,8.667];
 
-const OSRM=
-  'https://router.project-osrm.org/route/v1/driving/';
+const OSRM_BASE=
+'https://router.project-osrm.org';
 
 const NOMINATIM=
-  'https://nominatim.openstreetmap.org/search';
+'https://nominatim.openstreetmap.org/search';
 
 const WFS_URL=
-  'https://maps.zh.ch/wfs/OGDZHWFS' +
-  '?service=WFS' +
-  '&version=1.1.0' +
-  '&request=GetFeature' +
-  '&typeName=ms:OGDZHWFS_GEMEINDEGEBIET' +
-  '&outputFormat=application/json' +
-  '&srsName=EPSG:4326';
+'https://maps.zh.ch/wfs/OGDZHWFS'+
+'?service=WFS'+
+'&version=1.1.0'+
+'&request=GetFeature'+
+'&typeName=ms:OGDZHWFS_GEMEINDEGEBIET'+
+'&outputFormat=application/json'+
+'&srsName=EPSG:4326';
 
-
-/* =====================================================
-   KATEGORIEN
-===================================================== */
+const DEPOT={
+  lat:47.337,
+  lng:8.667,
+  name:'Werkhof / Depot Maur'
+};
 
 const CATEGORY={
 
@@ -1219,14 +1325,24 @@ const CATEGORY={
     icon:'🗑️'
   },
 
-  schaden:{
-    label:'Schaden',
-    icon:'🚧'
+  robidog:{
+    label:'Robidog',
+    icon:'🐕'
   },
 
   schacht:{
-    label:'Schacht',
+    label:'Schacht / Saugen',
     icon:'🕳️'
+  },
+
+  vitaparcours:{
+    label:'Vitaparcours',
+    icon:'🏃'
+  },
+
+  blumentopf:{
+    label:'Blumentopf / Giessen',
+    icon:'🌺'
   },
 
   licht:{
@@ -1234,9 +1350,24 @@ const CATEGORY={
     icon:'💡'
   },
 
+  schaden:{
+    label:'Strassenschaden',
+    icon:'🚧'
+  },
+
+  signal:{
+    label:'Signalisation',
+    icon:'🪧'
+  },
+
   baum:{
     label:'Grünanlage',
     icon:'🌳'
+  },
+
+  neophyten:{
+    label:'Neophyten',
+    icon:'🌿'
   },
 
   brunnen:{
@@ -1244,23 +1375,41 @@ const CATEGORY={
     icon:'💧'
   },
 
+  bach:{
+    label:'Bach / Gewässer',
+    icon:'🌊'
+  },
+
+  spielplatz:{
+    label:'Spielplatz',
+    icon:'🛝'
+  },
+
+  bank:{
+    label:'Sitzbank',
+    icon:'🪑'
+  },
+
+  reinigung:{
+    label:'Reinigung',
+    icon:'🧹'
+  },
+
+  winter:{
+    label:'Winterdienst',
+    icon:'❄️'
+  },
+
   sonstiges:{
-    label:'Sonstiges',
+    label:'Sonstiger Auftrag',
     icon:'📍'
   }
 
 };
 
-
-/* =====================================================
-   VARIABLEN
-===================================================== */
-
 let map;
-
 let osm;
 let sat;
-
 let streetNames;
 let houseNumbers;
 
@@ -1277,10 +1426,16 @@ let currentPosition=null;
 let workPoints=[];
 let workMarkers=[];
 
+let closures=[];
+let closureMarkers=[];
+
 let tours=[];
 
-let selectedPriority='medium';
+let plannedTour=[];
+let plannedRouteLayer=null;
+let plannedStopMarkers=[];
 
+let selectedPriority='medium';
 let beforePhoto='';
 
 let navigationActive=false;
@@ -1289,142 +1444,134 @@ let voiceEnabled=true;
 
 let trackActive=false;
 let trackPaused=false;
-
 let trackPoints=[];
 let trackDistance=0;
-
 let trackStartedAt=null;
 let pauseStartedAt=null;
 let pauseTotal=0;
-
 let trackTimer=null;
-
 let lastPosition=null;
 
 let currentTourMode=false;
+let currentTourIndex=-1;
 
 let filterOpen=false;
+let closureMode=false;
+
+let displayedTourLayer=null;
 
 
-/* =====================================================
+/* =========================================================
    HILFSFUNKTIONEN
-===================================================== */
+========================================================= */
 
 function uid(){
-
-  return Date.now()+
-    '-'+
-    Math.random()
-      .toString(36)
-      .slice(2,9);
-
+  return Date.now()+'-'+Math.random().toString(36).slice(2,9);
 }
 
-
 function esc(value){
-
   return String(value??'')
     .replace(/[&<>"']/g,c=>({
-
       '&':'&amp;',
       '<':'&lt;',
       '>':'&gt;',
       '"':'&quot;',
       "'":'&#39;'
-
     }[c]));
-
 }
 
-
-function toast(text){
-
-  const e=
-    document.getElementById('toast');
-
+function toast(text,ms=3000){
+  const e=document.getElementById('toast');
   e.textContent=text;
-
   e.classList.add('show');
-
   clearTimeout(toast.timer);
-
-  toast.timer=
-    setTimeout(
-      ()=>e.classList.remove('show'),
-      3000
-    );
-
+  toast.timer=setTimeout(
+    ()=>e.classList.remove('show'),
+    ms
+  );
 }
-
 
 function status(text){
-
-  document
-    .getElementById('status')
-    .textContent=text;
-
+  document.getElementById('status').textContent=text;
 }
 
+function formatDistance(m){
+  return m<1000
+    ?Math.round(m)+' m'
+    :(m/1000).toFixed(1)+' km';
+}
 
-function formatDuration(seconds){
+function formatRouteTime(sec){
+  const m=Math.round(sec/60);
 
-  const h=
-    Math.floor(seconds/3600);
+  if(m<60)return m+' min';
 
-  const m=
-    Math.floor(
-      (seconds%3600)/60
+  return Math.floor(m/60)+' h '+(m%60)+' min';
+}
+
+function formatDuration(s){
+  const h=Math.floor(s/3600);
+  const m=Math.floor((s%3600)/60);
+  const sec=s%60;
+
+  return String(h).padStart(2,'0')+':'+
+    String(m).padStart(2,'0')+':'+
+    String(sec).padStart(2,'0');
+}
+
+function shortTime(s){
+  const h=Math.floor(s/3600);
+  const m=Math.floor((s%3600)/60);
+
+  return String(h).padStart(2,'0')+':'+
+    String(m).padStart(2,'0');
+}
+
+function distanceBetween(
+  lat1,lon1,lat2,lon2
+){
+  const R=6371000;
+
+  const p1=lat1*Math.PI/180;
+  const p2=lat2*Math.PI/180;
+
+  const dp=(lat2-lat1)*Math.PI/180;
+  const dl=(lon2-lon1)*Math.PI/180;
+
+  const a=
+    Math.sin(dp/2)**2+
+    Math.cos(p1)*
+    Math.cos(p2)*
+    Math.sin(dl/2)**2;
+
+  return 2*R*
+    Math.atan2(
+      Math.sqrt(a),
+      Math.sqrt(1-a)
     );
+}
 
-  const s=
-    seconds%60;
+function priorityText(p){
+  if(p==='high')return '🔴 Dringend';
+  if(p==='low')return '🟢 Später';
+  return '🟠 Normal';
+}
 
-  return(
-    String(h).padStart(2,'0')+
-    ':'+
-    String(m).padStart(2,'0')+
-    ':'+
-    String(s).padStart(2,'0')
-  );
-
+function sleep(ms){
+  return new Promise(r=>setTimeout(r,ms));
 }
 
 
-function formatShortTime(seconds){
-
-  const h=
-    Math.floor(seconds/3600);
-
-  const m=
-    Math.floor(
-      (seconds%3600)/60
-    );
-
-  return(
-    String(h).padStart(2,'0')+
-    ':'+
-    String(m).padStart(2,'0')
-  );
-
-}
-
-
-/* =====================================================
+/* =========================================================
    KARTE
-===================================================== */
+========================================================= */
 
-map=
-  L.map('map',{
-    zoomControl:true,
-    preferCanvas:true,
-    minZoom:8,
-    maxZoom:19
-  })
-  .setView(
-    CENTER,
-    13
-  );
-
+map=L.map('map',{
+  zoomControl:true,
+  preferCanvas:true,
+  minZoom:8,
+  maxZoom:19
+}).setView(CENTER,13);
 
 map.createPane('maurMaskPane');
 map.getPane('maurMaskPane').style.zIndex=350;
@@ -1435,9 +1582,6 @@ map.getPane('routePane').style.zIndex=450;
 map.createPane('labelPane');
 map.getPane('labelPane').style.zIndex=500;
 
-map.createPane('ortPane');
-map.getPane('ortPane').style.zIndex=600;
-
 map.createPane('boundaryPane');
 map.getPane('boundaryPane').style.zIndex=700;
 
@@ -1447,69 +1591,55 @@ map.getPane('workPane').style.zIndex=750;
 map.createPane('trackPane');
 map.getPane('trackPane').style.zIndex=760;
 
+map.createPane('closurePane');
+map.getPane('closurePane').style.zIndex=770;
 
-osm=
-  L.tileLayer(
-    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    {
-      maxZoom:19,
-      attribution:
-        '© OpenStreetMap contributors'
-    }
-  )
-  .addTo(map);
+osm=L.tileLayer(
+  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {
+    maxZoom:19,
+    attribution:'© OpenStreetMap contributors'
+  }
+).addTo(map);
 
+sat=L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  {
+    maxZoom:19,
+    attribution:'© Esri World Imagery'
+  }
+);
 
-sat=
-  L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    {
-      maxZoom:19,
-      attribution:
-        '© Esri World Imagery'
-    }
-  );
+streetNames=L.tileLayer.wms(
+  'https://wms.geo.admin.ch/',
+  {
+    layers:'ch.swisstopo.amtliches-strassenverzeichnis',
+    format:'image/png',
+    transparent:true,
+    version:'1.3.0',
+    pane:'labelPane',
+    minZoom:14,
+    maxZoom:20
+  }
+).addTo(map);
 
-
-streetNames=
-  L.tileLayer.wms(
-    'https://wms.geo.admin.ch/',
-    {
-      layers:
-        'ch.swisstopo.amtliches-strassenverzeichnis',
-      format:'image/png',
-      transparent:true,
-      version:'1.3.0',
-      opacity:1,
-      pane:'labelPane',
-      minZoom:14,
-      maxZoom:20
-    }
-  )
-  .addTo(map);
-
-
-houseNumbers=
-  L.tileLayer.wms(
-    'https://wms.geo.admin.ch/',
-    {
-      layers:
-        'ch.swisstopo.amtliches-gebaeudeadressverzeichnis',
-      format:'image/png',
-      transparent:true,
-      version:'1.3.0',
-      opacity:1,
-      pane:'labelPane',
-      minZoom:16,
-      maxZoom:20
-    }
-  )
-  .addTo(map);
+houseNumbers=L.tileLayer.wms(
+  'https://wms.geo.admin.ch/',
+  {
+    layers:'ch.swisstopo.amtliches-gebaeudeadressverzeichnis',
+    format:'image/png',
+    transparent:true,
+    version:'1.3.0',
+    pane:'labelPane',
+    minZoom:16,
+    maxZoom:20
+  }
+).addTo(map);
 
 
-/* =====================================================
-   MAUR GRENZE
-===================================================== */
+/* =========================================================
+   MAUR
+========================================================= */
 
 async function loadMaur(){
 
@@ -1517,97 +1647,62 @@ async function loadMaur(){
 
     status('ONLINE • Lade Gemeinde Maur …');
 
-    const response=
-      await fetch(
-        WFS_URL,
-        {cache:'no-store'}
+    const r=await fetch(
+      WFS_URL,
+      {cache:'no-store'}
+    );
+
+    if(!r.ok)throw Error('WFS');
+
+    const geo=await r.json();
+
+    const feature=(geo.features||[]).find(f=>{
+      const p=f.properties||{};
+
+      return Object.values(p).some(
+        v=>String(v??'')
+          .trim()
+          .toUpperCase()==='MAUR'
       );
-
-    if(!response.ok)
-      throw new Error('WFS');
-
-    const geo=
-      await response.json();
-
-    const features=
-      geo.features||[];
-
-    const feature=
-      features.find(f=>{
-
-        const p=
-          f.properties||{};
-
-        return Object
-          .values(p)
-          .some(
-            v=>
-              String(v??'')
-                .trim()
-                .toUpperCase()
-              ==='MAUR'
-          );
-
-      });
+    });
 
     if(!feature)
-      throw new Error('Maur nicht gefunden');
+      throw Error('Maur nicht gefunden');
 
+    maurBoundary=L.geoJSON(
+      feature,
+      {
+        pane:'boundaryPane',
+        style:{
+          color:'#0057d9',
+          weight:6,
+          fill:false
+        },
+        interactive:false
+      }
+    ).addTo(map);
 
-    maurBoundary=
-      L.geoJSON(
-        feature,
-        {
-          pane:'boundaryPane',
-          style:{
-            color:'#0057d9',
-            weight:6,
-            opacity:1,
-            fill:false
-          },
-          interactive:false
-        }
-      )
-      .addTo(map);
-
-
-    maurBounds=
-      maurBoundary.getBounds();
-
+    maurBounds=maurBoundary.getBounds();
 
     map.fitBounds(
       maurBounds.pad(.05),
       {animate:false}
     );
 
+    createMaurMask(feature.geometry);
 
-    createMaurMask(
-      feature.geometry
-    );
+    status('ONLINE • NUR GEMEINDE MAUR');
 
+  }catch(e){
 
-    status(
-      'ONLINE • NUR GEMEINDE MAUR'
-    );
-
-  }
-  catch(error){
-
-    console.warn(error);
-
-    status(
-      'ONLINE • Karte aktiv'
-    );
+    console.warn(e);
+    status('ONLINE • Karte aktiv');
 
   }
 
 }
 
-
 function createMaurMask(geometry){
-
-  if(!geometry)
-    return;
 
   const world=[
     [90,-180],
@@ -1619,75 +1714,48 @@ function createMaurMask(geometry){
 
   const rings=[];
 
-  if(
-    geometry.type==='Polygon'
-  ){
-
-    geometry.coordinates
-      .forEach(ring=>{
-
-        rings.push(
-          ring.map(
-            p=>[p[1],p[0]]
-          )
-        );
-
-      });
-
+  if(geometry?.type==='Polygon'){
+    geometry.coordinates.forEach(
+      ring=>rings.push(
+        ring.map(p=>[p[1],p[0]])
+      )
+    );
   }
 
-
-  if(
-    geometry.type==='MultiPolygon'
-  ){
-
-    geometry.coordinates
-      .forEach(poly=>{
-
-        poly.forEach(ring=>{
-
-          rings.push(
-            ring.map(
-              p=>[p[1],p[0]]
-            )
-          );
-
-        });
-
-      });
-
+  if(geometry?.type==='MultiPolygon'){
+    geometry.coordinates.forEach(
+      poly=>poly.forEach(
+        ring=>rings.push(
+          ring.map(p=>[p[1],p[0]])
+        )
+      )
+    );
   }
 
-
-  maurMask=
-    L.polygon(
-      [world,...rings],
-      {
-        pane:'maurMaskPane',
-        stroke:false,
-        fillColor:'#fff',
-        fillOpacity:1,
-        fillRule:'evenodd',
-        interactive:false
-      }
-    )
-    .addTo(map);
-
+  maurMask=L.polygon(
+    [world,...rings],
+    {
+      pane:'maurMaskPane',
+      stroke:false,
+      fillColor:'#fff',
+      fillOpacity:1,
+      fillRule:'evenodd',
+      interactive:false
+    }
+  ).addTo(map);
 }
 
 
-/* =====================================================
+/* =========================================================
    KARTENANSICHT
-===================================================== */
+========================================================= */
 
 function changeView(view){
 
-  localStorage
-    .setItem(
-      'maurMapViewV18',
-      view
-    );
-
+  localStorage.setItem(
+    'maurMapViewV19',
+    view
+  );
 
   if(view==='normal'){
 
@@ -1701,7 +1769,6 @@ function changeView(view){
 
   }
 
-
   if(view==='satellite'){
 
     if(map.hasLayer(osm))
@@ -1711,7 +1778,6 @@ function changeView(view){
       sat.addTo(map);
 
   }
-
 
   if(view==='hybrid'){
 
@@ -1728,126 +1794,76 @@ function changeView(view){
 }
 
 
-function restoreMapSettings(){
-
-  changeView(
-    localStorage.getItem(
-      'maurMapViewV18'
-    )||'normal'
-  );
-
-}
-
-
-/* =====================================================
+/* =========================================================
    GPS
-===================================================== */
+========================================================= */
 
 function startGPS(){
 
   if(!navigator.geolocation){
 
     status('GPS nicht verfügbar');
-
     return;
 
   }
 
-
   navigator.geolocation.watchPosition(
-
     updateGPS,
-
-    error=>{
-
-      console.warn(error);
-
-      status(
-        'ONLINE • GPS wartet'
-      );
-
+    ()=>{
+      status('ONLINE • GPS wartet');
     },
-
     {
       enableHighAccuracy:true,
       maximumAge:3000,
       timeout:15000
     }
-
   );
 
 }
 
-
 function updateGPS(position){
 
   currentPosition={
-
-    lat:
-      position.coords.latitude,
-
-    lng:
-      position.coords.longitude,
-
-    accuracy:
-      position.coords.accuracy,
-
-    altitude:
-      position.coords.altitude,
-
-    speed:
-      position.coords.speed
-
+    lat:position.coords.latitude,
+    lng:position.coords.longitude,
+    accuracy:position.coords.accuracy,
+    altitude:position.coords.altitude,
+    speed:position.coords.speed
   };
-
 
   status(
     'ONLINE • GPS '+
-    Math.round(
-      currentPosition.accuracy
-    )+
+    Math.round(currentPosition.accuracy)+
     ' m'
   );
 
-
-  const latlng=[
+  const ll=[
     currentPosition.lat,
     currentPosition.lng
   ];
 
-
   if(!userMarker){
 
-    userMarker=
-      L.marker(
-        latlng,
-        {
-          icon:
-            L.divIcon({
-              className:'',
-              html:
-                '<div class="gps-icon"></div>',
-              iconSize:[18,18],
-              iconAnchor:[9,9]
-            }),
-          zIndexOffset:2000
-        }
-      )
-      .addTo(map);
+    userMarker=L.marker(
+      ll,
+      {
+        icon:L.divIcon({
+          className:'',
+          html:'<div class="gps-icon"></div>',
+          iconSize:[18,18],
+          iconAnchor:[9,9]
+        }),
+        zIndexOffset:2000
+      }
+    ).addTo(map);
 
-  }
-  else{
+  }else{
 
-    userMarker
-      .setLatLng(latlng);
+    userMarker.setLatLng(ll);
 
   }
 
-
-  if(
-    trackActive &&
-    !trackPaused
-  ){
+  if(trackActive&&!trackPaused){
 
     addTrackPoint(
       currentPosition.lat,
@@ -1856,28 +1872,17 @@ function updateGPS(position){
 
   }
 
-
-  if(
-    followEnabled &&
-    currentPosition
-  ){
+  if(followEnabled){
 
     map.setView(
-      latlng,
-      Math.max(
-        map.getZoom(),
-        16
-      ),
+      ll,
+      Math.max(map.getZoom(),16),
       {animate:true}
     );
 
   }
 
-
-  if(
-    navigationActive &&
-    destinationMarker
-  ){
+  if(navigationActive){
 
     checkDestinationDistance();
 
@@ -1885,15 +1890,11 @@ function updateGPS(position){
 
 }
 
-
 function locateMe(){
 
   if(!currentPosition){
 
-    toast(
-      'GPS wird noch gesucht.'
-    );
-
+    toast('GPS wird noch gesucht.');
     return;
 
   }
@@ -1909,97 +1910,33 @@ function locateMe(){
 }
 
 
-/* =====================================================
-   DISTANZ
-===================================================== */
-
-function distanceBetween(
-  lat1,
-  lon1,
-  lat2,
-  lon2
-){
-
-  const R=6371000;
-
-  const p1=
-    lat1*Math.PI/180;
-
-  const p2=
-    lat2*Math.PI/180;
-
-  const dp=
-    (lat2-lat1)*
-    Math.PI/180;
-
-  const dl=
-    (lon2-lon1)*
-    Math.PI/180;
-
-  const a=
-    Math.sin(dp/2)**2+
-    Math.cos(p1)*
-    Math.cos(p2)*
-    Math.sin(dl/2)**2;
-
-  return(
-    2*
-    R*
-    Math.atan2(
-      Math.sqrt(a),
-      Math.sqrt(1-a)
-    )
-  );
-
-}
-
-
-/* =====================================================
+/* =========================================================
    SUCHE
-===================================================== */
+========================================================= */
 
-const search=
-  document.getElementById(
-    'search'
-  );
-
-const results=
-  document.getElementById(
-    'results'
-  );
+const search=document.getElementById('search');
+const results=document.getElementById('results');
 
 let searchTimer;
-
 
 search.addEventListener(
   'input',
   ()=>{
+    clearTimeout(searchTimer);
 
-    clearTimeout(
-      searchTimer
-    );
-
-    const q=
-      search.value.trim();
+    const q=search.value.trim();
 
     if(q.length<3){
-
       results.innerHTML='';
-
       return;
-
     }
 
-
-    searchTimer=
-      setTimeout(
-        ()=>doSearch(q),
-        350
-      );
-
+    searchTimer=setTimeout(
+      ()=>doSearch(q),
+      350
+    );
   }
 );
-
 
 async function doSearch(q){
 
@@ -2010,30 +1947,21 @@ async function doSearch(q){
 
     const url=
       NOMINATIM+
-      '?format=jsonv2'+
-      '&limit=8'+
-      '&countrycodes=ch'+
-      '&q='+
+      '?format=jsonv2&limit=8&countrycodes=ch&q='+
       encodeURIComponent(
         q+', Maur, Zürich, Schweiz'
       );
 
-
-    const response=
-      await fetch(
-        url,
-        {
-          headers:{
-            Accept:
-              'application/json'
-          }
+    const r=await fetch(
+      url,
+      {
+        headers:{
+          Accept:'application/json'
         }
-      );
+      }
+    );
 
-
-    const data=
-      await response.json();
-
+    const data=await r.json();
 
     if(!data.length){
 
@@ -2044,53 +1972,40 @@ async function doSearch(q){
 
     }
 
+    results.innerHTML=data.map(
+      (x,i)=>`
+      <div class="result" data-i="${i}">
+        <b>${esc(
+          x.display_name
+            .split(',')
+            .slice(0,2)
+            .join(', ')
+        )}</b>
+        <small>${esc(x.display_name)}</small>
+      </div>
+      `
+    ).join('');
 
-    results.innerHTML=
-      data.map(
-        (item,index)=>`
+    [...results.children].forEach(
+      (e,i)=>{
+        e.onclick=()=>{
+          results.innerHTML='';
+          search.value=
+            data[i].display_name
+              .split(',')
+              .slice(0,2)
+              .join(', ');
 
-          <div
-            class="result"
-            data-index="${index}"
-          >
+          setDestination(
+            Number(data[i].lat),
+            Number(data[i].lon),
+            'Suchziel'
+          );
+        };
+      }
+    );
 
-            <b>
-              ${esc(
-                item.display_name
-                  .split(',')
-                  .slice(0,2)
-                  .join(', ')
-              )}
-            </b>
-
-            <small>
-              ${esc(
-                item.display_name
-              )}
-            </small>
-
-          </div>
-
-        `
-      ).join('');
-
-
-    [...results.children]
-      .forEach(
-        (element,index)=>{
-
-          element.onclick=
-            ()=>{
-              selectSearch(
-                data[index]
-              );
-            };
-
-        }
-      );
-
-  }
-  catch(error){
+  }catch(e){
 
     results.innerHTML=
       '<div class="result">Suche nicht verfügbar.</div>';
@@ -2100,216 +2015,132 @@ async function doSearch(q){
 }
 
 
-function selectSearch(item){
-
-  const lat=
-    Number(item.lat);
-
-  const lng=
-    Number(item.lon);
-
-
-  if(
-    maurBounds &&
-    !maurBounds.contains(
-      [lat,lng]
-    )
-  ){
-
-    toast(
-      'Dieses Ziel liegt ausserhalb von Maur.'
-    );
-
-    return;
-
-  }
-
-
-  search.value=
-    item.display_name
-      .split(',')
-      .slice(0,2)
-      .join(', ');
-
-  results.innerHTML='';
-
-
-  setDestination(
-    lat,
-    lng,
-    'Suchziel'
-  );
-
-}
-
-
-/* =====================================================
+/* =========================================================
    NAVIGATION
-===================================================== */
+========================================================= */
 
-function setDestination(
-  lat,
-  lng,
-  title
-){
+function setDestination(lat,lng,title){
 
   if(destinationMarker)
-    map.removeLayer(
-      destinationMarker
-    );
+    map.removeLayer(destinationMarker);
 
-
-  destinationMarker=
-    L.marker(
-      [lat,lng]
-    )
-    .addTo(map)
-    .bindPopup(
-      esc(title)
-    );
-
+  destinationMarker=L.marker(
+    [lat,lng]
+  )
+  .addTo(map)
+  .bindPopup(esc(title));
 
   routeTo(
     [lng,lat],
-    true
+    true,
+    title
   );
 
 }
 
-
 async function routeTo(
   destination,
-  fit
+  fit=true,
+  title='Ziel'
 ){
 
   if(!currentPosition){
 
-    toast(
-      'GPS wird noch gesucht.'
-    );
-
+    toast('GPS wird noch gesucht.');
     return;
 
   }
-
 
   const from=[
     currentPosition.lng,
     currentPosition.lat
   ];
 
-
   try{
 
     const url=
-      OSRM+
+      OSRM_BASE+
+      '/route/v1/driving/'+
       from.join(',')+
       ';'+
       destination.join(',')+
-      '?overview=full'+
-      '&geometries=geojson'+
-      '&steps=true';
+      '?overview=full&geometries=geojson&steps=true&alternatives=2';
 
+    const r=await fetch(url);
 
-    const response=
-      await fetch(url);
+    if(!r.ok)throw Error('Route');
 
-
-    if(!response.ok)
-      throw new Error('Route');
-
-
-    const data=
-      await response.json();
-
+    const data=await r.json();
 
     if(!data.routes?.length)
-      throw new Error('Keine Route');
+      throw Error('Keine Route');
 
+    let route=data.routes[0];
 
-    const route=
-      data.routes[0];
-
-
-    if(routeLayer)
-      map.removeLayer(
-        routeLayer
+    const alternative=
+      chooseRouteAvoidingClosures(
+        data.routes
       );
 
+    if(alternative)
+      route=alternative;
 
-    routeLayer=
-      L.geoJSON(
-        route.geometry,
-        {
-          pane:'routePane',
-          style:{
-            color:'#2563eb',
-            weight:7,
-            opacity:.9
-          }
+    if(routeLayer)
+      map.removeLayer(routeLayer);
+
+    routeLayer=L.geoJSON(
+      route.geometry,
+      {
+        pane:'routePane',
+        style:{
+          color:'#2563eb',
+          weight:7,
+          opacity:.9
         }
-      )
-      .addTo(map);
-
+      }
+    ).addTo(map);
 
     navigationActive=true;
 
+    document
+      .getElementById('navInfo')
+      .classList.add('show');
 
     document
-      .getElementById(
-        'navInfo'
-      )
-      .classList
-      .add('show');
-
-
-    document
-      .getElementById(
-        'navMain'
-      )
+      .getElementById('navMain')
       .textContent=
-        'Route: '+
-        formatDistance(
-          route.distance
-        )+
+        '🧭 '+title+
         ' • '+
-        formatRouteTime(
-          route.duration
-        );
-
+        formatDistance(route.distance)+
+        ' • '+
+        formatRouteTime(route.duration);
 
     document
-      .getElementById(
-        'navSub'
-      )
+      .getElementById('navSub')
       .textContent=
-        'Navigation aktiv';
-
+        'Schnellste verfügbare Route • Alternativen geprüft';
 
     if(fit){
 
       map.fitBounds(
         routeLayer.getBounds(),
         {
-          padding:[
-            40,
-            130
-          ],
+          padding:[40,130],
           maxZoom:16
         }
       );
 
     }
 
-
     speak(
-      'Route berechnet.'
+      'Route berechnet. '+
+      formatDistance(route.distance)+
+      '.'
     );
 
-  }
-  catch(error){
+  }catch(e){
 
-    console.warn(error);
+    console.warn(e);
 
     toast(
       'Route konnte nicht berechnet werden.'
@@ -2319,576 +2150,620 @@ async function routeTo(
 
 }
 
+function chooseRouteAvoidingClosures(routes){
 
-function formatDistance(meters){
+  if(!closures.length)
+    return routes[0];
 
-  if(meters<1000)
-    return Math.round(meters)+' m';
+  for(const route of routes){
 
-  return(
-    (meters/1000)
-      .toFixed(1)+
-    ' km'
-  );
+    if(!routeIntersectsClosures(route))
+      return route;
 
+  }
+
+  return routes[0];
 }
 
+function routeIntersectsClosures(route){
 
-function formatRouteTime(seconds){
+  if(!route?.geometry?.coordinates)
+    return false;
 
-  const minutes=
-    Math.round(
-      seconds/60
-    );
+  for(const coordinate of route.geometry.coordinates){
 
-  if(minutes<60)
-    return minutes+' min';
+    const lng=coordinate[0];
+    const lat=coordinate[1];
 
-  return(
-    Math.floor(minutes/60)+
-    ' h '+
-    (minutes%60)+
-    ' min'
-  );
+    for(const closure of closures){
 
+      const d=distanceBetween(
+        lat,
+        lng,
+        closure.lat,
+        closure.lng
+      );
+
+      if(d<=closure.radius)
+        return true;
+
+    }
+
+  }
+
+  return false;
 }
 
+function checkDestinationDistance(){
+
+  if(!destinationMarker||!currentPosition)
+    return;
+
+  const target=
+    destinationMarker.getLatLng();
+
+  const d=distanceBetween(
+    currentPosition.lat,
+    currentPosition.lng,
+    target.lat,
+    target.lng
+  );
+
+  if(d<25){
+
+    navigationActive=false;
+
+    speak('Ziel erreicht.');
+
+    toast('📍 Ziel erreicht.');
+
+    if(currentTourMode){
+
+      setTimeout(
+        finishTourStop,
+        1000
+      );
+
+    }
+
+  }
+
+}
 
 function stopNavigation(){
 
   navigationActive=false;
 
   if(routeLayer){
-
-    map.removeLayer(
-      routeLayer
-    );
-
+    map.removeLayer(routeLayer);
     routeLayer=null;
-
   }
-
 
   if(destinationMarker){
-
-    map.removeLayer(
-      destinationMarker
-    );
-
+    map.removeLayer(destinationMarker);
     destinationMarker=null;
-
   }
 
-
   document
-    .getElementById(
-      'navInfo'
-    )
-    .classList
-    .remove('show');
+    .getElementById('navInfo')
+    .classList.remove('show');
 
+  currentTourMode=false;
 
-  toast(
-    'Navigation beendet.'
-  );
+  toast('Navigation beendet.');
 
 }
-
 
 function speak(text){
 
   if(
-    !voiceEnabled ||
+    !voiceEnabled||
     !window.speechSynthesis
-  )
-    return;
-
+  )return;
 
   speechSynthesis.cancel();
 
+  const u=
+    new SpeechSynthesisUtterance(text);
 
-  const utterance=
-    new SpeechSynthesisUtterance(
-      text
-    );
+  u.lang='de-CH';
 
-  utterance.lang='de-CH';
-
-  speechSynthesis.speak(
-    utterance
-  );
+  speechSynthesis.speak(u);
 
 }
-
 
 function toggleVoice(){
 
-  voiceEnabled=
-    !voiceEnabled;
+  voiceEnabled=!voiceEnabled;
 
-
-  document
-    .getElementById(
-      'voiceBtn'
-    )
-    .textContent=
-      voiceEnabled
-      ?'🔊 Sprache an'
-      :'🔇 Sprache aus';
+  document.getElementById(
+    'voiceBtn'
+  ).textContent=
+    voiceEnabled
+    ?'🔊 Sprache an'
+    :'🔇 Sprache aus';
 
 }
 
-
 function toggleFollow(){
 
-  followEnabled=
-    !followEnabled;
+  followEnabled=!followEnabled;
 
-
-  const button=
+  const b=
     document.getElementById(
       'followBtn'
     );
 
-
-  button.textContent=
+  b.textContent=
     followEnabled
     ?'📍 Folgen an'
     :'📍 Folgen aus';
 
-
-  button.classList.toggle(
+  b.classList.toggle(
     'off',
     !followEnabled
   );
 
-
-  if(
-    followEnabled &&
-    currentPosition
-  ){
-
+  if(followEnabled)
     locateMe();
 
-  }
-
 }
 
 
-function checkDestinationDistance(){
-
-  if(
-    !destinationMarker ||
-    !currentPosition
-  )
-    return;
-
-
-  const target=
-    destinationMarker
-      .getLatLng();
-
-
-  const distance=
-    distanceBetween(
-      currentPosition.lat,
-      currentPosition.lng,
-      target.lat,
-      target.lng
-    );
-
-
-  if(distance<25){
-
-    speak(
-      'Ziel erreicht.'
-    );
-
-    toast(
-      '📍 Ziel erreicht.'
-    );
-
-    navigationActive=false;
-
-    if(currentTourMode){
-
-      setTimeout(
-        ()=>{
-          finishCurrentTaskAndNext();
-        },
-        1500
-      );
-
-    }
-
-  }
-
-}
-
-
-/* =====================================================
+/* =========================================================
    DATEN
-===================================================== */
+========================================================= */
 
 function loadData(){
 
   try{
-
-    workPoints=
-      JSON.parse(
-        localStorage.getItem(
-          'maurWorkPointsV18'
-        )||'[]'
-      );
-
-  }
-  catch{
-
+    workPoints=JSON.parse(
+      localStorage.getItem(
+        'maurWorkPointsV19'
+      )||'[]'
+    );
+  }catch{
     workPoints=[];
-
   }
-
 
   try{
-
-    tours=
-      JSON.parse(
-        localStorage.getItem(
-          'maurToursV18'
-        )||'[]'
-      );
-
-  }
-  catch{
-
+    tours=JSON.parse(
+      localStorage.getItem(
+        'maurToursV19'
+      )||'[]'
+    );
+  }catch{
     tours=[];
+  }
 
+  try{
+    closures=JSON.parse(
+      localStorage.getItem(
+        'maurClosuresV19'
+      )||'[]'
+    );
+  }catch{
+    closures=[];
   }
 
 }
-
 
 function saveData(){
-
   localStorage.setItem(
-    'maurWorkPointsV18',
-    JSON.stringify(
-      workPoints
-    )
+    'maurWorkPointsV19',
+    JSON.stringify(workPoints)
   );
-
 }
-
 
 function saveTours(){
-
   localStorage.setItem(
-    'maurToursV18',
-    JSON.stringify(
-      tours
-    )
+    'maurToursV19',
+    JSON.stringify(tours)
   );
+}
 
+function saveClosures(){
+  localStorage.setItem(
+    'maurClosuresV19',
+    JSON.stringify(closures)
+  );
 }
 
 
-/* =====================================================
-   AUFGABE ERSTELLEN
-===================================================== */
+/* =========================================================
+   AUFGABE ERFASSEN
+========================================================= */
 
-function openNewPoint(
-  category='sonstiges'
-){
+function openNewPoint(category='sonstiges'){
 
   if(!currentPosition){
 
-    toast(
-      'GPS wird noch gesucht.'
-    );
-
+    toast('GPS wird noch gesucht.');
     return;
 
   }
 
+  document.getElementById(
+    'pointCategory'
+  ).value=category;
 
-  if(
-    maurBounds &&
-    !maurBounds.contains([
-      currentPosition.lat,
-      currentPosition.lng
-    ])
-  ){
+  document.getElementById(
+    'pointName'
+  ).value=CATEGORY[category].label;
 
-    toast(
-      'GPS befindet sich ausserhalb von Maur.'
-    );
+  document.getElementById(
+    'pointNote'
+  ).value='';
 
-    return;
+  document.getElementById(
+    'beforePhoto'
+  ).value='';
 
-  }
-
-
-  document
-    .getElementById(
-      'pointCategory'
-    )
-    .value=category;
-
-
-  document
-    .getElementById(
-      'pointName'
-    )
-    .value=
-      CATEGORY[category].label;
-
-
-  document
-    .getElementById(
-      'pointNote'
-    )
-    .value='';
-
-
-  document
-    .getElementById(
-      'beforePhoto'
-    )
-    .value='';
-
-
-  document
-    .getElementById(
-      'beforePreview'
-    )
-    .style.display='none';
-
+  document.getElementById(
+    'beforePreview'
+  ).style.display='none';
 
   beforePhoto='';
 
-
   selectedPriority='medium';
-
 
   updatePriorityButtons();
 
+  renderCategoryExtra(category);
 
-  openPanel(
-    'workPointPanel'
-  );
+  openPanel('workPointPanel');
 
 }
-
 
 function updatePriorityButtons(){
 
   document
-    .querySelectorAll(
-      '[data-priority]'
-    )
-    .forEach(
-      button=>{
+    .querySelectorAll('[data-priority]')
+    .forEach(b=>{
+      b.classList.toggle(
+        'active',
+        b.dataset.priority===selectedPriority
+      );
+    });
 
-        const active=
-          button.dataset.priority
-          ===selectedPriority;
+}
 
-        button.classList.toggle(
-          'active',
-          active
-        );
+function renderCategoryExtra(category){
 
-      }
+  const box=
+    document.getElementById(
+      'categoryExtra'
     );
+
+  let html='';
+
+  if(category==='schacht'){
+
+    html=`
+      <label class="form-label">
+        Schacht-Arbeit
+      </label>
+
+      <select id="extraType" class="form-select">
+        <option>Schacht saugen</option>
+        <option>Schacht kontrollieren</option>
+        <option>Schacht reinigen</option>
+        <option>Schacht beschädigt</option>
+      </select>
+    `;
+
+  }
+
+  if(category==='blumentopf'){
+
+    html=`
+      <label class="form-label">
+        Giess-/Pflanzenarbeit
+      </label>
+
+      <div class="checkgrid">
+
+        <label class="checkitem">
+          <input type="checkbox" id="waterNeeded" checked>
+          💧 Giessen
+        </label>
+
+        <label class="checkitem">
+          <input type="checkbox" id="plantProblem">
+          🪴 Pflanze problematisch
+        </label>
+
+        <label class="checkitem">
+          <input type="checkbox" id="potProblem">
+          🪴 Topf beschädigt
+        </label>
+
+      </div>
+
+      <label class="form-label">
+        Wassermenge
+      </label>
+
+      <select id="waterAmount" class="form-select">
+        <option>5 Liter</option>
+        <option selected>10 Liter</option>
+        <option>20 Liter</option>
+        <option>30 Liter</option>
+        <option>Andere</option>
+      </select>
+    `;
+
+  }
+
+  if(category==='vitaparcours'){
+
+    const selected=[
+      ...document.querySelectorAll(
+        '.vitaTask:checked'
+      )
+    ].map(
+      x=>x.value
+    );
+
+    html=`
+      <label class="form-label">
+        Vitaparcours-Arbeiten
+      </label>
+
+      <div class="checkgrid">
+
+        <label class="checkitem">
+          <input type="checkbox"
+            value="Holzschnitzel auffüllen"
+            class="extraVitaTask"
+            ${selected.includes('Holzschnitzel auffüllen')?'checked':''}>
+          🪵 Holzschnitzel
+        </label>
+
+        <label class="checkitem">
+          <input type="checkbox"
+            value="Kies auffüllen"
+            class="extraVitaTask"
+            ${selected.includes('Kies auffüllen')?'checked':''}>
+          🪨 Kies
+        </label>
+
+        <label class="checkitem">
+          <input type="checkbox"
+            value="Verschmutzung"
+            class="extraVitaTask"
+            ${selected.includes('Verschmutzung')?'checked':''}>
+          🧹 Verschmutzung
+        </label>
+
+        <label class="checkitem">
+          <input type="checkbox"
+            value="Jäten / Unkraut entfernen"
+            class="extraVitaTask"
+            ${selected.includes('Jäten / Unkraut entfernen')?'checked':''}>
+          🌱 Jäten
+        </label>
+
+        <label class="checkitem">
+          <input type="checkbox"
+            value="Laub / Grünabfall"
+            class="extraVitaTask"
+            ${selected.includes('Laub / Grünabfall')?'checked':''}>
+          🍂 Laub
+        </label>
+
+        <label class="checkitem">
+          <input type="checkbox"
+            value="Zurückschneiden"
+            class="extraVitaTask"
+            ${selected.includes('Zurückschneiden')?'checked':''}>
+          ✂️ Zurückschneiden
+        </label>
+
+        <label class="checkitem">
+          <input type="checkbox"
+            value="Holz beschädigt"
+            class="extraVitaTask"
+            ${selected.includes('Holz beschädigt')?'checked':''}>
+          🪵 Holz beschädigt
+        </label>
+
+        <label class="checkitem">
+          <input type="checkbox"
+            value="Befestigung / Schrauben"
+            class="extraVitaTask"
+            ${selected.includes('Befestigung / Schrauben')?'checked':''}>
+          🔩 Befestigung
+        </label>
+
+        <label class="checkitem">
+          <input type="checkbox"
+            value="Tafel beschädigt"
+            class="extraVitaTask"
+            ${selected.includes('Tafel beschädigt')?'checked':''}>
+          🪧 Tafel
+        </label>
+
+        <label class="checkitem">
+          <input type="checkbox"
+            value="Station beschädigt"
+            class="extraVitaTask"
+            ${selected.includes('Station beschädigt')?'checked':''}>
+          🏋️ Station beschädigt
+        </label>
+
+      </div>
+    `;
+
+  }
+
+  box.innerHTML=html;
 
 }
 
 
-/* =====================================================
+/* =========================================================
    FOTO
-===================================================== */
+========================================================= */
 
-document
-  .getElementById(
-    'beforePhoto'
-  )
-  .addEventListener(
-    'change',
-    event=>{
+document.getElementById(
+  'beforePhoto'
+).addEventListener(
+  'change',
+  e=>{
 
-      const file=
-        event.target.files?.[0];
+    const file=e.target.files?.[0];
 
-      if(!file)
-        return;
+    if(!file)return;
 
+    const reader=new FileReader();
 
-      const reader=
-        new FileReader();
+    reader.onload=()=>{
 
+      beforePhoto=reader.result;
 
-      reader.onload=
-        ()=>{
-          
-          beforePhoto=
-            reader.result;
+      const img=
+        document.getElementById(
+          'beforePreview'
+        );
 
-          const image=
-            document.getElementById(
-              'beforePreview'
-            );
+      img.src=beforePhoto;
+      img.style.display='block';
 
-          image.src=
-            beforePhoto;
+    };
 
-          image.style.display=
-            'block';
+    reader.readAsDataURL(file);
 
-        };
+  }
+);
 
 
-      reader.readAsDataURL(
-        file
-      );
-
-    }
-  );
-
-
-/* =====================================================
+/* =========================================================
    AUFGABE SPEICHERN
-===================================================== */
+========================================================= */
 
 function saveWorkPoint(){
 
   if(!currentPosition){
 
-    toast(
-      'GPS wird noch gesucht.'
-    );
-
+    toast('GPS wird noch gesucht.');
     return;
 
   }
 
-
   const category=
-    document
-      .getElementById(
-        'pointCategory'
-      )
-      .value;
-
+    document.getElementById(
+      'pointCategory'
+    ).value;
 
   const name=
-    document
-      .getElementById(
-        'pointName'
-      )
-      .value
-      .trim();
-
+    document.getElementById(
+      'pointName'
+    ).value.trim();
 
   const note=
-    document
-      .getElementById(
-        'pointNote'
-      )
-      .value
-      .trim();
-
+    document.getElementById(
+      'pointNote'
+    ).value.trim();
 
   if(!name){
 
-    toast(
-      'Bitte Bezeichnung eingeben.'
-    );
-
+    toast('Bitte Bezeichnung eingeben.');
     return;
 
   }
 
-
   const point={
-
     id:uid(),
-
     category,
-
     name,
-
     note,
-
-    priority:
-      selectedPriority,
-
-    lat:
-      currentPosition.lat,
-
-    lng:
-      currentPosition.lng,
-
-    accuracy:
-      currentPosition.accuracy,
-
-    beforePhoto,
-
+    priority:selectedPriority,
+    lat:currentPosition.lat,
+    lng:currentPosition.lng,
+    accuracy:currentPosition.accuracy,
+    beforePhoto:beforePhoto||'',
     afterPhoto:'',
-
     done:false,
-
-    createdAt:
-      new Date()
-        .toISOString(),
-
+    createdAt:new Date().toISOString(),
     doneAt:null,
-
-    completedBy:'',
-
-    completedAt:null
-
+    extra:{}
   };
 
+  if(category==='schacht'){
 
-  workPoints.push(
-    point
-  );
+    point.extra.type=
+      document.getElementById(
+        'extraType'
+      )?.value||'Schacht saugen';
 
+  }
+
+  if(category==='blumentopf'){
+
+    point.extra.water=
+      document.getElementById(
+        'waterNeeded'
+      )?.checked||false;
+
+    point.extra.amount=
+      document.getElementById(
+        'waterAmount'
+      )?.value||'10 Liter';
+
+    point.extra.plantProblem=
+      document.getElementById(
+        'plantProblem'
+      )?.checked||false;
+
+    point.extra.potProblem=
+      document.getElementById(
+        'potProblem'
+      )?.checked||false;
+
+  }
+
+  if(category==='vitaparcours'){
+
+    point.extra.tasks=[
+      ...document.querySelectorAll(
+        '.extraVitaTask:checked'
+      )
+    ].map(
+      x=>x.value
+    );
+
+  }
+
+  workPoints.push(point);
 
   saveData();
-
   renderWorkPoints();
-
   updateDashboard();
 
   closePanels();
 
-
   toast(
     CATEGORY[category].icon+
-    ' Aufgabe gespeichert.'
+    ' Auftrag gespeichert.'
   );
 
 }
 
 
-/* =====================================================
+/* =========================================================
    MARKER
-===================================================== */
+========================================================= */
 
 function createWorkMarker(point){
 
   const cat=
-    CATEGORY[
-      point.category
-    ]||CATEGORY.sonstiges;
-
+    CATEGORY[point.category]||
+    CATEGORY.sonstiges;
 
   const icon=
     L.divIcon({
-
       className:'',
-
       html:
         '<div class="work-icon '+
         point.priority+
@@ -2896,45 +2771,59 @@ function createWorkMarker(point){
         '">'+
         cat.icon+
         '</div>',
-
-      iconSize:[
-        36,
-        36
-      ],
-
-      iconAnchor:[
-        18,
-        18
-      ]
-
+      iconSize:[36,36],
+      iconAnchor:[18,18]
     });
-
 
   const marker=
     L.marker(
-      [
-        point.lat,
-        point.lng
-      ],
+      [point.lat,point.lng],
       {
         icon,
         pane:'workPane'
       }
     );
 
+  let extra='';
+
+  if(point.category==='schacht'){
+    extra=
+      '<div style="margin-top:6px">'+
+      esc(point.extra?.type||'Schacht')+
+      '</div>';
+  }
+
+  if(point.category==='blumentopf'){
+
+    extra=
+      '<div style="margin-top:6px">'+
+      (point.extra?.water?'💧 '+esc(point.extra.amount||'Giessen'):'')+
+      (point.extra?.plantProblem?' 🪴 Pflanze prüfen':'')+
+      (point.extra?.potProblem?' 🪴 Topf prüfen':'')+
+      '</div>';
+
+  }
+
+  if(point.category==='vitaparcours'&&point.extra?.tasks?.length){
+
+    extra=
+      '<div style="margin-top:6px">'+
+      point.extra.tasks
+        .map(esc)
+        .join('<br>')+
+      '</div>';
+
+  }
 
   const photo=
     point.beforePhoto
     ?
-      '<img src="'+
-      point.beforePhoto+
-      '" style="width:100%;max-height:150px;object-fit:cover;border-radius:10px;margin-top:8px">'
-    :
-      '';
-
+    '<img src="'+
+    point.beforePhoto+
+    '" style="width:100%;max-height:150px;object-fit:cover;border-radius:10px;margin-top:8px">'
+    :'';
 
   marker.bindPopup(`
-
     <div style="min-width:230px">
 
       <b>
@@ -2942,14 +2831,11 @@ function createWorkMarker(point){
         ${esc(point.name)}
       </b>
 
-      <div
-        style="margin-top:5px;color:#6b7280;font-size:12px"
-      >
+      <div class="hint">
         ${esc(cat.label)}
       </div>
 
-      <div style="margin-top:7px">
-
+      <div>
         <span class="badge ${point.priority}">
           ${priorityText(point.priority)}
         </span>
@@ -2957,679 +2843,438 @@ function createWorkMarker(point){
         <span class="badge ${point.done?'done':'open'}">
           ${point.done?'ERLEDIGT':'OFFEN'}
         </span>
-
       </div>
+
+      ${extra}
 
       ${
         point.note
-        ?
-        '<div style="margin-top:8px">'+
-        esc(point.note)+
-        '</div>'
-        :
-        ''
+        ?'<div style="margin-top:8px">'+
+          esc(point.note)+
+          '</div>'
+        :''
       }
 
       ${photo}
 
-      <div
-        style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px"
-      >
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px">
 
         <button
           onclick="navigateToPoint('${point.id}')"
-          style="padding:8px;border-radius:8px;background:#2563eb;color:white"
-        >
+          style="padding:8px;border-radius:8px;background:#2563eb;color:white">
           🧭 Navi
         </button>
 
         <button
-          onclick="toggleDone('${point.id}')"
-          style="padding:8px;border-radius:8px;background:#16a34a;color:white"
-        >
-          ${point.done?'↩️ Offen':'✅ Erledigt'}
+          onclick="completePoint('${point.id}')"
+          style="padding:8px;border-radius:8px;background:#16a34a;color:white">
+          ${point.done?'↩️ Offen':'✅ Erledigen'}
         </button>
 
       </div>
 
     </div>
-
   `);
-
 
   return marker;
 
 }
 
-
-function priorityText(priority){
-
-  if(priority==='high')
-    return '🔴 Dringend';
-
-  if(priority==='medium')
-    return '🟠 Normal';
-
-  return '🟢 Später';
-
-}
-
-
-/* =====================================================
-   MARKER RENDER
-===================================================== */
-
 function renderWorkPoints(){
 
   workMarkers.forEach(
-    marker=>{
-      if(map.hasLayer(marker))
-        map.removeLayer(marker);
+    m=>{
+      if(map.hasLayer(m))
+        map.removeLayer(m);
     }
   );
 
-
   workMarkers=[];
 
-
   workPoints.forEach(
-    point=>{
-
-      const marker=
-        createWorkMarker(
-          point
-        );
-
-      marker.addTo(map);
-
-      workMarkers.push(
-        marker
-      );
-
+    p=>{
+      const m=createWorkMarker(p);
+      m.addTo(map);
+      workMarkers.push(m);
     }
   );
 
 }
 
 
-/* =====================================================
-   ERLEDIGT
-===================================================== */
+/* =========================================================
+   AUFGABEN
+========================================================= */
 
 function toggleDone(id){
 
-  const point=
+  const p=
     workPoints.find(
-      p=>p.id===id
+      x=>x.id===id
     );
 
-  if(!point)
-    return;
+  if(!p)return;
 
+  p.done=!p.done;
 
-  point.done=
-    !point.done;
-
-
-  if(point.done){
-
-    point.doneAt=
-      new Date()
-        .toISOString();
-
-  }
-  else{
-
-    point.doneAt=null;
-
-  }
-
+  p.doneAt=
+    p.done
+    ?new Date().toISOString()
+    :null;
 
   saveData();
-
   renderWorkPoints();
-
   updateDashboard();
-
   updatePointsList();
 
-
   toast(
-    point.done
+    p.done
     ?'✅ Aufgabe erledigt'
     :'↩️ Aufgabe wieder offen'
   );
 
 }
 
-
-/* =====================================================
-   NACHHER-FOTO
-===================================================== */
-
 function completePoint(id){
 
-  const point=
+  const p=
     workPoints.find(
-      p=>p.id===id
+      x=>x.id===id
     );
 
-  if(!point)
-    return;
-
+  if(!p)return;
 
   const input=
-    document.createElement(
-      'input'
-    );
+    document.createElement('input');
 
   input.type='file';
-
   input.accept='image/*';
-
   input.capture='environment';
 
+  input.onchange=e=>{
 
-  input.onchange=
-    event=>{
+    const file=e.target.files?.[0];
 
-      const file=
-        event.target.files?.[0];
+    if(!file){
+      toggleDone(id);
+      return;
+    }
 
-      if(!file){
+    const reader=new FileReader();
 
-        toggleDone(id);
+    reader.onload=()=>{
 
-        return;
+      p.afterPhoto=reader.result;
+      p.done=true;
+      p.doneAt=new Date().toISOString();
 
-      }
+      saveData();
+      renderWorkPoints();
+      updateDashboard();
+      updatePointsList();
 
-
-      const reader=
-        new FileReader();
-
-
-      reader.onload=
-        ()=>{
-
-          point.afterPhoto=
-            reader.result;
-
-          point.done=true;
-
-          point.doneAt=
-            new Date()
-              .toISOString();
-
-          point.completedAt=
-            new Date()
-              .toISOString();
-
-          saveData();
-
-          renderWorkPoints();
-
-          updateDashboard();
-
-          updatePointsList();
-
-          toast(
-            '📸 Nachher-Foto gespeichert und Aufgabe erledigt.'
-          );
-
-        };
-
-
-      reader.readAsDataURL(
-        file
+      toast(
+        '📸 Nachher-Foto gespeichert.'
       );
 
     };
 
+    reader.readAsDataURL(file);
+
+  };
 
   input.click();
 
 }
 
-
-/* =====================================================
-   AUFGABENLISTE
-===================================================== */
-
 function updatePointsList(){
 
-  const element=
+  const e=
     document.getElementById(
       'pointsList'
     );
 
+  let list=[...workPoints];
 
-  let list=
-    [...workPoints];
+  if(filterOpen)
+    list=list.filter(p=>!p.done);
 
-
-  if(filterOpen){
-
-    list=
-      list.filter(
-        p=>!p.done
-      );
-
-  }
-
+  const order={
+    high:0,
+    medium:1,
+    low:2
+  };
 
   list.sort(
     (a,b)=>{
 
-      const priority={
-        high:0,
-        medium:1,
-        low:2
-      };
-
       if(a.done!==b.done)
         return a.done-b.done;
 
-      return(
-        priority[a.priority]-
-        priority[b.priority]
-      );
+      return order[a.priority]-order[b.priority];
 
     }
   );
 
-
   if(!list.length){
 
-    element.innerHTML=
-      '<p class="hint">Keine Aufgaben vorhanden.</p>';
+    e.innerHTML=
+      '<p class="hint">Keine Aufgaben.</p>';
 
     return;
 
   }
 
+  e.innerHTML=list.map(
+    p=>{
 
-  element.innerHTML=
-    list.map(
-      point=>{
+      const cat=
+        CATEGORY[p.category]||
+        CATEGORY.sonstiges;
 
-        const cat=
-          CATEGORY[
-            point.category
-          ]||CATEGORY.sonstiges;
+      return `
+      <div class="point-item">
 
+        <div class="point-title">
 
-        return `
-
-          <div class="point-item">
-
-            <div class="point-title">
-
-              <div>
-
-                <b>
-                  ${cat.icon}
-                  ${esc(point.name)}
-                </b>
-
-                <div class="hint">
-                  ${esc(cat.label)}
-                </div>
-
-              </div>
-
-              <div>
-
-                <span class="badge ${point.priority}">
-                  ${priorityText(point.priority)}
-                </span>
-
-                <span class="badge ${point.done?'done':'open'}">
-                  ${point.done?'OK':'OFFEN'}
-                </span>
-
-              </div>
-
-            </div>
-
-            ${
-              point.note
-              ?
-              '<div class="hint" style="margin-top:6px">'+
-              esc(point.note)+
-              '</div>'
-              :
-              ''
-            }
-
-            <div class="hint">
-
-              ${point.lat.toFixed(5)},
-              ${point.lng.toFixed(5)}
-
-            </div>
-
-            <div class="point-actions">
-
-              <button
-                class="smallbtn"
-                onclick="showPoint('${point.id}')"
-              >
-                📍 Karte
-              </button>
-
-              <button
-                class="smallbtn"
-                onclick="navigateToPoint('${point.id}')"
-              >
-                🧭 Navi
-              </button>
-
-              <button
-                class="smallbtn green"
-                onclick="completePoint('${point.id}')"
-              >
-                ${
-                  point.done
-                  ?'↩️ Erledigt'
-                  :'📸 Erledigen'
-                }
-              </button>
-
-            </div>
-
-            <div class="point-actions">
-
-              ${
-                point.beforePhoto
-                ?
-                '<button class="smallbtn" onclick="showPhoto(\''+
-                point.id+
-                '\',\'before\')">📸 Vorher</button>'
-                :
-                '<span></span>'
-              }
-
-              ${
-                point.afterPhoto
-                ?
-                '<button class="smallbtn" onclick="showPhoto(\''+
-                point.id+
-                '\',\'after\')">📸 Nachher</button>'
-                :
-                '<span></span>'
-              }
-
-              <button
-                class="smallbtn danger"
-                onclick="deletePoint('${point.id}')"
-              >
-                🗑️ Löschen
-              </button>
-
-            </div>
-
+          <div>
+            <b>${cat.icon} ${esc(p.name)}</b>
+            <div class="hint">${esc(cat.label)}</div>
           </div>
 
-        `;
+          <div>
+            <span class="badge ${p.priority}">
+              ${priorityText(p.priority)}
+            </span>
 
-      }
-    )
-    .join('');
+            <span class="badge ${p.done?'done':'open'}">
+              ${p.done?'OK':'OFFEN'}
+            </span>
+          </div>
+
+        </div>
+
+        ${
+          p.note
+          ?'<div class="hint" style="margin-top:6px">'+
+            esc(p.note)+
+            '</div>'
+          :''
+        }
+
+        ${
+          p.category==='schacht'
+          ?'<div class="hint">🕳️ '+
+            esc(p.extra?.type||'Schacht')+
+            '</div>'
+          :''
+        }
+
+        ${
+          p.category==='vitaparcours'&&p.extra?.tasks?.length
+          ?'<div class="hint">🏃 '+
+            p.extra.tasks.map(esc).join(' • ')+
+            '</div>'
+          :''
+        }
+
+        ${
+          p.category==='blumentopf'
+          ?'<div class="hint">🌺 '+
+            (p.extra?.water?'💧 '+esc(p.extra.amount||'Giessen'):'')+
+            '</div>'
+          :''
+        }
+
+        <div class="hint">
+          ${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}
+        </div>
+
+        <div class="point-actions">
+
+          <button class="smallbtn"
+            onclick="showPoint('${p.id}')">
+            📍 Karte
+          </button>
+
+          <button class="smallbtn"
+            onclick="navigateToPoint('${p.id}')">
+            🧭 Navi
+          </button>
+
+          <button class="smallbtn green"
+            onclick="completePoint('${p.id}')">
+            ${p.done?'↩️ Offen':'📸 Erledigen'}
+          </button>
+
+        </div>
+
+        <div class="point-actions">
+
+          ${
+            p.beforePhoto
+            ?'<button class="smallbtn" onclick="showPhoto(\''+
+              p.id+
+              '\',\'before\')">📸 Vorher</button>'
+            :'<span></span>'
+          }
+
+          ${
+            p.afterPhoto
+            ?'<button class="smallbtn" onclick="showPhoto(\''+
+              p.id+
+              '\',\'after\')">📸 Nachher</button>'
+            :'<span></span>'
+          }
+
+          <button class="smallbtn danger"
+            onclick="deletePoint('${p.id}')">
+            🗑️ Löschen
+          </button>
+
+        </div>
+
+      </div>
+      `;
+
+    }
+  ).join('');
 
 }
-
-
-/* =====================================================
-   PUNKT ANZEIGEN
-===================================================== */
 
 function showPoint(id){
 
-  const point=
+  const p=
     workPoints.find(
-      p=>p.id===id
+      x=>x.id===id
     );
 
-  if(!point)
-    return;
-
+  if(!p)return;
 
   closePanels();
 
-
   map.setView(
-    [
-      point.lat,
-      point.lng
-    ],
+    [p.lat,p.lng],
     17
   );
 
-
-  const marker=
+  const m=
     workMarkers.find(
-      m=>{
-        const ll=
-          m.getLatLng();
+      x=>{
+        const ll=x.getLatLng();
 
-        return(
-          Math.abs(
-            ll.lat-point.lat
-          )<0.000001 &&
-          Math.abs(
-            ll.lng-point.lng
-          )<0.000001
-        );
-
+        return Math.abs(ll.lat-p.lat)<0.000001&&
+          Math.abs(ll.lng-p.lng)<0.000001;
       }
     );
 
-
-  if(marker)
-    marker.openPopup();
+  if(m)m.openPopup();
 
 }
 
-
-/* =====================================================
-   NAVI ZU AUFGABE
-===================================================== */
-
 function navigateToPoint(id){
 
-  const point=
+  const p=
     workPoints.find(
-      p=>p.id===id
+      x=>x.id===id
     );
 
-  if(!point)
-    return;
-
+  if(!p)return;
 
   currentTourMode=false;
 
-
   setDestination(
-    point.lat,
-    point.lng,
-    point.name
+    p.lat,
+    p.lng,
+    p.name
   );
-
 
   closePanels();
 
 }
 
-
-/* =====================================================
-   LÖSCHEN
-===================================================== */
-
 function deletePoint(id){
 
-  const point=
-    workPoints.find(
-      p=>p.id===id
-    );
-
-  if(!point)
-    return;
-
-
-  if(
-    !confirm(
-      'Diese Aufgabe wirklich löschen?'
-    )
-  )
-    return;
-
+  if(!confirm(
+    'Diese Aufgabe wirklich löschen?'
+  ))return;
 
   workPoints=
     workPoints.filter(
       p=>p.id!==id
     );
 
-
   saveData();
-
   renderWorkPoints();
-
   updateDashboard();
-
   updatePointsList();
 
-  toast(
-    'Aufgabe gelöscht.'
+  toast('Aufgabe gelöscht.');
+
+}
+
+function showPhoto(id,type){
+
+  const p=
+    workPoints.find(
+      x=>x.id===id
+    );
+
+  if(!p)return;
+
+  const photo=
+    type==='after'
+    ?p.afterPhoto
+    :p.beforePhoto;
+
+  if(!photo)return;
+
+  const win=window.open();
+
+  if(!win)return;
+
+  win.document.write(
+    '<html><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh">'+
+    '<img src="'+photo+'" style="max-width:100%;max-height:100vh;object-fit:contain">'+
+    '</body></html>'
   );
 
 }
 
 
-/* =====================================================
-   FOTOS
-===================================================== */
-
-function showPhoto(
-  id,
-  type
-){
-
-  const point=
-    workPoints.find(
-      p=>p.id===id
-    );
-
-  if(!point)
-    return;
-
-
-  const photo=
-    type==='after'
-    ?point.afterPhoto
-    :point.beforePhoto;
-
-
-  if(!photo)
-    return;
-
-
-  const win=
-    window.open();
-
-
-  if(!win)
-    return;
-
-
-  win.document.write(`
-
-    <html>
-
-      <head>
-        <title>
-          ${esc(point.name)}
-        </title>
-      </head>
-
-      <body
-        style="
-          margin:0;
-          background:#111;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          min-height:100vh
-        "
-      >
-
-        <img
-          src="${photo}"
-          style="
-            max-width:100%;
-            max-height:100vh;
-            object-fit:contain
-          "
-        >
-
-      </body>
-
-    </html>
-
-  `);
-
-}
-
-
-/* =====================================================
-   GPS TRACK
-===================================================== */
+/* =========================================================
+   GPS-SPUR
+========================================================= */
 
 function startTrack(){
 
   if(trackActive){
 
     stopTrack();
-
     return;
 
   }
-
 
   if(!currentPosition){
 
-    toast(
-      'GPS wird noch gesucht.'
-    );
-
+    toast('GPS wird noch gesucht.');
     return;
 
   }
 
-
   trackActive=true;
-
   trackPaused=false;
-
   trackPoints=[];
-
   trackDistance=0;
-
-  trackStartedAt=
-    Date.now();
-
+  trackStartedAt=Date.now();
   pauseStartedAt=null;
-
   pauseTotal=0;
-
   lastPosition=null;
-
 
   if(window.currentTrackLayer)
     map.removeLayer(
       window.currentTrackLayer
     );
-
 
   window.currentTrackLayer=
     L.polyline(
@@ -3640,97 +3285,61 @@ function startTrack(){
         weight:6,
         opacity:.9
       }
-    )
-    .addTo(map);
-
+    ).addTo(map);
 
   addTrackPoint(
     currentPosition.lat,
     currentPosition.lng
   );
 
+  document.getElementById(
+    'trackBtn'
+  ).textContent=
+    '⏹️ GPS-Spur stoppen';
 
-  document
-    .getElementById(
-      'trackBtn'
-    )
-    .textContent=
-      '⏹️ GPS-Spur stoppen';
+  document.getElementById(
+    'trackStatus'
+  ).textContent='Aktiv';
 
-
-  document
-    .getElementById(
-      'trackStatus'
-    )
-    .textContent=
-      'Aktiv';
-
-
-  trackTimer=
-    setInterval(
-      updateTrackUI,
-      1000
-    );
-
-
-  toast(
-    '📍 GPS-Spur gestartet.'
+  trackTimer=setInterval(
+    updateTrackUI,
+    1000
   );
 
-}
+  toast('📍 GPS-Spur gestartet.');
 
+}
 
 function stopTrack(){
 
   trackActive=false;
-
   trackPaused=false;
 
-  clearInterval(
-    trackTimer
-  );
-
+  clearInterval(trackTimer);
   trackTimer=null;
 
+  document.getElementById(
+    'trackBtn'
+  ).textContent=
+    '▶️ GPS-Spur starten';
 
-  document
-    .getElementById(
-      'trackBtn'
-    )
-    .textContent=
-      '▶️ GPS-Spur starten';
-
-
-  document
-    .getElementById(
-      'trackStatus'
-    )
-    .textContent=
-      'Nicht aktiv';
-
+  document.getElementById(
+    'trackStatus'
+  ).textContent=
+    'Nicht aktiv';
 
   updateTrackUI();
 
-
-  toast(
-    'GPS-Spur beendet.'
-  );
-
 }
 
+function addTrackPoint(lat,lng){
 
-function addTrackPoint(
-  lat,
-  lng
-){
-
-  if(!trackActive || trackPaused)
+  if(!trackActive||trackPaused)
     return;
-
 
   if(lastPosition){
 
-    const distance=
+    const d=
       distanceBetween(
         lastPosition.lat,
         lastPosition.lng,
@@ -3738,994 +3347,1850 @@ function addTrackPoint(
         lng
       );
 
-
-    if(
-      distance>0 &&
-      distance<300
-    ){
-
-      trackDistance+=
-        distance;
-
-    }
+    if(d>0&&d<300)
+      trackDistance+=d;
 
   }
 
+  lastPosition={lat,lng};
 
-  lastPosition={
-    lat,
-    lng
-  };
+  trackPoints.push([lat,lng]);
 
-
-  trackPoints.push([
-    lat,
-    lng
-  ]);
-
-
-  if(window.currentTrackLayer){
-
-    window.currentTrackLayer
-      .setLatLngs(
-        trackPoints
-      );
-
-  }
-
+  if(window.currentTrackLayer)
+    window.currentTrackLayer.setLatLngs(
+      trackPoints
+    );
 
   updateTrackUI();
 
 }
 
-
 function togglePause(){
 
   if(!trackActive){
 
-    toast(
-      'Keine laufende Tour.'
-    );
-
+    toast('Keine laufende GPS-Tour.');
     return;
 
   }
-
 
   if(!trackPaused){
 
     trackPaused=true;
+    pauseStartedAt=Date.now();
 
-    pauseStartedAt=
-      Date.now();
+    document.getElementById(
+      'pauseBtn'
+    ).textContent=
+      '▶️ Pause beenden';
 
+    document.getElementById(
+      'trackStatus'
+    ).textContent='Pause';
 
-    document
-      .getElementById(
-        'pauseBtn'
-      )
-      .textContent=
-        '▶️ Pause beenden';
+  }else{
 
-
-    document
-      .getElementById(
-        'trackStatus'
-      )
-      .textContent=
-        'Pause';
-
-
-    toast(
-      '⏸️ Pause gestartet.'
-    );
-
-  }
-  else{
-
-    if(pauseStartedAt){
-
+    if(pauseStartedAt)
       pauseTotal+=
-        Date.now()-
-        pauseStartedAt;
-
-    }
-
+        Date.now()-pauseStartedAt;
 
     pauseStartedAt=null;
-
     trackPaused=false;
 
+    document.getElementById(
+      'pauseBtn'
+    ).textContent='⏸️ Pause';
 
-    document
-      .getElementById(
-        'pauseBtn'
-      )
-      .textContent=
-        '⏸️ Pause';
-
-
-    document
-      .getElementById(
-        'trackStatus'
-      )
-      .textContent=
-        'Aktiv';
-
-
-    toast(
-      '▶️ Pause beendet.'
-    );
+    document.getElementById(
+      'trackStatus'
+    ).textContent='Aktiv';
 
   }
 
 }
 
-
-function getActiveSeconds(){
+function activeSeconds(){
 
   if(!trackStartedAt)
     return 0;
 
+  let paused=pauseTotal;
 
-  const total=
-    Date.now()-
-    trackStartedAt;
-
-
-  let pauses=
-    pauseTotal;
-
-
-  if(
-    trackPaused &&
-    pauseStartedAt
-  ){
-
-    pauses+=
-      Date.now()-
-      pauseStartedAt;
-
-  }
-
+  if(trackPaused&&pauseStartedAt)
+    paused+=Date.now()-pauseStartedAt;
 
   return Math.max(
     0,
     Math.floor(
-      (total-pauses)/1000
+      (Date.now()-trackStartedAt-paused)/1000
     )
   );
 
 }
-
-
-function getPauseSeconds(){
-
-  let total=
-    pauseTotal;
-
-
-  if(
-    trackPaused &&
-    pauseStartedAt
-  ){
-
-    total+=
-      Date.now()-
-      pauseStartedAt;
-
-  }
-
-
-  return Math.floor(
-    total/1000
-  );
-
-}
-
 
 function updateTrackUI(){
 
-  const activeSeconds=
-    getActiveSeconds();
+  const s=activeSeconds();
 
+  document.getElementById(
+    'trackTime'
+  ).textContent=
+    formatDuration(s);
 
-  const pauseSeconds=
-    getPauseSeconds();
+  document.getElementById(
+    'trackDistance'
+  ).textContent=
+    (trackDistance/1000).toFixed(2)+' km';
 
+  const speed=
+    s>60
+    ?trackDistance/1000/(s/3600)
+    :0;
 
-  document
-    .getElementById(
-      'trackTime'
-    )
-    .textContent=
-      formatDuration(
-        activeSeconds
-      );
+  document.getElementById(
+    'trackSpeed'
+  ).textContent=
+    speed.toFixed(1)+' km/h';
 
+  document.getElementById(
+    'dashKm'
+  ).textContent=
+    (trackDistance/1000).toFixed(1);
 
-  document
-    .getElementById(
-      'trackDistance'
-    )
-    .textContent=
-      (
-        trackDistance/1000
-      ).toFixed(2)+
-      ' km';
-
-
-  let speed=0;
-
-
-  if(activeSeconds>60){
-
-    speed=
-      (
-        trackDistance/1000
-      )/
-      (
-        activeSeconds/3600
-      );
-
-  }
-
-
-  document
-    .getElementById(
-      'trackSpeed'
-    )
-    .textContent=
-      speed.toFixed(1)+
-      ' km/h';
-
-
-  document
-    .getElementById(
-      'trackAltitude'
-    )
-    .textContent=
-      currentPosition?.altitude
-      ?
-      Math.round(
-        currentPosition.altitude
-      )+' m'
-      :
-      '–';
-
-
-  document
-    .getElementById(
-      'dashKm'
-    )
-    .textContent=
-      (
-        trackDistance/1000
-      ).toFixed(1);
-
-
-  document
-    .getElementById(
-      'dashTime'
-    )
-    .textContent=
-      formatShortTime(
-        activeSeconds
-      );
-
-
-  document
-    .getElementById(
-      'dashPause'
-    )
-    .textContent=
-      formatShortTime(
-        pauseSeconds
-      );
+  document.getElementById(
+    'dashTime'
+  ).textContent=
+    shortTime(s);
 
 }
 
 
-/* =====================================================
-   NÄCHSTE AUFGABE
-===================================================== */
+/* =========================================================
+   TOUR OPTIMIERUNG
+========================================================= */
 
-function getOpenPoints(){
+async function optimizeTour(){
 
-  return workPoints
-    .filter(
+  if(!plannedTour.length){
+
+    toast(
+      'Noch keine Punkte in der Tour.'
+    );
+
+    return;
+
+  }
+
+  const startMode=
+    document.getElementById(
+      'tourStartMode'
+    ).value;
+
+  const roundtrip=
+    document.getElementById(
+      'tourRoundtrip'
+    ).value==='true';
+
+  let start;
+
+  if(startMode==='gps'){
+
+    if(!currentPosition){
+
+      toast('GPS wird noch gesucht.');
+      return;
+
+    }
+
+    start={
+      lat:currentPosition.lat,
+      lng:currentPosition.lng,
+      name:'Aktueller Standort'
+    };
+
+  }
+
+  if(startMode==='depot')
+    start=DEPOT;
+
+  if(startMode==='first')
+    start=plannedTour[0];
+
+  const points=[
+    start,
+    ...plannedTour
+  ];
+
+  const coords=
+    points.map(
+      p=>p.lng+','+p.lat
+    ).join(';');
+
+  document.getElementById(
+    'tourSummary'
+  ).innerHTML=
+    '<div class="loading">⚡ Berechne optimale Reihenfolge …</div>';
+
+  try{
+
+    const url=
+      OSRM_BASE+
+      '/trip/v1/driving/'+
+      coords+
+      '?roundtrip='+
+      roundtrip+
+      '&source=first'+
+      '&destination='+
+      (roundtrip?'first':'last')+
+      '&overview=full'+
+      '&geometries=geojson';
+
+    const r=await fetch(url);
+
+    if(!r.ok)
+      throw Error('Trip');
+
+    const data=await r.json();
+
+    if(!data.trips?.length)
+      throw Error('Keine Tour');
+
+    const trip=data.trips[0];
+
+    const order=
+      data.waypoints
+        .slice(1)
+        .sort(
+          (a,b)=>a.waypoint_index-b.waypoint_index
+        )
+        .map(
+          w=>points[w.waypoint_index]
+        );
+
+    plannedTour=order;
+
+    if(plannedRouteLayer)
+      map.removeLayer(
+        plannedRouteLayer
+      );
+
+    plannedRouteLayer=
+      L.geoJSON(
+        trip.geometry,
+        {
+          pane:'routePane',
+          style:{
+            color:'#16a34a',
+            weight:7,
+            opacity:.85
+          }
+        }
+      ).addTo(map);
+
+    renderPlannedTour(
+      trip.distance,
+      trip.duration,
+      start,
+      roundtrip
+    );
+
+    map.fitBounds(
+      plannedRouteLayer.getBounds(),
+      {
+        padding:[30,130],
+        maxZoom:16
+      }
+    );
+
+    toast(
+      '⚡ Tour optimiert.'
+    );
+
+  }catch(e){
+
+    console.warn(e);
+
+    document.getElementById(
+      'tourSummary'
+    ).innerHTML=
+      '<div class="route-summary">❌ Tour konnte nicht berechnet werden.</div>';
+
+    toast(
+      'Touroptimierung fehlgeschlagen.'
+    );
+
+  }
+
+}
+
+function renderPlannedTour(
+  distance,
+  duration,
+  start,
+  roundtrip
+){
+
+  const summary=
+    document.getElementById(
+      'tourSummary'
+    );
+
+  summary.innerHTML=`
+
+    <div class="route-summary">
+
+      <b>⚡ Optimierte Tour</b>
+
+      <div style="margin-top:6px">
+        ${formatDistance(distance)}
+        •
+        ${formatRouteTime(duration)}
+      </div>
+
+      <div class="hint">
+        Start: ${esc(start.name||'Start')}
+        •
+        ${roundtrip?'Rückkehr zum Start':'keine Rückkehr'}
+      </div>
+
+    </div>
+
+  `;
+
+  const e=
+    document.getElementById(
+      'tourStops'
+    );
+
+  e.innerHTML=
+    plannedTour.map(
+      (p,i)=>`
+
+      <div class="stop-item">
+
+        <span class="number">
+          ${i+1}
+        </span>
+
+        <b>
+          ${CATEGORY[p.category]?.icon||'📍'}
+          ${esc(p.name)}
+        </b>
+
+        <div class="hint">
+          ${esc(
+            CATEGORY[p.category]?.label||
+            p.category||
+            'Auftrag'
+          )}
+        </div>
+
+        <div class="point-actions">
+
+          <button class="smallbtn"
+            onclick="showPoint('${p.id}')">
+            📍 Karte
+          </button>
+
+          <button class="smallbtn"
+            onclick="navigateToPoint('${p.id}')">
+            🧭 Einzel-Navi
+          </button>
+
+        </div>
+
+      </div>
+
+      `
+    ).join('');
+
+}
+
+
+/* =========================================================
+   TOUR AUS OFFENEN AUFGABEN
+========================================================= */
+
+function loadOpenTasksIntoTour(){
+
+  plannedTour=
+    workPoints.filter(
       p=>!p.done
     );
 
-}
+  if(!plannedTour.length){
 
-
-function getNextPoint(){
-
-  const open=
-    getOpenPoints();
-
-
-  if(!open.length)
-    return null;
-
-
-  if(!currentPosition)
-    return open[0];
-
-
-  open.sort(
-    (a,b)=>{
-
-      const da=
-        distanceBetween(
-          currentPosition.lat,
-          currentPosition.lng,
-          a.lat,
-          a.lng
-        );
-
-
-      const db=
-        distanceBetween(
-          currentPosition.lat,
-          currentPosition.lng,
-          b.lat,
-          b.lng
-        );
-
-
-      const priority={
-        high:0,
-        medium:1,
-        low:2
-      };
-
-
-      const pa=
-        priority[a.priority];
-
-      const pb=
-        priority[b.priority];
-
-
-      if(pa!==pb)
-        return pa-pb;
-
-
-      return da-db;
-
-    }
-  );
-
-
-  return open[0];
-
-}
-
-
-function goToNextTask(){
-
-  const point=
-    getNextPoint();
-
-
-  if(!point){
-
-    toast(
-      '🎉 Alle Aufgaben sind erledigt!'
-    );
-
-    speak(
-      'Alle Aufgaben sind erledigt.'
-    );
-
+    toast('Keine offenen Aufgaben.');
     return;
 
   }
 
+  renderTourInputList();
+
+  toast(
+    plannedTour.length+
+    ' offene Aufgaben übernommen.'
+  );
+
+}
+
+function renderTourInputList(){
+
+  document.getElementById(
+    'tourStops'
+  ).innerHTML=
+    plannedTour.map(
+      (p,i)=>`
+
+      <div class="stop-item">
+
+        <span class="number">
+          ${i+1}
+        </span>
+
+        <b>
+          ${CATEGORY[p.category]?.icon||'📍'}
+          ${esc(p.name)}
+        </b>
+
+        <div class="hint">
+          ${p.lat.toFixed(5)},
+          ${p.lng.toFixed(5)}
+        </div>
+
+      </div>
+
+      `
+    ).join('');
+
+}
+
+
+/* =========================================================
+   TOUR STARTEN
+========================================================= */
+
+function startPlannedTour(){
+
+  if(!plannedTour.length){
+
+    toast('Keine geplante Tour.');
+    return;
+
+  }
+
+  currentTourIndex=0;
+  currentTourMode=true;
+
+  if(!trackActive)
+    startTrack();
+
+  navigatePlannedStop();
+
+}
+
+function navigatePlannedStop(){
+
+  if(
+    currentTourIndex<0||
+    currentTourIndex>=plannedTour.length
+  ){
+
+    finishPlannedTour();
+    return;
+
+  }
+
+  const p=
+    plannedTour[currentTourIndex];
+
+  setDestination(
+    p.lat,
+    p.lng,
+    p.name
+  );
 
   currentTourMode=true;
 
-
-  setDestination(
-    point.lat,
-    point.lng,
-    point.name
+  toast(
+    'Stop '+(currentTourIndex+1)+
+    '/'+plannedTour.length+
+    ': '+p.name
   );
 
+}
+
+function finishTourStop(){
+
+  const p=
+    plannedTour[currentTourIndex];
+
+  if(p){
+
+    p.done=true;
+    p.doneAt=new Date().toISOString();
+
+    const original=
+      workPoints.find(
+        x=>x.id===p.id
+      );
+
+    if(original){
+
+      original.done=true;
+      original.doneAt=p.doneAt;
+
+    }
+
+    saveData();
+    renderWorkPoints();
+    updateDashboard();
+
+  }
+
+  currentTourIndex++;
+
+  if(
+    currentTourIndex<
+    plannedTour.length
+  ){
+
+    setTimeout(
+      navigatePlannedStop,
+      700
+    );
+
+  }else{
+
+    finishPlannedTour();
+
+  }
+
+}
+
+function finishPlannedTour(){
+
+  currentTourMode=false;
 
   toast(
-    'Nächste Aufgabe: '+
-    point.name
+    '🎉 Tour abgeschlossen.'
+  );
+
+  speak(
+    'Tour abgeschlossen.'
+  );
+
+  updateDashboard();
+
+}
+
+
+/* =========================================================
+   SCHNELLSTE NÄCHSTE AUFGABE
+========================================================= */
+
+function goToNextTask(){
+
+  const open=
+    workPoints.filter(
+      p=>!p.done
+    );
+
+  if(!open.length){
+
+    toast('🎉 Alle Aufgaben erledigt.');
+    return;
+
+  }
+
+  let best=open[0];
+
+  if(currentPosition){
+
+    let bestD=Infinity;
+
+    open.forEach(p=>{
+
+      const d=
+        distanceBetween(
+          currentPosition.lat,
+          currentPosition.lng,
+          p.lat,
+          p.lng
+        );
+
+      if(d<bestD){
+
+        bestD=d;
+        best=p;
+
+      }
+
+    });
+
+  }
+
+  currentTourMode=false;
+
+  setDestination(
+    best.lat,
+    best.lng,
+    best.name
   );
 
 }
 
 
-function finishCurrentTaskAndNext(){
+/* =========================================================
+   TOUR IMPORT
+========================================================= */
 
-  const target=
-    destinationMarker
-      ?.getLatLng();
+document.getElementById(
+  'importTourBtn'
+).onclick=
+  importTourFile;
 
+async function importTourFile(){
 
-  if(!target)
+  const file=
+    document.getElementById(
+      'tourFile'
+    ).files?.[0];
+
+  if(!file){
+
+    toast('Bitte zuerst Foto oder Datei auswählen.');
     return;
 
+  }
 
-  let nearest=null;
+  const progress=
+    document.getElementById(
+      'importProgress'
+    );
 
-  let best=Infinity;
+  progress.innerHTML=
+    '<div class="loading">📥 Datei wird analysiert …</div>';
 
+  try{
 
-  workPoints.forEach(
-    point=>{
+    let points=[];
 
-      if(point.done)
-        return;
+    const name=file.name.toLowerCase();
 
+    if(file.type.startsWith('image/')){
 
-      const d=
-        distanceBetween(
-          point.lat,
-          point.lng,
-          target.lat,
-          target.lng
+      points=
+        await parsePhotoOCR(file);
+
+    }else if(name.endsWith('.csv')){
+
+      const text=await file.text();
+
+      points=
+        parseCSV(text);
+
+    }else if(
+      name.endsWith('.xlsx')||
+      name.endsWith('.xls')
+    ){
+
+      points=
+        await parseExcel(file);
+
+    }else if(name.endsWith('.gpx')){
+
+      const text=await file.text();
+
+      points=
+        parseGPX(text);
+
+    }else if(
+      name.endsWith('.json')||
+      name.endsWith('.geojson')
+    ){
+
+      const text=await file.text();
+
+      points=
+        parseJSONPoints(
+          JSON.parse(text)
         );
 
+    }else if(name.endsWith('.kml')){
 
-      if(d<best){
+      const text=await file.text();
 
-        best=d;
+      points=
+        parseKML(text);
 
-        nearest=point;
+    }else if(name.endsWith('.txt')){
+
+      const text=await file.text();
+
+      points=
+        parseTextList(text);
+
+    }else{
+
+      throw Error(
+        'Dateityp nicht unterstützt'
+      );
+
+    }
+
+    if(!points.length)
+      throw Error(
+        'Keine Punkte erkannt'
+      );
+
+    const geocoded=
+      await geocodeMissingPoints(points);
+
+    plannedTour=
+      geocoded;
+
+    renderTourInputList();
+
+    progress.innerHTML=
+      '<div class="route-summary">✅ '+
+      geocoded.length+
+      ' Punkte erkannt und übernommen.</div>';
+
+    toast(
+      geocoded.length+
+      ' Tourpunkte importiert.'
+    );
+
+  }catch(e){
+
+    console.warn(e);
+
+    progress.innerHTML=
+      '<div class="route-summary">❌ '+
+      esc(e.message||'Import fehlgeschlagen')+
+      '</div>';
+
+    toast(
+      'Tour konnte nicht importiert werden.'
+    );
+
+  }
+
+  document.getElementById(
+    'tourFile'
+  ).value='';
+
+}
+
+
+/* =========================================================
+   CSV
+========================================================= */
+
+function parseCSV(text){
+
+  const result=
+    Papa.parse(
+      text.trim(),
+      {
+        header:true,
+        skipEmptyLines:true
+      }
+    );
+
+  return result.data
+    .map(normalizeImportedRow)
+    .filter(Boolean);
+
+}
+
+
+/* =========================================================
+   EXCEL
+========================================================= */
+
+async function parseExcel(file){
+
+  const buffer=
+    await file.arrayBuffer();
+
+  const workbook=
+    XLSX.read(
+      buffer,
+      {type:'array'}
+    );
+
+  const sheet=
+    workbook.Sheets[
+      workbook.SheetNames[0]
+    ];
+
+  const rows=
+    XLSX.utils.sheet_to_json(
+      sheet
+    );
+
+  return rows
+    .map(normalizeImportedRow)
+    .filter(Boolean);
+
+}
+
+
+/* =========================================================
+   JSON
+========================================================= */
+
+function parseJSONPoints(data){
+
+  if(data.type==='FeatureCollection'){
+
+    return data.features
+      .map(
+        feature=>{
+
+          const c=
+            feature.geometry?.coordinates;
+
+          const p=
+            feature.properties||{};
+
+          if(
+            feature.geometry?.type==='Point'&&
+            c?.length>=2
+          ){
+
+            return {
+              id:uid(),
+              category:guessCategory(
+                p.typ||p.type||p.kategorie
+              ),
+              name:
+                p.name||
+                p.bezeichnung||
+                p.adresse||
+                'Importpunkt',
+              lat:Number(c[1]),
+              lng:Number(c[0]),
+              note:p.notiz||p.note||'',
+              priority:'medium',
+              done:false,
+              extra:{}
+            };
+
+          }
+
+          return null;
+
+        }
+      )
+      .filter(Boolean);
+
+  }
+
+  const arr=
+    Array.isArray(data)
+    ?data
+    :data.points||data.workPoints||[];
+
+  return arr
+    .map(normalizeImportedRow)
+    .filter(Boolean);
+
+}
+
+
+/* =========================================================
+   GPX
+========================================================= */
+
+function parseGPX(text){
+
+  const xml=
+    new DOMParser()
+      .parseFromString(
+        text,
+        'application/xml'
+      );
+
+  const points=[];
+
+  const wpts=
+    [...xml.querySelectorAll('wpt')];
+
+  wpts.forEach(
+    w=>{
+
+      const lat=
+        Number(w.getAttribute('lat'));
+
+      const lng=
+        Number(w.getAttribute('lon'));
+
+      const name=
+        w.querySelector('name')
+          ?.textContent||
+        'GPX Punkt';
+
+      if(
+        Number.isFinite(lat)&&
+        Number.isFinite(lng)
+      ){
+
+        points.push({
+          id:uid(),
+          category:'sonstiges',
+          name,
+          lat,
+          lng,
+          note:'',
+          priority:'medium',
+          done:false,
+          extra:{}
+        });
 
       }
 
     }
   );
 
+  if(points.length)
+    return points;
 
-  if(nearest){
+  const trkpts=
+    [...xml.querySelectorAll('trkpt')];
 
-    currentTourMode=true;
+  trkpts.forEach(
+    (p,i)=>{
 
-    setTimeout(
-      ()=>{
-        setDestination(
-          nearest.lat,
-          nearest.lng,
-          nearest.name
-        );
-      },
-      500
-    );
+      const lat=
+        Number(p.getAttribute('lat'));
 
-  }
+      const lng=
+        Number(p.getAttribute('lon'));
+
+      if(i%10===0&&
+        Number.isFinite(lat)&&
+        Number.isFinite(lng)
+      ){
+
+        points.push({
+          id:uid(),
+          category:'sonstiges',
+          name:'GPX Punkt '+(i+1),
+          lat,
+          lng,
+          note:'',
+          priority:'medium',
+          done:false,
+          extra:{}
+        });
+
+      }
+
+    }
+  );
+
+  return points;
 
 }
 
 
-/* =====================================================
-   TOUR
-===================================================== */
+/* =========================================================
+   KML
+========================================================= */
 
-function startTour(){
+function parseKML(text){
 
-  const open=
-    getOpenPoints();
+  const xml=
+    new DOMParser()
+      .parseFromString(
+        text,
+        'application/xml'
+      );
 
+  const points=[];
 
-  if(!open.length){
+  [...xml.querySelectorAll('Placemark')]
+    .forEach(
+      pm=>{
 
-    toast(
-      'Keine offenen Aufgaben.'
+        const name=
+          pm.querySelector('name')
+            ?.textContent||
+          'KML Punkt';
+
+        const coords=
+          pm.querySelector('Point coordinates')
+            ?.textContent
+            ?.trim()
+            ?.split(',');
+
+        if(
+          coords?.length>=2
+        ){
+
+          points.push({
+            id:uid(),
+            category:'sonstiges',
+            name,
+            lat:Number(coords[1]),
+            lng:Number(coords[0]),
+            note:'',
+            priority:'medium',
+            done:false,
+            extra:{}
+          });
+
+        }
+
+      }
     );
+
+  return points;
+
+}
+
+
+/* =========================================================
+   TEXT
+========================================================= */
+
+function parseTextList(text){
+
+  return text
+    .split(/\r?\n/)
+    .map(x=>x.trim())
+    .filter(Boolean)
+    .map(
+      line=>({
+        id:uid(),
+        category:guessCategory(line),
+        name:line,
+        lat:null,
+        lng:null,
+        note:'',
+        priority:'medium',
+        done:false,
+        extra:{}
+      })
+    );
+
+}
+
+
+/* =========================================================
+   IMPORT-ZEILE NORMALISIEREN
+========================================================= */
+
+function normalizeImportedRow(row){
+
+  if(!row)return null;
+
+  const keys=
+    Object.keys(row);
+
+  const get=(...names)=>{
+
+    for(const name of names){
+
+      const key=
+        keys.find(
+          k=>
+            k.toLowerCase()
+             .replace(/[\s_-]/g,'')
+            ===name
+             .toLowerCase()
+             .replace(/[\s_-]/g,'')
+        );
+
+      if(key&&row[key]!==undefined)
+        return row[key];
+
+    }
+
+    return '';
+
+  };
+
+  let lat=Number(
+    get(
+      'lat',
+      'latitude',
+      'breitengrad'
+    )
+  );
+
+  let lng=Number(
+    get(
+      'lng',
+      'lon',
+      'longitude',
+      'laengengrad',
+      'längengrad'
+    )
+  );
+
+  if(!Number.isFinite(lat))
+    lat=null;
+
+  if(!Number.isFinite(lng))
+    lng=null;
+
+  const name=
+    get(
+      'name',
+      'bezeichnung',
+      'adresse',
+      'ort',
+      'punkt'
+    )||
+    'Importpunkt';
+
+  const category=
+    guessCategory(
+      get(
+        'typ',
+        'type',
+        'kategorie',
+        'category'
+      )
+    );
+
+  return {
+    id:uid(),
+    category,
+    name:String(name),
+    lat,
+    lng,
+    note:String(
+      get(
+        'notiz',
+        'note',
+        'bemerkung'
+      )||''
+    ),
+    priority:'medium',
+    done:false,
+    extra:{}
+  };
+
+}
+
+function guessCategory(text){
+
+  const s=
+    String(text||'')
+      .toLowerCase();
+
+  if(
+    s.includes('robidog')||
+    s.includes('hund')
+  )return'robidog';
+
+  if(
+    s.includes('abfall')||
+    s.includes('kübel')||
+    s.includes('kuebel')||
+    s.includes('mülleimer')||
+    s.includes('muelleimer')
+  )return'abfall';
+
+  if(
+    s.includes('schacht')||
+    s.includes('saugen')||
+    s.includes('schlammsammler')
+  )return'schacht';
+
+  if(
+    s.includes('vita')||
+    s.includes('parcours')
+  )return'vitaparcours';
+
+  if(
+    s.includes('blumentopf')||
+    s.includes('pflanz')||
+    s.includes('giessen')||
+    s.includes('gießen')
+  )return'blumentopf';
+
+  if(
+    s.includes('lampe')||
+    s.includes('licht')||
+    s.includes('beleucht')
+  )return'licht';
+
+  if(
+    s.includes('signal')||
+    s.includes('schild')
+  )return'signal';
+
+  if(
+    s.includes('baum')||
+    s.includes('grün')||
+    s.includes('gruen')
+  )return'baum';
+
+  if(
+    s.includes('neophyt')
+  )return'neophyten';
+
+  if(
+    s.includes('brunnen')
+  )return'brunnen';
+
+  if(
+    s.includes('bach')||
+    s.includes('gewässer')||
+    s.includes('gewaesser')
+  )return'bach';
+
+  if(
+    s.includes('spielplatz')
+  )return'spielplatz';
+
+  if(
+    s.includes('bank')
+  )return'bank';
+
+  if(
+    s.includes('reinigung')||
+    s.includes('verschmutz')
+  )return'reinigung';
+
+  if(
+    s.includes('winter')
+  )return'winter';
+
+  if(
+    s.includes('schaden')||
+    s.includes('defekt')
+  )return'schaden';
+
+  return'sonstiges';
+
+}
+
+
+/* =========================================================
+   GEOCODING
+========================================================= */
+
+async function geocodeMissingPoints(points){
+
+  const output=[];
+
+  for(const point of points){
+
+    if(
+      Number.isFinite(point.lat)&&
+      Number.isFinite(point.lng)
+    ){
+
+      output.push(point);
+      continue;
+
+    }
+
+    const q=
+      point.name;
+
+    if(!q){
+
+      continue;
+
+    }
+
+    try{
+
+      const url=
+        NOMINATIM+
+        '?format=jsonv2&limit=1&countrycodes=ch&q='+
+        encodeURIComponent(
+          q+', Maur, Zürich, Schweiz'
+        );
+
+      const r=await fetch(
+        url,
+        {
+          headers:{
+            Accept:'application/json'
+          }
+        }
+      );
+
+      const data=await r.json();
+
+      if(data.length){
+
+        point.lat=
+          Number(data[0].lat);
+
+        point.lng=
+          Number(data[0].lon);
+
+        output.push(point);
+
+      }
+
+      await sleep(900);
+
+    }catch(e){
+
+      console.warn(
+        'Geocoding',
+        point.name,
+        e
+      );
+
+    }
+
+  }
+
+  return output;
+
+}
+
+
+/* =========================================================
+   FOTO OCR
+========================================================= */
+
+async function parsePhotoOCR(file){
+
+  if(!window.Tesseract)
+    throw Error(
+      'OCR-Bibliothek nicht verfügbar'
+    );
+
+  const progress=
+    document.getElementById(
+      'importProgress'
+    );
+
+  progress.innerHTML=
+    '<div class="loading">📷 Foto wird gelesen … 0%</div>';
+
+  const result=
+    await Tesseract.recognize(
+      file,
+      'deu+eng',
+      {
+        logger:m=>{
+
+          if(
+            m.status==='recognizing text'
+          ){
+
+            progress.innerHTML=
+              '<div class="loading">📷 OCR … '+
+              Math.round(
+                (m.progress||0)*100
+              )+
+              '%</div>';
+
+          }
+
+        }
+      }
+    );
+
+  const text=
+    result.data.text||'';
+
+  progress.innerHTML=
+    '<div class="loading">🔎 Text erkannt – Adressen werden gesucht …</div>';
+
+  return parseTextList(text);
+
+}
+
+
+/* =========================================================
+   BAUSTELLEN / SPERRUNGEN
+========================================================= */
+
+function renderClosures(){
+
+  closureMarkers.forEach(
+    m=>{
+      if(map.hasLayer(m))
+        map.removeLayer(m);
+    }
+  );
+
+  closureMarkers=[];
+
+  closures.forEach(
+    c=>{
+
+      const marker=
+        L.marker(
+          [c.lat,c.lng],
+          {
+            pane:'closurePane',
+            icon:L.divIcon({
+              className:'',
+              html:'<div class="closure-icon">🚧</div>',
+              iconSize:[38,38],
+              iconAnchor:[19,19]
+            })
+          }
+        ).addTo(map);
+
+      marker.bindPopup(`
+        <b>🚧 ${esc(c.name)}</b>
+        <div class="hint">
+          Radius ${c.radius} m
+        </div>
+
+        <button
+          onclick="deleteClosure('${c.id}')"
+          style="margin-top:8px;padding:8px;border-radius:8px;background:#fee2e2;color:#991b1b">
+          Sperrung löschen
+        </button>
+      `);
+
+      L.circle(
+        [c.lat,c.lng],
+        {
+          pane:'closurePane',
+          radius:c.radius,
+          color:'#dc2626',
+          fillColor:'#dc2626',
+          fillOpacity:.12
+        }
+      ).addTo(map);
+
+      closureMarkers.push(marker);
+
+    }
+  );
+
+  renderClosureList();
+
+}
+
+function renderClosureList(){
+
+  const e=
+    document.getElementById(
+      'closureList'
+    );
+
+  if(!closures.length){
+
+    e.innerHTML=
+      '<p class="hint">Keine Sperrungen gespeichert.</p>';
 
     return;
 
   }
 
+  e.innerHTML=
+    closures.map(
+      c=>`
+      <div class="closure-item">
 
-  currentTourMode=true;
+        <b>🚧 ${esc(c.name)}</b>
 
+        <div class="hint">
+          Radius ${c.radius} m
+        </div>
 
-  if(!trackActive)
-    startTrack();
+        <button
+          class="smallbtn danger"
+          onclick="deleteClosure('${c.id}')">
+          🗑️ Löschen
+        </button>
 
+      </div>
+      `
+    ).join('');
 
-  goToNextTask();
+}
 
+function startClosureMode(){
 
-  speak(
-    'Werkdienst-Tour gestartet.'
+  closureMode=true;
+
+  closePanels();
+
+  toast(
+    '🚧 Tippe jetzt auf die gesperrte Stelle.'
   );
 
 }
 
+map.on(
+  'click',
+  e=>{
+
+    if(!closureMode)
+      return;
+
+    closureMode=false;
+
+    const name=
+      prompt(
+        'Name der Baustelle / Sperrung:',
+        'Baustelle'
+      );
+
+    if(!name)
+      return;
+
+    const radius=
+      Number(
+        prompt(
+          'Radius in Metern:',
+          '40'
+        )
+      )||40;
+
+    closures.push({
+      id:uid(),
+      name,
+      lat:e.latlng.lat,
+      lng:e.latlng.lng,
+      radius,
+      createdAt:new Date().toISOString()
+    });
+
+    saveClosures();
+    renderClosures();
+
+    toast(
+      '🚧 Sperrung gespeichert.'
+    );
+
+  }
+);
+
+function deleteClosure(id){
+
+  if(!confirm(
+    'Sperrung wirklich löschen?'
+  ))return;
+
+  closures=
+    closures.filter(
+      c=>c.id!==id
+    );
+
+  saveClosures();
+  renderClosures();
+
+}
+
+
+/* =========================================================
+   TOUR DATEIEN / MANUELL
+========================================================= */
+
+document.getElementById(
+  'manualTourPointBtn'
+).onclick=()=>{
+  openNewPoint('sonstiges');
+  toast(
+    'Punkt wird gleichzeitig als Auftrag gespeichert.'
+  );
+};
+
+document.getElementById(
+  'loadOpenTasksBtn'
+).onclick=
+  loadOpenTasksIntoTour;
+
+document.getElementById(
+  'optimizeTourBtn'
+).onclick=
+  optimizeTour;
+
+document.getElementById(
+  'startPlannedTourBtn'
+).onclick=
+  startPlannedTour;
+
+document.getElementById(
+  'clearPlannedTourBtn'
+).onclick=()=>{
+
+  plannedTour=[];
+
+  if(plannedRouteLayer){
+
+    map.removeLayer(
+      plannedRouteLayer
+    );
+
+    plannedRouteLayer=null;
+
+  }
+
+  document.getElementById(
+    'tourSummary'
+  ).innerHTML='';
+
+  document.getElementById(
+    'tourStops'
+  ).innerHTML='';
+
+  toast(
+    'Tourplanung gelöscht.'
+  );
+
+};
+
+
+/* =========================================================
+   VITAPARCOURS
+========================================================= */
+
+document.getElementById(
+  'newVitaBtn'
+).onclick=()=>{
+  openNewPoint('vitaparcours');
+};
+
+document
+  .querySelectorAll('.vitaTask')
+  .forEach(
+    checkbox=>{
+      checkbox.addEventListener(
+        'change',
+        ()=>{
+          renderCategoryExtra(
+            'vitaparcours'
+          );
+        }
+      );
+    }
+  );
+
+
+/* =========================================================
+   TOUREN SPEICHERN
+========================================================= */
 
 function saveCurrentTour(){
 
-  if(
-    trackPoints.length<2
-  ){
+  if(trackPoints.length<2){
 
     toast(
-      'Noch keine ausreichende GPS-Spur.'
+      'Noch keine GPS-Spur vorhanden.'
     );
 
     return;
 
   }
-
 
   const name=
     prompt(
       'Name der Tour:',
       'Werkdienst '+
       new Date()
-        .toLocaleDateString(
-          'de-CH'
-        )
+        .toLocaleDateString('de-CH')
     );
 
+  if(!name)return;
 
-  if(!name)
-    return;
-
-
-  const tour={
-
+  tours.unshift({
     id:uid(),
-
     name,
-
-    createdAt:
-      new Date()
-        .toISOString(),
-
-    distanceMeters:
-      trackDistance,
-
-    durationSeconds:
-      getActiveSeconds(),
-
-    pauseSeconds:
-      getPauseSeconds(),
-
-    points:
-      [...trackPoints]
-
-  };
-
-
-  tours.unshift(
-    tour
-  );
-
+    createdAt:new Date().toISOString(),
+    distanceMeters:trackDistance,
+    durationSeconds:activeSeconds(),
+    points:[...trackPoints]
+  });
 
   saveTours();
-
   renderTours();
 
-
-  toast(
-    '💾 Tour gespeichert.'
-  );
+  toast('💾 Tour gespeichert.');
 
 }
 
-
-/* =====================================================
-   GESPEICHERTE TOUREN
-===================================================== */
-
 function renderTours(){
 
-  const element=
+  const e=
     document.getElementById(
       'tourList'
     );
 
-
-  if(!tours.length){
-
-    element.innerHTML=
-      '<p class="hint">Noch keine Touren.</p>';
-
-    return;
-
-  }
-
-
-  element.innerHTML=
-    tours.map(
-      tour=>`
-
-        <div class="tour-item">
-
-          <b>
-            🗺️
-            ${esc(tour.name)}
-          </b>
-
-          <div class="hint">
-
-            ${new Date(
-              tour.createdAt
-            ).toLocaleString(
-              'de-CH'
-            )}
-
-          </div>
-
-          <div class="hint">
-
-            ${
-              (
-                tour.distanceMeters/1000
-              ).toFixed(2)
-            }
-            km
-            •
-            ${
-              formatDuration(
-                tour.durationSeconds
-              )
-            }
-
-          </div>
-
-          <div class="point-actions">
-
-            <button
-              class="smallbtn"
-              onclick="showTour('${tour.id}')"
-            >
-              👁️ Anzeigen
-            </button>
-
-            <button
-              class="smallbtn"
-              onclick="fitTour('${tour.id}')"
-            >
-              🔎 Ganze Tour
-            </button>
-
-            <button
-              class="smallbtn danger"
-              onclick="deleteTour('${tour.id}')"
-            >
-              🗑️ Löschen
-            </button>
-
-          </div>
-
-        </div>
-
-      `
-    )
-    .join('');
+  if(!e)return;
 
 }
 
+function showSavedTour(id){
 
-let displayedTourLayer=null;
-
-
-function showTour(id){
-
-  const tour=
+  const t=
     tours.find(
-      t=>t.id===id
+      x=>x.id===id
     );
 
-  if(!tour)
-    return;
-
+  if(!t)return;
 
   if(displayedTourLayer)
-    map.removeLayer(
-      displayedTourLayer
-    );
-
+    map.removeLayer(displayedTourLayer);
 
   displayedTourLayer=
     L.polyline(
-      tour.points,
+      t.points,
       {
         pane:'trackPane',
         color:'#f97316',
-        weight:6,
-        opacity:.9
+        weight:6
       }
-    )
-    .addTo(map);
-
+    ).addTo(map);
 
   map.fitBounds(
     displayedTourLayer.getBounds(),
     {
-      padding:[
-        30,
-        120
-      ],
+      padding:[30,120],
       maxZoom:16
     }
   );
 
-
-  toast(
-    'Tour angezeigt.'
-  );
-
 }
 
 
-function fitTour(id){
-
-  showTour(id);
-
-}
-
-
-function deleteTour(id){
-
-  if(
-    !confirm(
-      'Tour wirklich löschen?'
-    )
-  )
-    return;
-
-
-  tours=
-    tours.filter(
-      t=>t.id!==id
-    );
-
-
-  saveTours();
-
-  renderTours();
-
-  toast(
-    'Tour gelöscht.'
-  );
-
-}
-
-
-/* =====================================================
+/* =========================================================
    DASHBOARD
-===================================================== */
+========================================================= */
 
 function updateDashboard(){
 
-  const total=
-    workPoints.length;
-
+  const total=workPoints.length;
 
   const done=
-    workPoints
-      .filter(
-        p=>p.done
-      )
-      .length;
+    workPoints.filter(
+      p=>p.done
+    ).length;
 
-
-  const open=
-    total-done;
-
+  const open=total-done;
 
   const urgent=
-    workPoints
-      .filter(
-        p=>
-          !p.done &&
-          p.priority==='high'
-      )
-      .length;
-
+    workPoints.filter(
+      p=>!p.done&&p.priority==='high'
+    ).length;
 
   const progress=
     total
-    ?
-      Math.round(
-        done/total*100
-      )
-    :
-      0;
+    ?Math.round(done/total*100)
+    :0;
 
+  document.getElementById(
+    'dashTotal'
+  ).textContent=total;
 
-  document
-    .getElementById(
-      'dashTotal'
-    )
-    .textContent=
-      total;
+  document.getElementById(
+    'dashDone'
+  ).textContent=done;
 
+  document.getElementById(
+    'dashOpen'
+  ).textContent=open;
 
-  document
-    .getElementById(
-      'dashDone'
-    )
-    .textContent=
-      done;
+  document.getElementById(
+    'dashUrgent'
+  ).textContent=urgent;
 
+  document.getElementById(
+    'dashProgress'
+  ).style.width=
+    progress+'%';
 
-  document
-    .getElementById(
-      'dashOpen'
-    )
-    .textContent=
-      open;
+  document.getElementById(
+    'dashProgressText'
+  ).textContent=
+    done+' / '+total+' erledigt';
 
+  document.getElementById(
+    'pointsTotal'
+  ).textContent=total;
 
-  document
-    .getElementById(
-      'dashProgress'
-    )
-    .style.width=
-      progress+'%';
+  document.getElementById(
+    'pointsOpen'
+  ).textContent=open;
 
+  document.getElementById(
+    'pointsDone'
+  ).textContent=done;
 
-  document
-    .getElementById(
-      'dashProgressText'
-    )
-    .textContent=
-      done+
-      ' / '+
-      total+
-      ' erledigt';
-
-
-  document
-    .getElementById(
-      'pointsTotal'
-    )
-    .textContent=
-      total;
-
-
-  document
-    .getElementById(
-      'pointsOpen'
-    )
-    .textContent=
-      open;
-
-
-  document
-    .getElementById(
-      'pointsDone'
-    )
-    .textContent=
-      done;
-
-
-  document
-    .getElementById(
-      'pointsUrgent'
-    )
-    .textContent=
-      urgent;
-
+  document.getElementById(
+    'pointsUrgent'
+  ).textContent=urgent;
 
   updateTrackUI();
-
   updatePointsList();
 
 }
 
 
-/* =====================================================
+/* =========================================================
    PANELS
-===================================================== */
+========================================================= */
 
 function openPanel(id){
 
   document
-    .querySelectorAll(
-      '.panel'
-    )
+    .querySelectorAll('.panel')
     .forEach(
-      panel=>
-        panel.classList.remove(
-          'open'
-        )
+      p=>p.classList.remove('open')
     );
 
+  document.getElementById(
+    id
+  ).classList.add('open');
+
+  document.getElementById(
+    'searchWrap'
+  ).style.display='none';
 
   document
-    .getElementById(id)
-    .classList.add(
-      'open'
-    );
-
-
-  document
-    .getElementById(
-      'searchWrap'
-    )
-    .style.display=
-      'none';
-
-
-  document
-    .querySelectorAll(
-      '.bottom button'
-    )
+    .querySelectorAll('.bottom button')
     .forEach(
-      button=>
-        button.classList.remove(
-          'active'
-        )
+      b=>b.classList.remove('active')
     );
 
 }
 
-
 function closePanels(){
 
   document
-    .querySelectorAll(
-      '.panel'
-    )
+    .querySelectorAll('.panel')
     .forEach(
-      panel=>
-        panel.classList.remove(
-          'open'
-        )
+      p=>p.classList.remove('open')
     );
 
-
-  document
-    .getElementById(
-      'searchWrap'
-    )
-    .style.display=
-      'block';
-
+  document.getElementById(
+    'searchWrap'
+  ).style.display='block';
 
   setTimeout(
-    ()=>{
-      map.invalidateSize({
-        pan:false
-      });
-    },
+    ()=>map.invalidateSize({pan:false}),
     100
   );
 
 }
 
 
-/* =====================================================
+/* =========================================================
    EXPORT
-===================================================== */
+========================================================= */
 
 function exportData(){
 
   const data={
-
-    app:
-      'Maur Strassendienst',
-
-    version:
-      'V18',
-
-    exportedAt:
-      new Date()
-        .toISOString(),
-
+    app:'Maur Strassendienst',
+    version:'V19',
+    exportedAt:new Date().toISOString(),
     workPoints,
-
-    tours
-
+    tours,
+    closures
   };
-
 
   const blob=
     new Blob(
@@ -4737,536 +5202,372 @@ function exportData(){
         )
       ],
       {
-        type:
-          'application/json'
+        type:'application/json'
       }
     );
 
-
   const url=
-    URL.createObjectURL(
-      blob
-    );
+    URL.createObjectURL(blob);
 
+  const a=
+    document.createElement('a');
 
-  const link=
-    document.createElement(
-      'a'
-    );
+  a.href=url;
 
-
-  link.href=url;
-
-  link.download=
-    'maur-strassendienst-V18-'+
+  a.download=
+    'maur-strassendienst-V19-'+
     new Date()
       .toISOString()
       .slice(0,10)+
     '.json';
 
+  document.body.appendChild(a);
 
-  document.body.appendChild(
-    link
-  );
+  a.click();
 
+  a.remove();
 
-  link.click();
+  URL.revokeObjectURL(url);
 
-  link.remove();
-
-
-  URL.revokeObjectURL(
-    url
-  );
-
-
-  toast(
-    '📤 Daten exportiert.'
-  );
+  toast('📤 Daten exportiert.');
 
 }
 
 
-/* =====================================================
-   IMPORT
-===================================================== */
+/* =========================================================
+   IMPORT DATEN
+========================================================= */
 
-function importData(){
+document.getElementById(
+  'importDataBtn'
+).onclick=()=>{
+  document.getElementById(
+    'dataFile'
+  ).click();
+};
 
-  document
-    .getElementById(
-      'importFile'
-    )
-    .click();
+document.getElementById(
+  'dataFile'
+).addEventListener(
+  'change',
+  async e=>{
 
-}
+    const file=e.target.files?.[0];
 
+    if(!file)return;
 
-document
-  .getElementById(
-    'importFile'
-  )
-  .addEventListener(
-    'change',
-    async event=>{
+    try{
 
-      const file=
-        event.target
-          .files?.[0];
-
-
-      if(!file)
-        return;
-
-
-      try{
-
-        const text=
-          await file.text();
-
-
-        const data=
-          JSON.parse(
-            text
-          );
-
-
-        if(
-          !Array.isArray(
-            data.workPoints
-          )
-        ){
-
-          throw new Error(
-            'Ungültige Datei'
-          );
-
-        }
-
-
-        workPoints=
-          data.workPoints;
-
-
-        if(
-          Array.isArray(
-            data.tours
-          )
-        ){
-
-          tours=
-            data.tours;
-
-        }
-
-
-        saveData();
-
-        saveTours();
-
-        renderWorkPoints();
-
-        renderTours();
-
-        updateDashboard();
-
-
-        toast(
-          '📥 Daten importiert.'
+      const data=
+        JSON.parse(
+          await file.text()
         );
 
-      }
-      catch(error){
+      if(Array.isArray(data.workPoints))
+        workPoints=data.workPoints;
 
-        console.warn(error);
+      if(Array.isArray(data.tours))
+        tours=data.tours;
 
-        toast(
-          'Import fehlgeschlagen.'
-        );
+      if(Array.isArray(data.closures))
+        closures=data.closures;
 
-      }
+      saveData();
+      saveTours();
+      saveClosures();
 
+      renderWorkPoints();
+      renderClosures();
+      updateDashboard();
 
-      event.target.value='';
+      toast(
+        '📥 Daten erfolgreich importiert.'
+      );
+
+    }catch(err){
+
+      console.warn(err);
+
+      toast(
+        'Import fehlgeschlagen.'
+      );
 
     }
-  );
+
+    e.target.value='';
+
+  }
+);
 
 
-/* =====================================================
-   ALLE DATEN LÖSCHEN
-===================================================== */
+/* =========================================================
+   ALLES LÖSCHEN
+========================================================= */
 
-function clearAllData(){
+document.getElementById(
+  'clearDataBtn'
+).onclick=()=>{
 
-  if(
-    !confirm(
-      'Wirklich alle Werkdienst-Daten löschen?'
-    )
-  )
-    return;
-
+  if(!confirm(
+    'Wirklich ALLE Werkdienst-Daten löschen?'
+  ))return;
 
   workPoints=[];
-
   tours=[];
+  closures=[];
 
+  localStorage.removeItem(
+    'maurWorkPointsV19'
+  );
 
-  saveData();
+  localStorage.removeItem(
+    'maurToursV19'
+  );
 
-  saveTours();
-
+  localStorage.removeItem(
+    'maurClosuresV19'
+  );
 
   renderWorkPoints();
-
-  renderTours();
-
+  renderClosures();
   updateDashboard();
-
 
   toast(
     '🗑️ Alle Daten gelöscht.'
   );
 
-}
+};
 
 
-/* =====================================================
+/* =========================================================
    PRIORITÄT
-===================================================== */
+========================================================= */
 
 document
-  .querySelectorAll(
-    '[data-priority]'
-  )
+  .querySelectorAll('[data-priority]')
   .forEach(
-    button=>{
+    b=>{
+      b.onclick=()=>{
+        selectedPriority=
+          b.dataset.priority;
 
-      button.onclick=
-        ()=>{
-
-          selectedPriority=
-            button.dataset.priority;
-
-          updatePriorityButtons();
-
-        };
-
+        updatePriorityButtons();
+      };
     }
   );
 
 
-/* =====================================================
-   EVENTS
-===================================================== */
+/* =========================================================
+   KATEGORIE
+========================================================= */
 
 document
-  .getElementById(
-    'settingsBtn'
-  )
-  .onclick=
-    ()=>{
-      openPanel(
-        'settingsPanel'
+  .getElementById('pointCategory')
+  .addEventListener(
+    'change',
+    e=>{
+      renderCategoryExtra(
+        e.target.value
       );
-    };
-
-
-document
-  .getElementById(
-    'closeSettings'
-  )
-  .onclick=
-    closePanels;
-
-
-document
-  .getElementById(
-    'closeDashboard'
-  )
-  .onclick=
-    closePanels;
-
-
-document
-  .getElementById(
-    'closeWorkPoint'
-  )
-  .onclick=
-    closePanels;
-
-
-document
-  .getElementById(
-    'closePoints'
-  )
-  .onclick=
-    closePanels;
-
-
-document
-  .getElementById(
-    'newWorkPointBtn'
-  )
-  .onclick=
-    ()=>openNewPoint(
-      'sonstiges'
-    );
-
-
-document
-  .getElementById(
-    'saveWorkPointBtn'
-  )
-  .onclick=
-    saveWorkPoint;
-
-
-document
-  .getElementById(
-    'trackBtn'
-  )
-  .onclick=
-    startTrack;
-
-
-document
-  .getElementById(
-    'pauseBtn'
-  )
-  .onclick=
-    togglePause;
-
-
-document
-  .getElementById(
-    'saveTourBtn'
-  )
-  .onclick=
-    saveCurrentTour;
-
-
-document
-  .getElementById(
-    'startTourBtn'
-  )
-  .onclick=
-    startTour;
-
-
-document
-  .getElementById(
-    'nextTaskBtn'
-  )
-  .onclick=
-    goToNextTask;
-
-
-document
-  .getElementById(
-    'voiceBtn'
-  )
-  .onclick=
-    toggleVoice;
-
-
-document
-  .getElementById(
-    'followBtn'
-  )
-  .onclick=
-    toggleFollow;
-
-
-document
-  .getElementById(
-    'stopNavBtn'
-  )
-  .onclick=
-    stopNavigation;
-
-
-document
-  .getElementById(
-    'locateBtn'
-  )
-  .onclick=
-    locateMe;
-
-
-document
-  .getElementById(
-    'exportBtn'
-  )
-  .onclick=
-    exportData;
-
-
-document
-  .getElementById(
-    'importBtn'
-  )
-  .onclick=
-    importData;
-
-
-document
-  .getElementById(
-    'clearDataBtn'
-  )
-  .onclick=
-    clearAllData;
-
-
-document
-  .getElementById(
-    'filterOpenBtn'
-  )
-  .onclick=
-    ()=>{
-
-      filterOpen=true;
-
-      updatePointsList();
-
-    };
-
-
-document
-  .getElementById(
-    'filterAllBtn'
-  )
-  .onclick=
-    ()=>{
-
-      filterOpen=false;
-
-      updatePointsList();
-
-    };
-
-
-document
-  .querySelectorAll(
-    '[data-category]'
-  )
-  .forEach(
-    button=>{
-
-      button.onclick=
-        ()=>{
-          openNewPoint(
-            button.dataset.category
-          );
-        };
-
     }
   );
 
 
 document
-  .querySelectorAll(
-    '[data-view]'
-  )
+  .querySelectorAll('[data-category]')
   .forEach(
-    button=>{
-
-      button.onclick=
-        ()=>{
-          changeView(
-            button.dataset.view
-          );
-        };
-
+    b=>{
+      b.onclick=()=>{
+        openNewPoint(
+          b.dataset.category
+        );
+      };
     }
   );
 
 
-/* =====================================================
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+document.getElementById(
+  'settingsBtn'
+).onclick=()=>{
+  openPanel('settingsPanel');
+};
+
+document.getElementById(
+  'closeSettings'
+).onclick=closePanels;
+
+document.getElementById(
+  'closeDashboard'
+).onclick=closePanels;
+
+document.getElementById(
+  'closeWorkPoint'
+).onclick=closePanels;
+
+document.getElementById(
+  'closePoints'
+).onclick=closePanels;
+
+document.getElementById(
+  'closeTour'
+).onclick=closePanels;
+
+document.getElementById(
+  'closeVita'
+).onclick=closePanels;
+
+document.getElementById(
+  'closeClosure'
+).onclick=closePanels;
+
+document.getElementById(
+  'openTourBtn'
+).onclick=()=>{
+  openPanel('tourPanel');
+};
+
+document.getElementById(
+  'startTourBtn'
+).onclick=()=>{
+  if(plannedTour.length)
+    startPlannedTour();
+  else
+    loadOpenTasksIntoTour();
+};
+
+document.getElementById(
+  'nextTaskBtn'
+).onclick=
+  goToNextTask;
+
+document.getElementById(
+  'saveWorkPointBtn'
+).onclick=
+  saveWorkPoint;
+
+document.getElementById(
+  'trackBtn'
+).onclick=
+  startTrack;
+
+document.getElementById(
+  'pauseBtn'
+).onclick=
+  togglePause;
+
+document.getElementById(
+  'voiceBtn'
+).onclick=
+  toggleVoice;
+
+document.getElementById(
+  'followBtn'
+).onclick=
+  toggleFollow;
+
+document.getElementById(
+  'stopNavBtn'
+).onclick=
+  stopNavigation;
+
+document.getElementById(
+  'locateBtn'
+).onclick=
+  locateMe;
+
+document.getElementById(
+  'exportBtn'
+).onclick=
+  exportData;
+
+document.getElementById(
+  'addClosureBtn'
+).onclick=
+  startClosureMode;
+
+document.getElementById(
+  'openClosureBtn'
+).onclick=
+  ()=>openPanel('closurePanel');
+
+document.getElementById(
+  'filterOpenBtn'
+).onclick=()=>{
+  filterOpen=true;
+  updatePointsList();
+};
+
+document.getElementById(
+  'filterAllBtn'
+).onclick=()=>{
+  filterOpen=false;
+  updatePointsList();
+};
+
+
+/* =========================================================
+   KARTENANSICHT BUTTONS
+========================================================= */
+
+document
+  .querySelectorAll('[data-view]')
+  .forEach(
+    b=>{
+      b.onclick=()=>{
+        changeView(
+          b.dataset.view
+        );
+      };
+    }
+  );
+
+
+/* =========================================================
    BOTTOM NAV
-===================================================== */
+========================================================= */
 
-document
-  .getElementById(
-    'dashboardTab'
-  )
-  .onclick=
-    ()=>{
+document.getElementById(
+  'dashboardTab'
+).onclick=()=>{
+  openPanel('dashboardPanel');
+  updateDashboard();
+};
 
-      openPanel(
-        'dashboardPanel'
-      );
+document.getElementById(
+  'tourTab'
+).onclick=()=>{
+  openPanel('tourPanel');
+};
 
-      updateDashboard();
+document.getElementById(
+  'navTab'
+).onclick=()=>{
+  closePanels();
+  search.focus();
+};
 
-      renderTours();
+document.getElementById(
+  'pointsTab'
+).onclick=()=>{
+  openPanel('pointsPanel');
+  updatePointsList();
+};
 
-    };
-
-
-document
-  .getElementById(
-    'navTab'
-  )
-  .onclick=
-    ()=>{
-
-      closePanels();
-
-      search.focus();
-
-    };
-
-
-document
-  .getElementById(
-    'gpsTab'
-  )
-  .onclick=
-    ()=>{
-
-      closePanels();
-
-      locateMe();
-
-    };
+document.getElementById(
+  'mapTab'
+).onclick=()=>{
+  closePanels();
+  locateMe();
+};
 
 
-document
-  .getElementById(
-    'pointsTab'
-  )
-  .onclick=
-    ()=>{
-
-      openPanel(
-        'pointsPanel'
-      );
-
-      updatePointsList();
-
-    };
-
-
-document
-  .getElementById(
-    'mapTab'
-  )
-  .onclick=
-    ()=>{
-
-      closePanels();
-
-      map.invalidateSize({
-        pan:false
-      });
-
-    };
-
-
-/* =====================================================
-   DRAG = FOLLOW AUS
-===================================================== */
+/* =========================================================
+   DRAG
+========================================================= */
 
 map.on(
   'dragstart',
@@ -5277,64 +5578,57 @@ map.on(
 );
 
 
-/* =====================================================
-   ONLINE / OFFLINE
-===================================================== */
+/* =========================================================
+   ONLINE/OFFLINE
+========================================================= */
 
 window.addEventListener(
   'online',
   ()=>{
-    status(
-      'ONLINE • V18'
-    );
-
-    toast(
-      '🌐 Wieder online'
-    );
+    status('ONLINE • V19');
+    toast('🌐 Wieder online');
   }
 );
-
 
 window.addEventListener(
   'offline',
   ()=>{
-    status(
-      'OFFLINE • V18'
-    );
-
+    status('OFFLINE • V19');
     toast(
-      '📴 Offline – lokale Daten bleiben verfügbar.'
+      '📴 Offline – lokale Daten bleiben erhalten.'
     );
   }
 );
 
 
-/* =====================================================
+/* =========================================================
    START
-===================================================== */
+========================================================= */
 
 (async function init(){
 
   loadData();
 
-  restoreMapSettings();
+  changeView(
+    localStorage.getItem(
+      'maurMapViewV19'
+    )||'normal'
+  );
 
   renderWorkPoints();
-
+  renderClosures();
   updateDashboard();
-
-  renderTours();
 
   startGPS();
 
   await loadMaur();
 
   renderWorkPoints();
-
+  renderClosures();
   updateDashboard();
 
   toast(
-    '🚜 Maur Strassendienst V18 geladen.'
+    '🚜 Maur Strassendienst V19 geladen.'
   );
 
 })();
