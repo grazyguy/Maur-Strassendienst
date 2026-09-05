@@ -941,3 +941,1159 @@ pmtilesArchive
 
                                     [
                                         "get",
+                                        "kind"
+                                    ],
+
+                                    "forest",
+                                    "#c8dfc0",
+
+                                    "grass",
+                                    "#dcebd4",
+
+                                    "meadow",
+                                    "#e2efd7",
+
+                                    "orchard",
+                                    "#d7e7c5",
+
+                                    "vineyard",
+                                    "#dce6c5",
+
+                                    "#e7eadf"
+
+                                ]
+
+                        }
+
+                    },
+
+
+                    /* =================
+                       SITES
+                    ================= */
+
+                    {
+
+                        id: "sites",
+
+                        type: "fill",
+
+                        source: "maur",
+
+                        "source-layer":
+                            "sites",
+
+                        paint: {
+
+                            "fill-color":
+                                "#e3e8dc",
+
+                            "fill-opacity":
+                                0.75
+
+                        }
+
+                    },
+
+
+                    /* =================
+                       WASSER
+                    ================= */
+
+                    {
+
+                        id: "water",
+
+                        type: "fill",
+
+                        source: "maur",
+
+                        "source-layer":
+                            "water_polygons",
+
+                        paint: {
+
+                            "fill-color":
+                                "#9ecae1"
+
+                        }
+
+                    },
+
+
+                    /* =================
+                       WASSERLINIEN
+                    ================= */
+
+                    {
+
+                        id: "water-lines",
+
+                        type: "line",
+
+                        source: "maur",
+
+                        "source-layer":
+                            "water_lines",
+
+                        paint: {
+
+                            "line-color":
+                                "#7db7d8",
+
+                            "line-width": 1.5
+
+                        }
+
+                    },
+
+
+                    /* =================
+                       GEBÄUDE
+                    ================= */
+
+                    {
+
+                        id: "buildings",
+
+                        type: "fill",
+
+                        source: "maur",
+
+                        "source-layer":
+                            "buildings",
+
+                        paint: {
+
+                            "fill-color":
+                                "#d7d2c8",
+
+                            "fill-opacity":
+                                0.85
+
+                        }
+
+                    },
+
+
+                    /* =================
+                       STRASSEN
+                    ================= */
+
+                    {
+
+                        id: "roads",
+
+                        type: "line",
+
+                        source: "maur",
+
+                        "source-layer":
+                            "streets",
+
+                        paint: {
+
+                            "line-color":
+
+                                [
+
+                                    "match",
+
+                                    [
+                                        "get",
+                                        "kind"
+                                    ],
+
+                                    "motorway",
+                                    "#e89292",
+
+                                    "trunk",
+                                    "#efa6a6",
+
+                                    "primary",
+                                    "#f0b36d",
+
+                                    "secondary",
+                                    "#f4d18c",
+
+                                    "tertiary",
+                                    "#ffffff",
+
+                                    "residential",
+                                    "#ffffff",
+
+                                    "service",
+                                    "#eeeeee",
+
+                                    "track",
+                                    "#d3c3a5",
+
+                                    "path",
+                                    "#c6b79f",
+
+                                    "#ffffff"
+
+                                ],
+
+                            "line-width":
+
+                                [
+
+                                    "interpolate",
+
+                                    [
+                                        "linear"
+                                    ],
+
+                                    [
+                                        "zoom"
+                                    ],
+
+                                    10,
+                                    1,
+
+                                    13,
+                                    2,
+
+                                    16,
+                                    4,
+
+                                    19,
+                                    8
+
+                                ]
+
+                        }
+
+                    },
+
+
+                    /* =================
+                       STRASSENLABEL
+                    ================= */
+
+                    {
+
+                        id: "street-labels",
+
+                        type: "symbol",
+
+                        source: "maur",
+
+                        "source-layer":
+                            "street_labels",
+
+                        layout: {
+
+                            "text-field":
+                                [
+                                    "coalesce",
+                                    [
+                                        "get",
+                                        "name"
+                                    ],
+                                    [
+                                        "get",
+                                        "ref"
+                                    ]
+                                ],
+
+                            "text-size":
+
+                                [
+
+                                    "interpolate",
+
+                                    [
+                                        "linear"
+                                    ],
+
+                                    [
+                                        "zoom"
+                                    ],
+
+                                    10,
+                                    10,
+
+                                    14,
+                                    12,
+
+                                    18,
+                                    15
+
+                                ],
+
+                            "text-font": [
+                                "Noto Sans Regular"
+                            ]
+
+                        },
+
+                        paint: {
+
+                            "text-color":
+                                "#333333",
+
+                            "text-halo-color":
+                                "#ffffff",
+
+                            "text-halo-width":
+                                1.5
+
+                        }
+
+                    },
+
+
+                    /* =================
+                       ORTS / ADRESSEN
+                    ================= */
+
+                    {
+
+                        id: "addresses",
+
+                        type: "symbol",
+
+                        source: "maur",
+
+                        "source-layer":
+                            "addresses",
+
+                        minzoom: 16,
+
+                        layout: {
+
+                            "text-field":
+                                [
+                                    "coalesce",
+                                    [
+                                        "get",
+                                        "housenumber"
+                                    ],
+                                    ""
+                                ],
+
+                            "text-size": 11,
+
+                            "text-font": [
+                                "Noto Sans Regular"
+                            ]
+
+                        },
+
+                        paint: {
+
+                            "text-color":
+                                "#555555",
+
+                            "text-halo-color":
+                                "#ffffff",
+
+                            "text-halo-width":
+                                1
+
+                        }
+
+                    }
+
+                ]
+
+            }
+
+        });
+
+
+    map.addControl(
+        new maplibregl.NavigationControl(),
+        "top-right"
+    );
+
+
+    map.on("click", function(e) {
+
+        if (!addingPoint) {
+            return;
+        }
+
+        addOwnPoint(
+            e.lngLat.lng,
+            e.lngLat.lat
+        );
+
+        addingPoint = false;
+
+        closePanels();
+
+        showToast(
+            "Punkt gespeichert"
+        );
+
+    });
+
+
+    loadOwnPoints();
+
+});
+
+
+/* =========================
+   ANSICHT WECHSELN
+========================= */
+
+function changeView(view) {
+
+    if (!map) {
+        return;
+    }
+
+    currentView = view;
+
+
+    const satelliteVisible =
+        view === "satellite" ||
+        view === "hybrid";
+
+
+    map.setLayoutProperty(
+        "satellite",
+        "visibility",
+        satelliteVisible
+            ? "visible"
+            : "none"
+    );
+
+
+    /* Normale Kartenelemente */
+
+    const normalLayers = [
+
+        "background",
+        "land",
+        "sites",
+        "water",
+        "water-lines",
+        "buildings"
+
+    ];
+
+
+    normalLayers.forEach(
+        layer => {
+
+            if (!map.getLayer(layer)) {
+                return;
+            }
+
+            map.setLayoutProperty(
+
+                layer,
+
+                "visibility",
+
+                view === "normal"
+                    ? "visible"
+                    : "none"
+
+            );
+
+        }
+    );
+
+
+    /* Strassen */
+
+    if (map.getLayer("roads")) {
+
+        map.setLayoutProperty(
+
+            "roads",
+
+            "visibility",
+
+            view === "satellite"
+                ? "none"
+                : "visible"
+
+        );
+
+    }
+
+
+    /* Hybrid und normale Karte
+       zeigen Strassennamen */
+
+    if (map.getLayer("street-labels")) {
+
+        map.setLayoutProperty(
+
+            "street-labels",
+
+            "visibility",
+
+            "visible"
+
+        );
+
+    }
+
+
+    if (map.getLayer("addresses")) {
+
+        map.setLayoutProperty(
+
+            "addresses",
+
+            "visibility",
+
+            "visible"
+
+        );
+
+    }
+
+
+    document
+        .querySelectorAll(".view-button")
+        .forEach(button => {
+
+            button.classList.remove(
+                "active"
+            );
+
+        });
+
+
+    if (view === "normal") {
+
+        document
+            .getElementById(
+                "normalViewButton"
+            )
+            .classList.add("active");
+
+    }
+
+
+    if (view === "satellite") {
+
+        document
+            .getElementById(
+                "satelliteViewButton"
+            )
+            .classList.add("active");
+
+    }
+
+
+    if (view === "hybrid") {
+
+        document
+            .getElementById(
+                "hybridViewButton"
+            )
+            .classList.add("active");
+
+    }
+
+
+    showToast(
+
+        view === "normal"
+            ? "Karte"
+            : view === "satellite"
+                ? "Satellit"
+                : "Hybrid"
+
+    );
+
+}
+
+
+/* =========================
+   PANELS
+========================= */
+
+function closePanels() {
+
+    document
+        .querySelectorAll(".panel")
+        .forEach(panel => {
+
+            panel.classList.remove(
+                "active"
+            );
+
+        });
+
+}
+
+
+function openLayers() {
+
+    closePanels();
+
+    document
+        .getElementById(
+            "layersPanel"
+        )
+        .classList.add("active");
+
+}
+
+
+function openViewPanel() {
+
+    closePanels();
+
+    document
+        .getElementById(
+            "viewPanel"
+        )
+        .classList.add("active");
+
+}
+
+
+function openNavigation() {
+
+    closePanels();
+
+    document
+        .getElementById(
+            "navPanel"
+        )
+        .classList.add("active");
+
+}
+
+
+function openPointPanel() {
+
+    closePanels();
+
+    document
+        .getElementById(
+            "pointPanel"
+        )
+        .classList.add("active");
+
+}
+
+
+/* =========================
+   LAYER
+========================= */
+
+function toggleLayer(
+    type,
+    enabled
+) {
+
+    if (!map) {
+        return;
+    }
+
+    const layer =
+        map.getLayer(type);
+
+    if (!layer) {
+        return;
+    }
+
+    map.setLayoutProperty(
+
+        type,
+
+        "visibility",
+
+        enabled
+            ? "visible"
+            : "none"
+
+    );
+
+}
+
+
+/* =========================
+   GPS
+========================= */
+
+function goToLocation() {
+
+    if (!navigator.geolocation) {
+
+        showToast(
+            "GPS wird nicht unterstützt"
+        );
+
+        return;
+
+    }
+
+
+    navigator.geolocation.getCurrentPosition(
+
+        position => {
+
+            const lat =
+                position.coords.latitude;
+
+            const lon =
+                position.coords.longitude;
+
+
+            map.flyTo({
+
+                center: [
+                    lon,
+                    lat
+                ],
+
+                zoom: 17,
+
+                speed: 1.2
+
+            });
+
+
+            if (gpsMarker) {
+
+                gpsMarker.remove();
+
+            }
+
+
+            const el =
+                document.createElement(
+                    "div"
+                );
+
+            el.className =
+                "gps-marker";
+
+
+            gpsMarker =
+                new maplibregl.Marker(el)
+
+                    .setLngLat([
+                        lon,
+                        lat
+                    ])
+
+                    .addTo(map);
+
+
+            showToast(
+                "Standort gefunden"
+            );
+
+        },
+
+        () => {
+
+            showToast(
+                "GPS konnte nicht gefunden werden"
+            );
+
+        },
+
+        {
+
+            enableHighAccuracy:
+                true,
+
+            timeout:
+                10000,
+
+            maximumAge:
+                5000
+
+        }
+
+    );
+
+}
+
+
+/* =========================
+   SUCHE
+========================= */
+
+async function searchAddress() {
+
+    const input =
+        document.getElementById(
+            "searchInput"
+        );
+
+    const query =
+        input.value.trim();
+
+
+    if (!query) {
+        return;
+    }
+
+
+    showToast(
+        "Suche..."
+    );
+
+
+    try {
+
+        const url =
+            "https://nominatim.openstreetmap.org/search" +
+            "?format=json" +
+            "&limit=1" +
+            "&countrycodes=ch" +
+            "&q=" +
+            encodeURIComponent(query);
+
+
+        const response =
+            await fetch(url);
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.length) {
+
+            showToast(
+                "Kein Treffer"
+            );
+
+            return;
+
+        }
+
+
+        const lat =
+            parseFloat(data[0].lat);
+
+        const lon =
+            parseFloat(data[0].lon);
+
+
+        map.flyTo({
+
+            center: [
+                lon,
+                lat
+            ],
+
+            zoom: 17,
+
+            speed: 1.2
+
+        });
+
+
+        currentDestination = {
+
+            lat: lat,
+
+            lon: lon,
+
+            name:
+                data[0].display_name
+
+        };
+
+
+        document
+            .getElementById(
+                "destinationText"
+            )
+            .innerText =
+                data[0].display_name;
+
+
+        showToast(
+            "Ziel gefunden"
+        );
+
+
+    } catch (error) {
+
+        showToast(
+            "Suche nicht verfügbar"
+        );
+
+    }
+
+}
+
+
+/* =========================
+   NAVIGATION
+========================= */
+
+function useCurrentLocationAsStart() {
+
+    goToLocation();
+
+}
+
+
+function openGoogleMaps() {
+
+    if (!currentDestination) {
+
+        showToast(
+            "Zuerst ein Ziel suchen"
+        );
+
+        return;
+
+    }
+
+
+    const url =
+        "https://www.google.com/maps/dir/?api=1" +
+        "&destination=" +
+        currentDestination.lat +
+        "," +
+        currentDestination.lon;
+
+
+    window.open(
+        url,
+        "_blank"
+    );
+
+}
+
+
+/* =========================
+   EIGENE PUNKTE
+========================= */
+
+function startAddPoint() {
+
+    addingPoint = true;
+
+    closePanels();
+
+    showToast(
+        "Jetzt auf die Karte tippen"
+    );
+
+}
+
+
+function addOwnPoint(
+    lon,
+    lat
+) {
+
+    const el =
+        document.createElement(
+            "div"
+        );
+
+    el.className =
+        "own-marker";
+
+    el.innerHTML =
+        "📍";
+
+
+    const marker =
+        new maplibregl.Marker(el)
+
+            .setLngLat([
+                lon,
+                lat
+            ])
+
+            .addTo(map);
+
+
+    ownMarkers.push(marker);
+
+
+    const saved =
+        JSON.parse(
+            localStorage.getItem(
+                "maurOwnPoints"
+            ) || "[]"
+        );
+
+
+    saved.push({
+
+        lon: lon,
+
+        lat: lat
+
+    });
+
+
+    localStorage.setItem(
+
+        "maurOwnPoints",
+
+        JSON.stringify(saved)
+
+    );
+
+}
+
+
+function loadOwnPoints() {
+
+    const saved =
+        JSON.parse(
+            localStorage.getItem(
+                "maurOwnPoints"
+            ) || "[]"
+        );
+
+
+    saved.forEach(point => {
+
+        const el =
+            document.createElement(
+                "div"
+            );
+
+        el.className =
+            "own-marker";
+
+        el.innerHTML =
+            "📍";
+
+
+        const marker =
+            new maplibregl.Marker(el)
+
+                .setLngLat([
+                    point.lon,
+                    point.lat
+                ])
+
+                .addTo(map);
+
+
+        ownMarkers.push(
+            marker
+        );
+
+    });
+
+}
+
+
+function toggleOwnPoints(
+    enabled
+) {
+
+    ownMarkers.forEach(
+        marker => {
+
+            marker
+                .getElement()
+                .style.display =
+                    enabled
+                        ? "flex"
+                        : "none";
+
+        }
+    );
+
+}
+
+
+/* =========================
+   TOAST
+========================= */
+
+function showToast(
+    message
+) {
+
+    const toast =
+        document.getElementById(
+            "toast"
+        );
+
+
+    toast.innerText =
+        message;
+
+
+    toast.style.display =
+        "block";
+
+
+    clearTimeout(
+        window.toastTimer
+    );
+
+
+    window.toastTimer =
+        setTimeout(() => {
+
+            toast.style.display =
+                "none";
+
+        }, 2200);
+
+}
+
+
+/* =========================
+   ONLINE STATUS
+========================= */
+
+function updateConnectionStatus() {
+
+    const status =
+        document.getElementById(
+            "connectionStatus"
+        );
+
+
+    if (navigator.onLine) {
+
+        status.innerText =
+            "● Online";
+
+        status.style.background =
+            "#166534";
+
+    } else {
+
+        status.innerText =
+            "● Offline";
+
+        status.style.background =
+            "#991b1b";
+
+    }
+
+}
+
+
+window.addEventListener(
+    "online",
+    updateConnectionStatus
+);
+
+window.addEventListener(
+    "offline",
+    updateConnectionStatus
+);
+
+updateConnectionStatus();
+
+
+</script>
+
+</body>
+</html>
