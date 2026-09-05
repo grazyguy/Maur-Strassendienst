@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width,
+                   initial-scale=1,
+                   maximum-scale=1,
+                   user-scalable=no">
+
+    <meta name="theme-color"
+          content="#111827">
+
+    <title>Maur Strassendienst</title>
+
+
+    <!-- LEAFLET CSS -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+
+    <!-- DEIN CSS -->
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+    <!-- ================================= -->
+    <!-- OBERER BEREICH -->
+    <!-- ================================= -->
+
+    <header class="topbar">
+
+        <div class="title">
+
+            <strong>MAUR</strong>
+
+            <span>
+                Strassendienst
+            </span>
+
+        </div>
+
+
+        <button
+            id="gpsButton"
+            class="iconButton">
+
+            📍
+
+        </button>
+
+    </header>
+
+
+
+    <!-- ================================= -->
+    <!-- SUCHE -->
+    <!-- ================================= -->
+
+    <div class="searchBox">
+
+        <input
+            id="searchInput"
+            type="search"
+            placeholder="Strasse, Adresse oder Ort suchen..."
+            autocomplete="off"
+        >
+
+
+        <button
+            id="searchButton">
+
+            🔎
+
+        </button>
+
+    </div>
+
+
+    <div id="searchResults"></div>
+
+
+
+    <!-- ================================= -->
+    <!-- KARTE -->
+    <!-- ================================= -->
+
+    <div id="map"></div>
+
+
+
+    <!-- ================================= -->
+    <!-- UNTERES MENÜ -->
+    <!-- ================================= -->
+
+    <div class="bottomPanel">
+
+
+        <button
+            onclick="showMyLocation()">
+
+            📍
+
+            <span>
+                Standort
+            </span>
+
+        </button>
+
+
+
+        <button
+            onclick="toggleLayers()">
+
+            🗂️
+
+            <span>
+                Ebenen
+            </span>
+
+        </button>
+
+
+
+        <button
+            onclick="startNavigation()">
+
+            🧭
+
+            <span>
+                Navi
+            </span>
+
+        </button>
+
+
+
+        <button
+            onclick="addPoint()">
+
+            ➕
+
+            <span>
+                Punkt
+            </span>
+
+        </button>
+
+
+    </div>
+
+
+
+    <!-- ================================= -->
+    <!-- EBENEN PANEL -->
+    <!-- ================================= -->
+
+    <div
+        id="layerPanel"
+        class="panel hidden">
+
+
+        <h3>
+            Kartenebenen
+        </h3>
+
+
+        <label>
+
+            <input
+                type="checkbox"
+                checked
+                id="roadsLayer">
+
+            Strassen
+
+        </label>
+
+
+
+        <label>
+
+            <input
+                type="checkbox"
+                id="binsLayer">
+
+            Abfallkübel
+
+        </label>
+
+
+
+        <label>
+
+            <input
+                type="checkbox"
+                id="winterLayer">
+
+            Winterdienst
+
+        </label>
+
+
+
+        <label>
+
+            <input
+                type="checkbox"
+                id="specialLayer">
+
+            Sonderpunkte
+
+        </label>
+
+
+
+        <label>
+
+            <input
+                type="checkbox"
+                id="propertiesLayer">
+
+            Gemeindeliegenschaften
+
+        </label>
+
+
+
+        <button
+            onclick="toggleLayers()">
+
+            Schliessen
+
+        </button>
+
+
+    </div>
+
+
+
+    <!-- ================================= -->
+    <!-- INFO PANEL -->
+    <!-- ================================= -->
+
+    <div
+        id="infoPanel"
+        class="panel hidden">
+
+
+        <button
+            class="close"
+            onclick="closeInfo()">
+
+            ✕
+
+        </button>
+
+
+        <h2
+            id="infoTitle">
+        </h2>
+
+
+        <div
+            id="infoContent">
+        </div>
+
+
+        <button
+            id="navigateButton"
+            class="mainButton">
+
+            🧭 Zum Ziel navigieren
+
+        </button>
+
+
+    </div>
+
+
+
+    <!-- ================================= -->
+    <!-- LEAFLET JAVASCRIPT -->
+    <!-- ================================= -->
+
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+    </script>
+
+
+
+    <!-- ================================= -->
+    <!-- DEIN JS -->
+    <!-- ================================= -->
+
+    <script src="app.js"></script>
+
+
+</body>
+
+</html>
