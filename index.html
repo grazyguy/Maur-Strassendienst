@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
-<title>Maur Strassendienst V16</title>
+<title>Maur Strassendienst V17</title>
 
 <link rel="manifest" href="./manifest.json">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -22,7 +22,7 @@ html,body{
   color:#111827
 }
 
-button,input{font:inherit}
+button,input,textarea,select{font:inherit}
 button{border:0;cursor:pointer}
 
 .topbar{
@@ -164,10 +164,171 @@ button{border:0;cursor:pointer}
   width:100%
 }
 
+.secondary{
+  background:#e5e7eb;
+  color:#111827;
+  padding:11px;
+  border-radius:10px;
+  width:100%
+}
+
+.green{
+  background:#16a34a;
+  color:white
+}
+
+.red{
+  background:#dc2626;
+  color:white
+}
+
+.orange{
+  background:#ea580c;
+  color:white
+}
+
 .hint{
   font-size:12px;
   color:#6b7280;
   line-height:1.45
+}
+
+.dashboard{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:8px;
+  margin-bottom:12px
+}
+
+.stat{
+  background:#f3f4f6;
+  border-radius:12px;
+  padding:12px
+}
+
+.stat strong{
+  display:block;
+  font-size:21px;
+  margin-top:2px
+}
+
+.stat span{
+  font-size:11px;
+  color:#6b7280
+}
+
+.progress{
+  height:9px;
+  background:#e5e7eb;
+  border-radius:10px;
+  overflow:hidden;
+  margin:8px 0 12px
+}
+
+.progressbar{
+  height:100%;
+  width:0%;
+  background:#16a34a;
+  transition:width .25s
+}
+
+.category-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:8px
+}
+
+.category-btn{
+  padding:13px 8px;
+  border-radius:12px;
+  background:#f3f4f6;
+  text-align:left;
+  border:1px solid #e5e7eb
+}
+
+.category-btn b{
+  display:block;
+  font-size:14px
+}
+
+.category-btn small{
+  color:#6b7280
+}
+
+.form-label{
+  display:block;
+  font-size:12px;
+  font-weight:700;
+  margin:10px 0 5px
+}
+
+.form-input,
+.form-textarea,
+.form-select{
+  width:100%;
+  border:1px solid #d1d5db;
+  border-radius:10px;
+  padding:10px;
+  background:white;
+  outline:none
+}
+
+.form-textarea{
+  min-height:90px;
+  resize:vertical
+}
+
+.photo-preview{
+  width:100%;
+  max-height:220px;
+  object-fit:cover;
+  border-radius:12px;
+  margin-top:8px;
+  display:none
+}
+
+.point-item{
+  padding:12px 0;
+  border-bottom:1px solid #e5e7eb
+}
+
+.point-title{
+  display:flex;
+  justify-content:space-between;
+  gap:8px
+}
+
+.point-badge{
+  display:inline-block;
+  padding:4px 7px;
+  border-radius:7px;
+  background:#e5e7eb;
+  font-size:10px;
+  font-weight:800
+}
+
+.point-done{
+  background:#dcfce7;
+  color:#166534
+}
+
+.point-actions{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:7px;
+  margin-top:8px
+}
+
+.smallbtn{
+  padding:8px 6px;
+  border-radius:9px;
+  background:#e5e7eb;
+  font-size:12px
+}
+
+.danger{
+  background:#fee2e2;
+  color:#991b1b
 }
 
 .navinfo{
@@ -222,14 +383,14 @@ button{border:0;cursor:pointer}
   background:white;
   border-top:1px solid #d1d5db;
   display:grid;
-  grid-template-columns:repeat(4,1fr);
+  grid-template-columns:repeat(5,1fr);
   padding-bottom:env(safe-area-inset-bottom)
 }
 
 .bottom button{
   background:white;
   color:#6b7280;
-  font-size:11px
+  font-size:10px
 }
 
 .bottom button.active{
@@ -239,7 +400,7 @@ button{border:0;cursor:pointer}
 
 .bottom span{
   display:block;
-  font-size:21px;
+  font-size:20px;
   margin-bottom:2px
 }
 
@@ -261,28 +422,6 @@ button{border:0;cursor:pointer}
 
 .toast.show{display:block}
 
-.point-item{
-  padding:10px 0;
-  border-bottom:1px solid #e5e7eb
-}
-
-.point-actions{
-  display:flex;
-  gap:7px;
-  margin-top:7px
-}
-
-.smallbtn{
-  padding:7px 9px;
-  border-radius:9px;
-  background:#e5e7eb
-}
-
-.danger{
-  background:#fee2e2;
-  color:#991b1b
-}
-
 .mapmsg{
   position:absolute;
   z-index:1050;
@@ -294,6 +433,25 @@ button{border:0;cursor:pointer}
   padding:10px 12px;
   border-radius:12px;
   display:none
+}
+
+.track-info{
+  background:#eff6ff;
+  border:1px solid #bfdbfe;
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:10px
+}
+
+.track-row{
+  display:flex;
+  justify-content:space-between;
+  margin:4px 0
+}
+
+.tour-item{
+  padding:12px 0;
+  border-bottom:1px solid #e5e7eb
 }
 
 .leaflet-container{
@@ -309,31 +467,13 @@ button{border:0;cursor:pointer}
   z-index:1
 }
 
-/* ---------------------------------------------------------
-   LEAFLET EBENEN
-   --------------------------------------------------------- */
-
-.leaflet-pane.maur-mask-pane{
-  z-index:350;
-}
-
-.leaflet-pane.road-pane{
-  z-index:450;
-}
-
-.leaflet-pane.label-pane{
-  z-index:500;
-}
-
-.leaflet-pane.ort-pane{
-  z-index:600;
-}
-
-.leaflet-pane.boundary-pane{
-  z-index:700;
-}
-
-/* Gemeindegrenze */
+.leaflet-pane.maur-mask-pane{z-index:350}
+.leaflet-pane.road-pane{z-index:450}
+.leaflet-pane.label-pane{z-index:500}
+.leaflet-pane.ort-pane{z-index:600}
+.leaflet-pane.boundary-pane{z-index:700}
+.leaflet-pane.work-pane{z-index:750}
+.leaflet-pane.gps-track-pane{z-index:760}
 
 .maur-border-casing{
   stroke:#ffffff;
@@ -348,8 +488,6 @@ button{border:0;cursor:pointer}
   fill:none
 }
 
-/* Maske */
-
 .maur-mask{
   stroke:none;
   fill:#ffffff;
@@ -357,8 +495,6 @@ button{border:0;cursor:pointer}
   fill-rule:evenodd;
   pointer-events:none
 }
-
-/* Ortsgrenzen */
 
 .ort-border-casing{
   stroke:#ffffff;
@@ -399,6 +535,33 @@ button{border:0;cursor:pointer}
     -1px 0 2px #fff;
   font-size:12px
 }
+
+.work-icon{
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  background:white;
+  border:3px solid #111827;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+  box-shadow:0 3px 9px #0005
+}
+
+.work-icon.done{
+  opacity:.5;
+  filter:grayscale(1)
+}
+
+.gps-icon{
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:#2563eb;
+  border:3px solid white;
+  box-shadow:0 1px 7px #0007
+}
 </style>
 </head>
 
@@ -407,9 +570,8 @@ button{border:0;cursor:pointer}
 <header class="topbar">
   <div>
     <div class="brand">MAUR STRASSENDIENST</div>
-    <div class="status" id="status">ONLINE • V16</div>
+    <div class="status" id="status">ONLINE • V17</div>
   </div>
-
   <button class="iconbtn" id="settingsBtn">⚙️</button>
 </header>
 
@@ -427,36 +589,251 @@ button{border:0;cursor:pointer}
 <div id="map"></div>
 
 <section id="navInfo" class="navinfo">
-
-  <div id="navMain" class="navmain">
-    Keine Navigation aktiv
-  </div>
-
+  <div id="navMain" class="navmain">Keine Navigation aktiv</div>
   <div id="navSub" class="navsub"></div>
 
   <div class="navbuttons">
+    <button id="voiceBtn">🔊 Sprache an</button>
+    <button id="followBtn">📍 Folgen aus</button>
+    <button id="stopNavBtn">✕ Stop</button>
+  </div>
+</section>
 
-    <button id="voiceBtn">
-      🔊 Sprache an
+<!-- ======================================================
+     DASHBOARD
+     ====================================================== -->
+
+<section id="dashboardPanel" class="panel">
+
+  <button class="close" id="closeDashboard">✕</button>
+
+  <h2>🚜 Werkdienst</h2>
+
+  <div class="dashboard">
+    <div class="stat">
+      <span>Gesamt</span>
+      <strong id="dashTotal">0</strong>
+    </div>
+
+    <div class="stat">
+      <span>Erledigt</span>
+      <strong id="dashDone">0</strong>
+    </div>
+
+    <div class="stat">
+      <span>Offen</span>
+      <strong id="dashOpen">0</strong>
+    </div>
+
+    <div class="stat">
+      <span>Tour km</span>
+      <strong id="dashKm">0.0</strong>
+    </div>
+  </div>
+
+  <div class="progress">
+    <div class="progressbar" id="dashProgress"></div>
+  </div>
+
+  <button class="primary" id="newWorkPointBtn">
+    ＋ Werkdienst-Punkt hinzufügen
+  </button>
+
+  <h3>Punktkategorien</h3>
+
+  <div class="category-grid">
+
+    <button class="category-btn" data-category="abfall">
+      🗑️ <b>Abfallkübel</b>
+      <small>Entleerung / Kontrolle</small>
     </button>
 
-    <button id="followBtn">
-      📍 Folgen aus
+    <button class="category-btn" data-category="schaden">
+      🚧 <b>Schaden</b>
+      <small>Strasse / Weg / Belag</small>
     </button>
 
-    <button id="stopNavBtn">
-      ✕ Stop
+    <button class="category-btn" data-category="schacht">
+      🕳️ <b>Schacht</b>
+      <small>Kontrolle / Reinigung</small>
+    </button>
+
+    <button class="category-btn" data-category="licht">
+      💡 <b>Beleuchtung</b>
+      <small>Lampe / Störung</small>
+    </button>
+
+    <button class="category-btn" data-category="baum">
+      🌳 <b>Baum / Grün</b>
+      <small>Pflege / Kontrolle</small>
+    </button>
+
+    <button class="category-btn" data-category="brunnen">
+      💧 <b>Brunnen</b>
+      <small>Kontrolle / Reinigung</small>
+    </button>
+
+    <button class="category-btn" data-category="sonstiges">
+      📍 <b>Sonstiges</b>
+      <small>Eigener Werkdienstpunkt</small>
     </button>
 
   </div>
 
+  <h3>GPS-Spur</h3>
+
+  <div class="track-info">
+
+    <div class="track-row">
+      <span>Status</span>
+      <b id="trackStatus">Nicht aktiv</b>
+    </div>
+
+    <div class="track-row">
+      <span>Zeit</span>
+      <b id="trackTime">00:00:00</b>
+    </div>
+
+    <div class="track-row">
+      <span>Distanz</span>
+      <b id="trackDistance">0.00 km</b>
+    </div>
+
+  </div>
+
+  <button class="primary" id="trackBtn">
+    ▶️ GPS-Spur starten
+  </button>
+
+  <div style="height:8px"></div>
+
+  <button class="secondary" id="saveTourBtn">
+    💾 Aktuelle Tour speichern
+  </button>
+
+  <h3>Gespeicherte Touren</h3>
+
+  <div id="tourList"></div>
+
 </section>
+
+<!-- ======================================================
+     WERKDIENST-PUNKT FORMULAR
+     ====================================================== -->
+
+<section id="workPointPanel" class="panel">
+
+  <button class="close" id="closeWorkPoint">✕</button>
+
+  <h2>🚜 Werkdienst-Punkt</h2>
+
+  <label class="form-label">Kategorie</label>
+
+  <select id="pointCategory" class="form-select">
+
+    <option value="abfall">🗑️ Abfallkübel</option>
+    <option value="schaden">🚧 Schaden</option>
+    <option value="schacht">🕳️ Schacht</option>
+    <option value="licht">💡 Beleuchtung</option>
+    <option value="baum">🌳 Baum / Grün</option>
+    <option value="brunnen">💧 Brunnen</option>
+    <option value="sonstiges">📍 Sonstiges</option>
+
+  </select>
+
+  <label class="form-label">Name / Bezeichnung</label>
+
+  <input
+    id="pointName"
+    class="form-input"
+    placeholder="z.B. Abfallkübel Bahnhofstrasse"
+  >
+
+  <label class="form-label">Bemerkung</label>
+
+  <textarea
+    id="pointNote"
+    class="form-textarea"
+    placeholder="Bemerkung zum Punkt …"
+  ></textarea>
+
+  <label class="form-label">Foto</label>
+
+  <input
+    type="file"
+    id="pointPhoto"
+    accept="image/*"
+    capture="environment"
+    class="form-input"
+  >
+
+  <img
+    id="photoPreview"
+    class="photo-preview"
+    alt="Foto"
+  >
+
+  <p class="hint">
+    Der Punkt wird automatisch an deiner aktuellen GPS-Position gespeichert.
+  </p>
+
+  <button class="primary" id="saveWorkPointBtn">
+    💾 Punkt speichern
+  </button>
+
+</section>
+
+<!-- ======================================================
+     PUNKTE
+     ====================================================== -->
+
+<section id="pointsPanel" class="panel">
+
+  <button class="close" id="closePoints">✕</button>
+
+  <h2>🚜 Werkdienst-Punkte</h2>
+
+  <div class="dashboard">
+
+    <div class="stat">
+      <span>Gesamt</span>
+      <strong id="pointsTotal">0</strong>
+    </div>
+
+    <div class="stat">
+      <span>Offen</span>
+      <strong id="pointsOpen">0</strong>
+    </div>
+
+    <div class="stat">
+      <span>Erledigt</span>
+      <strong id="pointsDone">0</strong>
+    </div>
+
+    <div class="stat">
+      <span>Kategorie</span>
+      <strong id="pointsCategoryCount">0</strong>
+    </div>
+
+  </div>
+
+  <button class="primary" id="addPointBtn">
+    ＋ Punkt an aktueller Position
+  </button>
+
+  <div id="pointsList"></div>
+
+</section>
+
+<!-- ======================================================
+     EINSTELLUNGEN
+     ====================================================== -->
 
 <section id="settingsPanel" class="panel">
 
   <button class="close" id="closeSettings">✕</button>
 
-  <h2>Einstellungen</h2>
+  <h2>⚙️ Einstellungen</h2>
 
   <h3>Kartenansicht</h3>
 
@@ -497,30 +874,44 @@ button{border:0;cursor:pointer}
     📍 Meinen Standort zeigen
   </button>
 
-  <p class="hint">
-    Nur Gemeinde Maur wird angezeigt.
-    Beim Zoomen wird die Karte nicht mehr zurückgesetzt.
-  </p>
+  <h3>Daten</h3>
 
-</section>
-
-<section id="pointsPanel" class="panel">
-
-  <button class="close" id="closePoints">✕</button>
-
-  <h2>Eigene Punkte</h2>
-
-  <button class="primary" id="addPointBtn">
-    ＋ Punkt an aktueller Position speichern
+  <button class="secondary" id="exportBtn">
+    📤 Werkdienst-Daten exportieren
   </button>
 
-  <div id="pointsList"></div>
+  <div style="height:8px"></div>
+
+  <button class="secondary" id="importBtn">
+    📥 Werkdienst-Daten importieren
+  </button>
+
+  <input
+    type="file"
+    id="importFile"
+    accept=".json,application/json"
+    style="display:none"
+  >
+
+  <div style="height:8px"></div>
+
+  <button class="secondary" id="clearDataBtn">
+    🗑️ Alle Werkdienst-Daten löschen
+  </button>
+
+  <p class="hint">
+    Die Werkdienst-Punkte und Touren werden momentan direkt auf diesem Gerät gespeichert.
+  </p>
 
 </section>
 
 <nav class="bottom">
 
-  <button id="navTab" class="active">
+  <button id="dashboardTab" class="active">
+    <span>🚜</span>Werkdienst
+  </button>
+
+  <button id="navTab">
     <span>🧭</span>Navi
   </button>
 
@@ -529,7 +920,7 @@ button{border:0;cursor:pointer}
   </button>
 
   <button id="pointsTab">
-    <span>⭐</span>Punkte
+    <span>📋</span>Punkte
   </button>
 
   <button id="mapTab">
@@ -543,18 +934,7 @@ button{border:0;cursor:pointer}
 <script>
 
 /* =========================================================
-   MAUR STRASSENDIENST V16
-   =========================================================
-
-   WICHTIG:
-   KEIN maxBounds
-   KEIN setMaxBounds
-   KEIN maxBoundsViscosity
-
-   Dadurch kann Leaflet beim Zoomen nicht mehr
-   automatisch zurückspringen.
-
-   Maur bleibt optisch durch die Maske begrenzt.
+   MAUR STRASSENDIENST V17
    ========================================================= */
 
 const CENTER = [47.337,8.667];
@@ -582,6 +962,11 @@ const ORTSCHAFTEN = [
   'UESSIKON'
 ];
 
+
+/* =========================================================
+   GLOBALE VARIABLEN
+   ========================================================= */
+
 let map;
 let osm;
 let sat;
@@ -606,10 +991,78 @@ let maurBoundary = null;
 let maurMask = null;
 let ortLayers = [];
 
-let ownMarkers = [];
-let ownPoints = [];
-
 let maurBounds = null;
+
+
+/* =========================================================
+   WERKDIENST
+   ========================================================= */
+
+let workPoints = [];
+let workMarkers = [];
+
+let selectedCategory = 'sonstiges';
+
+let pendingPhoto = '';
+
+const CATEGORY = {
+
+  abfall:{
+    label:'Abfallkübel',
+    icon:'🗑️'
+  },
+
+  schaden:{
+    label:'Schaden',
+    icon:'🚧'
+  },
+
+  schacht:{
+    label:'Schacht',
+    icon:'🕳️'
+  },
+
+  licht:{
+    label:'Beleuchtung',
+    icon:'💡'
+  },
+
+  baum:{
+    label:'Baum / Grün',
+    icon:'🌳'
+  },
+
+  brunnen:{
+    label:'Brunnen',
+    icon:'💧'
+  },
+
+  sonstiges:{
+    label:'Sonstiges',
+    icon:'📍'
+  }
+
+};
+
+
+/* =========================================================
+   GPS-SPUR
+   ========================================================= */
+
+let trackActive = false;
+let trackPoints = [];
+let trackLayer = null;
+
+let trackStartedAt = null;
+let trackDistanceMeters = 0;
+let trackTimer = null;
+
+
+/* =========================================================
+   TOUREN
+   ========================================================= */
+
+let tours = [];
 
 
 /* =========================================================
@@ -660,6 +1113,17 @@ function esc(s){
 }
 
 
+function uid(){
+
+  return Date.now() +
+    '-' +
+    Math.random()
+      .toString(36)
+      .slice(2,9);
+
+}
+
+
 /* =========================================================
    KARTE
    ========================================================= */
@@ -669,11 +1133,6 @@ map = L.map('map',{
   zoomControl:true,
 
   preferCanvas:true,
-
-  /*
-    Kein maxBounds!
-    Dadurch kein Zurückspringen.
-  */
 
   minZoom:8,
 
@@ -689,33 +1148,30 @@ map = L.map('map',{
 );
 
 
-/* ---------------------------------------------------------
-   EIGENE LEAFLET PANES
-   --------------------------------------------------------- */
+/* =========================================================
+   PANES
+   ========================================================= */
 
 map.createPane('maurMaskPane');
-
-map.getPane('maurMaskPane').style.zIndex = 350;
-
+map.getPane('maurMaskPane').style.zIndex=350;
 
 map.createPane('roadPane');
-
-map.getPane('roadPane').style.zIndex = 450;
-
+map.getPane('roadPane').style.zIndex=450;
 
 map.createPane('labelPane');
-
-map.getPane('labelPane').style.zIndex = 500;
-
+map.getPane('labelPane').style.zIndex=500;
 
 map.createPane('ortPane');
-
-map.getPane('ortPane').style.zIndex = 600;
-
+map.getPane('ortPane').style.zIndex=600;
 
 map.createPane('boundaryPane');
+map.getPane('boundaryPane').style.zIndex=700;
 
-map.getPane('boundaryPane').style.zIndex = 700;
+map.createPane('workPane');
+map.getPane('workPane').style.zIndex=750;
+
+map.createPane('gpsTrackPane');
+map.getPane('gpsTrackPane').style.zIndex=760;
 
 
 /* =========================================================
@@ -746,7 +1202,7 @@ sat = L.tileLayer(
 
 
 /* =========================================================
-   OFFIZIELLE SCHWEIZER STRASSENNAMEN
+   SCHWEIZER STRASSENNAMEN
    ========================================================= */
 
 streetNames = L.tileLayer.wms(
@@ -756,29 +1212,23 @@ streetNames = L.tileLayer.wms(
       'ch.swisstopo.amtliches-strassenverzeichnis',
 
     styles:'default',
-
     format:'image/png',
-
     transparent:true,
-
     version:'1.3.0',
-
     opacity:1,
-
     pane:'labelPane',
 
     attribution:
       '© swisstopo / geo.admin.ch',
 
     minZoom:14,
-
     maxZoom:20
   }
 ).addTo(map);
 
 
 /* =========================================================
-   OFFIZIELLE SCHWEIZER HAUSNUMMERN
+   SCHWEIZER HAUSNUMMERN
    ========================================================= */
 
 houseNumbers = L.tileLayer.wms(
@@ -788,22 +1238,16 @@ houseNumbers = L.tileLayer.wms(
       'ch.swisstopo.amtliches-gebaeudeadressverzeichnis',
 
     styles:'default',
-
     format:'image/png',
-
     transparent:true,
-
     version:'1.3.0',
-
     opacity:1,
-
     pane:'labelPane',
 
     attribution:
       '© swisstopo / geo.admin.ch',
 
     minZoom:16,
-
     maxZoom:20
   }
 ).addTo(map);
@@ -815,25 +1259,31 @@ houseNumbers = L.tileLayer.wms(
 
 map.whenReady(async()=>{
 
+  loadWorkData();
+
+  loadTours();
+
   await loadMaurOnly();
 
   startGPS();
 
   restoreSettings();
 
-  loadPoints();
+  renderWorkPoints();
 
-  renderPoints();
+  updateDashboard();
+
+  renderTours();
 
   toast(
-    'Maur Strassendienst V16 geladen.'
+    'Maur Strassendienst V17 geladen.'
   );
 
 });
 
 
 /* =========================================================
-   GEMEINDE MAUR LADEN
+   GEMEINDE MAUR
    ========================================================= */
 
 async function loadMaurOnly(){
@@ -855,11 +1305,9 @@ async function loadMaurOnly(){
 
 
     if(!r.ok){
-
       throw new Error(
         'WFS '+r.status
       );
-
     }
 
 
@@ -922,10 +1370,6 @@ async function loadMaurOnly(){
     }
 
 
-    /* -----------------------------------------------------
-       GEMEINDEGRENZE
-       ----------------------------------------------------- */
-
     maurBoundary =
       L.geoJSON(
         maurFeature,
@@ -948,16 +1392,6 @@ async function loadMaurOnly(){
       maurBoundary.getBounds();
 
 
-    /* -----------------------------------------------------
-       ERSTE ANSICHT
-       -----------------------------------------------------
-
-       fitBounds wird NUR EINMAL beim Laden benutzt.
-
-       Beim späteren Zoomen wird fitBounds NICHT mehr
-       automatisch aufgerufen.
-       ----------------------------------------------------- */
-
     map.fitBounds(
       maurBounds.pad(.06),
       {
@@ -966,30 +1400,16 @@ async function loadMaurOnly(){
     );
 
 
-    /* -----------------------------------------------------
-       MASKE
-       ----------------------------------------------------- */
-
     createMaurMask(
       maurFeature.geometry
     );
 
-
-    /* -----------------------------------------------------
-       ORTSCHAFTEN
-       ----------------------------------------------------- */
 
     await loadOrtschaftsgrenzen();
 
 
     status(
       'ONLINE • NUR GEMEINDE MAUR'
-    );
-
-
-    toast(
-      'Gemeinde Maur geladen',
-      2500
     );
 
 
@@ -1016,52 +1436,34 @@ async function loadMaurOnly(){
 
 
 /* =========================================================
-   MASKE AUSSERHALB MAUR
+   MASKE
    ========================================================= */
 
 function createMaurMask(geometry){
 
   if(maurMask){
-
-    map.removeLayer(
-      maurMask
-    );
-
+    map.removeLayer(maurMask);
   }
 
 
   if(!geometry){
-
     return;
-
   }
 
-
-  /*
-    Welt-Aussenring.
-  */
 
   const world = [
 
     [90,-180],
-
     [90,180],
-
     [-90,180],
-
     [-90,-180],
-
     [90,-180]
 
   ];
 
 
-  const rings = [];
+  const rings=[];
 
-
-  /*
-    POLYGON
-  */
 
   if(
     geometry.type === 'Polygon'
@@ -1074,10 +1476,7 @@ function createMaurMask(geometry){
     coords.forEach(
       ring=>{
 
-        if(
-          ring &&
-          ring.length
-        ){
+        if(ring && ring.length){
 
           rings.push(
             ring.map(
@@ -1095,10 +1494,6 @@ function createMaurMask(geometry){
 
   }
 
-
-  /*
-    MULTIPOLYGON
-  */
 
   if(
     geometry.type === 'MultiPolygon'
@@ -1119,10 +1514,7 @@ function createMaurMask(geometry){
         poly.forEach(
           ring=>{
 
-            if(
-              ring &&
-              ring.length
-            ){
+            if(ring && ring.length){
 
               rings.push(
                 ring.map(
@@ -1143,13 +1535,6 @@ function createMaurMask(geometry){
 
   }
 
-
-  /*
-    Welt + Maur-Ringe.
-
-    fillRule evenodd sorgt dafür,
-    dass Maur als Loch sichtbar bleibt.
-  */
 
   maurMask =
     L.polygon(
@@ -1178,7 +1563,7 @@ function createMaurMask(geometry){
 
 
 /* =========================================================
-   ORTSCHAFTSGRENZEN
+   ORTSCHAFTEN
    ========================================================= */
 
 async function loadOrtschaftsgrenzen(){
@@ -1221,8 +1606,7 @@ async function loadOrtschaftsgrenzen(){
           url,
           {
             headers:{
-              Accept:
-                'application/json'
+              Accept:'application/json'
             }
           }
         );
@@ -1242,8 +1626,7 @@ async function loadOrtschaftsgrenzen(){
       }
 
 
-      const x =
-        data[0];
+      const x=data[0];
 
 
       if(!x.geojson){
@@ -1281,8 +1664,7 @@ async function loadOrtschaftsgrenzen(){
               {
                 sticky:true,
                 direction:'center',
-                className:
-                  'maur-label'
+                className:'maur-label'
               }
             );
 
@@ -1294,17 +1676,12 @@ async function loadOrtschaftsgrenzen(){
 
       layer.addTo(map);
 
-      ortLayers.push(
-        layer
-      );
+      ortLayers.push(layer);
 
 
       await new Promise(
         resolve=>
-          setTimeout(
-            resolve,
-            800
-          )
+          setTimeout(resolve,800)
       );
 
 
@@ -1335,9 +1712,7 @@ function changeView(v){
 
 
   document
-    .querySelectorAll(
-      '[data-view]'
-    )
+    .querySelectorAll('[data-view]')
     .forEach(
       b=>{
         b.classList.toggle(
@@ -1363,10 +1738,7 @@ function changeView(v){
 
   }
 
-
-  else if(
-    v==='satellite'
-  ){
+  else if(v==='satellite'){
 
     if(map.hasLayer(osm)){
       map.removeLayer(osm);
@@ -1378,7 +1750,6 @@ function changeView(v){
     }
 
   }
-
 
   else{
 
@@ -1453,7 +1824,7 @@ function restoreSettings(){
 
 
 /* =========================================================
-   GEMEINDEGRENZE
+   GRENZE
    ========================================================= */
 
 function toggleBorders(){
@@ -1491,7 +1862,7 @@ function toggleBorders(){
 
 
 /* =========================================================
-   STRASSENNAMEN / HAUSNUMMERN
+   LABELS
    ========================================================= */
 
 function toggleMapLabels(){
@@ -1522,24 +1893,14 @@ function toggleMapLabels(){
 
   if(streets){
 
-    if(!map.hasLayer(
-      streetNames
-    )){
-
+    if(!map.hasLayer(streetNames)){
       streetNames.addTo(map);
-
     }
 
   }else{
 
-    if(map.hasLayer(
-      streetNames
-    )){
-
-      map.removeLayer(
-        streetNames
-      );
-
+    if(map.hasLayer(streetNames)){
+      map.removeLayer(streetNames);
     }
 
   }
@@ -1547,24 +1908,14 @@ function toggleMapLabels(){
 
   if(houses){
 
-    if(!map.hasLayer(
-      houseNumbers
-    )){
-
+    if(!map.hasLayer(houseNumbers)){
       houseNumbers.addTo(map);
-
     }
 
   }else{
 
-    if(map.hasLayer(
-      houseNumbers
-    )){
-
-      map.removeLayer(
-        houseNumbers
-      );
-
+    if(map.hasLayer(houseNumbers)){
+      map.removeLayer(houseNumbers);
     }
 
   }
@@ -1573,7 +1924,7 @@ function toggleMapLabels(){
 
 
 /* =========================================================
-   OPTIONALE EINSTELLUNGEN
+   OPTIONEN
    ========================================================= */
 
 function toggleOptional(){
@@ -1648,7 +1999,7 @@ function startGPS(){
 
 function updateGPS(p){
 
-  currentPosition = {
+  currentPosition={
 
     lat:p.coords.latitude,
 
@@ -1677,30 +2028,37 @@ function updateGPS(p){
   if(!userMarker){
 
     userMarker =
-      L.circleMarker(
+      L.marker(
         ll,
         {
-          radius:8,
-          color:'#fff',
-          weight:3,
-          fillColor:'#2563eb',
-          fillOpacity:1
+          icon:L.divIcon({
+            className:'',
+            html:'<div class="gps-icon"></div>',
+            iconSize:[18,18],
+            iconAnchor:[9,9]
+          }),
+          zIndexOffset:1000
         }
       ).addTo(map);
 
   }else{
 
-    userMarker.setLatLng(
-      ll
-    );
+    userMarker.setLatLng(ll);
 
   }
 
 
-  /*
-    Nur wenn FOLLOW aktiv,
-    darf GPS die Karte bewegen.
-  */
+  /* GPS-SPUR */
+
+  if(trackActive){
+
+    addTrackPoint(
+      currentPosition.lat,
+      currentPosition.lng
+    );
+
+  }
+
 
   if(
     followEnabled &&
@@ -1728,9 +2086,7 @@ function updateGPS(p){
     Date.now()-lastReroute>10000
   ){
 
-    lastReroute =
-      Date.now();
-
+    lastReroute=Date.now();
 
     routeTo(
       destination,
@@ -1786,16 +2142,10 @@ function goToLocation(){
    ========================================================= */
 
 const search =
-  document.getElementById(
-    'search'
-  );
-
+  document.getElementById('search');
 
 const results =
-  document.getElementById(
-    'results'
-  );
-
+  document.getElementById('results');
 
 let timer;
 
@@ -1830,10 +2180,6 @@ search.addEventListener(
 );
 
 
-/* =========================================================
-   ADRESSSUCHE
-   ========================================================= */
-
 async function doSearch(q){
 
   results.innerHTML =
@@ -1843,10 +2189,10 @@ async function doSearch(q){
   try{
 
     const url =
-      NOMINATIM +
-      '?format=jsonv2' +
-      '&limit=8' +
-      '&countrycodes=ch' +
+      NOMINATIM+
+      '?format=jsonv2'+
+      '&limit=8'+
+      '&countrycodes=ch'+
       '&q='+
       encodeURIComponent(
         q+
@@ -1859,8 +2205,7 @@ async function doSearch(q){
         url,
         {
           headers:{
-            Accept:
-              'application/json'
+            Accept:'application/json'
           }
         }
       );
@@ -1899,9 +2244,7 @@ async function doSearch(q){
           </b>
 
           <small>
-            ${esc(
-              x.display_name
-            )}
+            ${esc(x.display_name)}
           </small>
 
         </div>
@@ -1910,26 +2253,21 @@ async function doSearch(q){
       ).join('');
 
 
-    [
-      ...results.children
-    ].forEach(
-      (e,i)=>{
+    [...results.children]
+      .forEach(
+        (e,i)=>{
 
-        e.onclick =
-          ()=>{
-            selectSearch(
-              d[i]
-            );
+          e.onclick=()=>{
+            selectSearch(d[i]);
           };
 
-      }
-    );
+        }
+      );
 
 
   }catch(e){
 
     console.warn(e);
-
 
     results.innerHTML =
       '<div class="result">Suche nicht verfügbar.</div>';
@@ -1940,17 +2278,14 @@ async function doSearch(q){
 
 
 /* =========================================================
-   SUCHERGEBNIS
+   SUCHE AUSWÄHLEN
    ========================================================= */
 
 function selectSearch(x){
 
   const c=[
-
     Number(x.lat),
-
     Number(x.lon)
-
   ];
 
 
@@ -1990,11 +2325,7 @@ function selectSearch(x){
 
 
   if(destMarker){
-
-    map.removeLayer(
-      destMarker
-    );
-
+    map.removeLayer(destMarker);
   }
 
 
@@ -2040,11 +2371,8 @@ async function routeTo(
 
 
   const from=[
-
     currentPosition.lng,
-
     currentPosition.lat
-
   ];
 
 
@@ -2065,11 +2393,7 @@ async function routeTo(
 
 
     if(!r.ok){
-
-      throw Error(
-        r.status
-      );
-
+      throw Error(r.status);
     }
 
 
@@ -2078,11 +2402,7 @@ async function routeTo(
 
 
     if(!d.routes?.length){
-
-      throw Error(
-        'Keine Route'
-      );
-
+      throw Error('Keine Route');
     }
 
 
@@ -2091,11 +2411,7 @@ async function routeTo(
 
 
     if(routeLayer){
-
-      map.removeLayer(
-        routeLayer
-      );
-
+      map.removeLayer(routeLayer);
     }
 
 
@@ -2122,16 +2438,8 @@ async function routeTo(
       map.fitBounds(
         routeLayer.getBounds(),
         {
-          paddingTopLeft:[
-            30,
-            90
-          ],
-
-          paddingBottomRight:[
-            30,
-            150
-          ],
-
+          paddingTopLeft:[30,90],
+          paddingBottomRight:[30,150],
           maxZoom:16
         }
       );
@@ -2140,18 +2448,12 @@ async function routeTo(
 
 
     document
-      .getElementById(
-        'navInfo'
-      )
-      .classList.add(
-        'show'
-      );
+      .getElementById('navInfo')
+      .classList.add('show');
 
 
     document
-      .getElementById(
-        'navMain'
-      )
+      .getElementById('navMain')
       .textContent =
         'Route: '+
         fmtDist(rt.distance)+
@@ -2160,9 +2462,7 @@ async function routeTo(
 
 
     document
-      .getElementById(
-        'navSub'
-      )
+      .getElementById('navSub')
       .textContent =
         'Ziel wird angefahren';
 
@@ -2197,10 +2497,6 @@ async function routeTo(
 }
 
 
-/* =========================================================
-   DISTANZ / ZEIT
-   ========================================================= */
-
 function fmtDist(m){
 
   return m<1000
@@ -2213,9 +2509,7 @@ function fmtDist(m){
 function fmtTime(s){
 
   const m =
-    Math.round(
-      s/60
-    );
+    Math.round(s/60);
 
 
   return m<60
@@ -2240,11 +2534,7 @@ function stopNav(){
 
 
   if(routeLayer){
-
-    map.removeLayer(
-      routeLayer
-    );
-
+    map.removeLayer(routeLayer);
   }
 
 
@@ -2252,19 +2542,13 @@ function stopNav(){
 
 
   document
-    .getElementById(
-      'navInfo'
-    )
-    .classList.remove(
-      'show'
-    );
+    .getElementById('navInfo')
+    .classList.remove('show');
 
 
   if(destMarker){
 
-    map.removeLayer(
-      destMarker
-    );
+    map.removeLayer(destMarker);
 
     destMarker=null;
 
@@ -2288,9 +2572,7 @@ function speak(text){
     !voiceEnabled ||
     !window.speechSynthesis
   ){
-
     return;
-
   }
 
 
@@ -2298,31 +2580,24 @@ function speak(text){
 
 
   const u =
-    new SpeechSynthesisUtterance(
-      text
-    );
+    new SpeechSynthesisUtterance(text);
 
 
   u.lang='de-CH';
 
 
-  speechSynthesis.speak(
-    u
-  );
+  speechSynthesis.speak(u);
 
 }
 
 
 function toggleVoice(){
 
-  voiceEnabled =
-    !voiceEnabled;
+  voiceEnabled=!voiceEnabled;
 
 
   const b =
-    document.getElementById(
-      'voiceBtn'
-    );
+    document.getElementById('voiceBtn');
 
 
   b.textContent =
@@ -2372,11 +2647,8 @@ function setFollow(on){
   ){
 
     const ll=[
-
       currentPosition.lat,
-
       currentPosition.lng
-
     ];
 
 
@@ -2407,8 +2679,7 @@ function toggleFollow(){
 
 
 /* =========================================================
-   WENN KARTE BEWEGT WIRD:
-   FOLLOW AUS
+   MANUELLES KARTENBEWEGEN
    ========================================================= */
 
 map.on(
@@ -2429,43 +2700,45 @@ map.on(
 
 
 /* =========================================================
-   EIGENE PUNKTE
+   WERKDIENST-DATEN LADEN
    ========================================================= */
 
-function loadPoints(){
+function loadWorkData(){
 
   try{
 
-    ownPoints =
+    workPoints =
       JSON.parse(
         localStorage.getItem(
-          'maurOwnPointsV16'
+          'maurWorkPointsV17'
         ) ||
         '[]'
       );
 
   }catch(e){
 
-    ownPoints=[];
+    workPoints=[];
 
   }
 
 }
 
 
-function savePoints(){
+function saveWorkData(){
 
   localStorage.setItem(
-    'maurOwnPointsV16',
-    JSON.stringify(
-      ownPoints
-    )
+    'maurWorkPointsV17',
+    JSON.stringify(workPoints)
   );
 
 }
 
 
-function addPoint(){
+/* =========================================================
+   WERKDIENST PUNKT ERSTELLEN
+   ========================================================= */
+
+function openNewWorkPoint(category='sonstiges'){
 
   if(!currentPosition){
 
@@ -2487,7 +2760,7 @@ function addPoint(){
   ){
 
     toast(
-      'Der Standort liegt ausserhalb Maur.'
+      'Der Standort liegt ausserhalb von Maur.'
     );
 
     return;
@@ -2495,63 +2768,349 @@ function addPoint(){
   }
 
 
-  const n =
-    prompt(
-      'Name für den Punkt:',
-      'Punkt '+
-      (ownPoints.length+1)
-    );
+  selectedCategory=category;
 
 
-  if(!n){
-    return;
-  }
+  document.getElementById(
+    'pointCategory'
+  ).value=category;
 
 
-  ownPoints.push({
-
-    id:Date.now(),
-
-    name:n,
-
-    lat:currentPosition.lat,
-
-    lng:currentPosition.lng
-
-  });
+  document.getElementById(
+    'pointName'
+  ).value =
+    CATEGORY[category].label;
 
 
-  savePoints();
-
-  renderPoints();
-
-  updatePointsList();
+  document.getElementById(
+    'pointNote'
+  ).value='';
 
 
-  toast(
-    'Punkt gespeichert.'
+  document.getElementById(
+    'pointPhoto'
+  ).value='';
+
+
+  pendingPhoto='';
+
+
+  document.getElementById(
+    'photoPreview'
+  ).style.display='none';
+
+
+  openPanel(
+    'workPointPanel'
   );
 
 }
 
 
 /* =========================================================
-   PUNKTE ANZEIGEN
+   FOTO
    ========================================================= */
 
-function renderPoints(){
+document.getElementById(
+  'pointPhoto'
+).addEventListener(
+  'change',
+  e=>{
 
-  ownMarkers.forEach(
+    const file =
+      e.target.files?.[0];
+
+
+    if(!file){
+      return;
+    }
+
+
+    const reader =
+      new FileReader();
+
+
+    reader.onload=()=>{
+
+      pendingPhoto =
+        reader.result;
+
+
+      const img =
+        document.getElementById(
+          'photoPreview'
+        );
+
+
+      img.src=pendingPhoto;
+
+      img.style.display='block';
+
+    };
+
+
+    reader.readAsDataURL(file);
+
+  }
+);
+
+
+/* =========================================================
+   PUNKT SPEICHERN
+   ========================================================= */
+
+function saveWorkPoint(){
+
+  if(!currentPosition){
+
+    toast(
+      'GPS wird noch gesucht.'
+    );
+
+    return;
+
+  }
+
+
+  const category =
+    document.getElementById(
+      'pointCategory'
+    ).value;
+
+
+  const name =
+    document.getElementById(
+      'pointName'
+    ).value.trim();
+
+
+  const note =
+    document.getElementById(
+      'pointNote'
+    ).value.trim();
+
+
+  if(!name){
+
+    toast(
+      'Bitte eine Bezeichnung eingeben.'
+    );
+
+    return;
+
+  }
+
+
+  const point={
+
+    id:uid(),
+
+    category,
+
+    name,
+
+    note,
+
+    lat:currentPosition.lat,
+
+    lng:currentPosition.lng,
+
+    accuracy:currentPosition.accuracy,
+
+    photo:pendingPhoto || '',
+
+    done:false,
+
+    createdAt:new Date().toISOString(),
+
+    doneAt:null
+
+  };
+
+
+  workPoints.push(point);
+
+  saveWorkData();
+
+  renderWorkPoints();
+
+  updateDashboard();
+
+  closePanels();
+
+
+  toast(
+    CATEGORY[category].icon+
+    ' Punkt gespeichert.'
+  );
+
+}
+
+
+/* =========================================================
+   MARKER ERSTELLEN
+   ========================================================= */
+
+function createWorkMarker(p){
+
+  const cat =
+    CATEGORY[p.category] ||
+    CATEGORY.sonstiges;
+
+
+  const icon =
+    L.divIcon({
+
+      className:'',
+
+      html:
+        '<div class="work-icon '+
+        (p.done?'done':'')+
+        '">'+
+        cat.icon+
+        '</div>',
+
+      iconSize:[34,34],
+
+      iconAnchor:[17,17],
+
+      popupAnchor:[0,-17]
+
+    });
+
+
+  const marker =
+    L.marker(
+      [p.lat,p.lng],
+      {
+        icon,
+        pane:'workPane'
+      }
+    );
+
+
+  const photoHtml =
+    p.photo
+      ? `
+        <img
+          src="${p.photo}"
+          style="
+            width:100%;
+            max-height:160px;
+            object-fit:cover;
+            border-radius:10px;
+            margin-top:8px
+          "
+        >
+      `
+      : '';
+
+
+  marker.bindPopup(`
+
+    <div style="min-width:220px">
+
+      <b>
+        ${cat.icon}
+        ${esc(p.name)}
+      </b>
+
+      <div style="
+        margin-top:5px;
+        color:#6b7280;
+        font-size:12px
+      ">
+        ${esc(cat.label)}
+      </div>
+
+      ${
+        p.note
+        ? `
+          <div style="margin-top:8px">
+            ${esc(p.note)}
+          </div>
+        `
+        : ''
+      }
+
+      ${
+        p.done
+        ? `
+          <div style="
+            margin-top:8px;
+            color:#166534;
+            font-weight:700
+          ">
+            ✅ Erledigt
+          </div>
+        `
+        : ''
+      }
+
+      ${photoHtml}
+
+      <div style="
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:6px;
+        margin-top:10px
+      ">
+
+        <button
+          onclick="navigateToWorkPoint('${p.id}')"
+          style="
+            padding:8px;
+            border-radius:8px;
+            background:#2563eb;
+            color:white
+          "
+        >
+          🧭 Navi
+        </button>
+
+        <button
+          onclick="toggleWorkDone('${p.id}')"
+          style="
+            padding:8px;
+            border-radius:8px;
+            background:#16a34a;
+            color:white
+          "
+        >
+          ${p.done?'↩️ Offen':'✅ Erledigt'}
+        </button>
+
+      </div>
+
+    </div>
+
+  `);
+
+
+  return marker;
+
+}
+
+
+/* =========================================================
+   WERKDIENST MARKER RENDERN
+   ========================================================= */
+
+function renderWorkPoints(){
+
+  workMarkers.forEach(
     m=>{
-      map.removeLayer(m);
+      if(map.hasLayer(m)){
+        map.removeLayer(m);
+      }
     }
   );
 
 
-  ownMarkers=[];
+  workMarkers=[];
 
 
-  ownPoints.forEach(
+  workPoints.forEach(
     p=>{
 
       if(
@@ -2561,27 +3120,288 @@ function renderPoints(){
           p.lng
         ])
       ){
-
         return;
-
       }
 
 
-      ownMarkers.push(
+      const marker =
+        createWorkMarker(p);
 
-        L.marker([
-          p.lat,
-          p.lng
-        ])
-        .addTo(map)
-        .bindTooltip(
-          p.name
-        )
 
-      );
+      marker.addTo(map);
+
+      workMarkers.push(marker);
 
     }
   );
+
+}
+
+
+/* =========================================================
+   PUNKT ERLEDIGT
+   ========================================================= */
+
+function toggleWorkDone(id){
+
+  const p =
+    workPoints.find(
+      x=>x.id===id
+    );
+
+
+  if(!p){
+    return;
+  }
+
+
+  p.done=!p.done;
+
+
+  p.doneAt =
+    p.done
+      ? new Date().toISOString()
+      : null;
+
+
+  saveWorkData();
+
+  renderWorkPoints();
+
+  updateDashboard();
+
+  updatePointsList();
+
+  toast(
+    p.done
+      ? 'Punkt als erledigt markiert.'
+      : 'Punkt wieder geöffnet.'
+  );
+
+}
+
+
+/* =========================================================
+   PUNKT LÖSCHEN
+   ========================================================= */
+
+function deleteWorkPoint(id){
+
+  const p =
+    workPoints.find(
+      x=>x.id===id
+    );
+
+
+  if(!p){
+    return;
+  }
+
+
+  if(
+    !confirm(
+      'Diesen Werkdienst-Punkt wirklich löschen?'
+    )
+  ){
+    return;
+  }
+
+
+  workPoints =
+    workPoints.filter(
+      x=>x.id!==id
+    );
+
+
+  saveWorkData();
+
+  renderWorkPoints();
+
+  updateDashboard();
+
+  updatePointsList();
+
+  toast(
+    'Punkt gelöscht.'
+  );
+
+}
+
+
+/* =========================================================
+   PUNKT ANZEIGEN
+   ========================================================= */
+
+function showWorkPoint(id){
+
+  const p =
+    workPoints.find(
+      x=>x.id===id
+    );
+
+
+  if(!p){
+    return;
+  }
+
+
+  closePanels();
+
+
+  map.setView(
+    [p.lat,p.lng],
+    17
+  );
+
+
+  const marker =
+    workMarkers.find(
+      m=>
+        m.getLatLng().lat===p.lat &&
+        m.getLatLng().lng===p.lng
+    );
+
+
+  if(marker){
+    marker.openPopup();
+  }
+
+}
+
+
+/* =========================================================
+   NAVIGATION ZUM WERKDIENST-PUNKT
+   ========================================================= */
+
+function navigateToWorkPoint(id){
+
+  const p =
+    workPoints.find(
+      x=>x.id===id
+    );
+
+
+  if(!p){
+    return;
+  }
+
+
+  destination=[
+    p.lng,
+    p.lat
+  ];
+
+
+  if(destMarker){
+    map.removeLayer(destMarker);
+  }
+
+
+  destMarker =
+    L.marker([
+      p.lat,
+      p.lng
+    ])
+    .addTo(map)
+    .bindPopup(
+      CATEGORY[p.category].icon+
+      ' '+
+      p.name
+    );
+
+
+  closePanels();
+
+  routeTo(
+    destination,
+    true
+  );
+
+}
+
+
+/* =========================================================
+   DASHBOARD
+   ========================================================= */
+
+function updateDashboard(){
+
+  const total =
+    workPoints.length;
+
+
+  const done =
+    workPoints.filter(
+      p=>p.done
+    ).length;
+
+
+  const open =
+    total-done;
+
+
+  const progress =
+    total
+      ? Math.round(
+          done/total*100
+        )
+      : 0;
+
+
+  document.getElementById(
+    'dashTotal'
+  ).textContent=total;
+
+
+  document.getElementById(
+    'dashDone'
+  ).textContent=done;
+
+
+  document.getElementById(
+    'dashOpen'
+  ).textContent=open;
+
+
+  document.getElementById(
+    'dashKm'
+  ).textContent=
+    (trackDistanceMeters/1000)
+      .toFixed(1);
+
+
+  document.getElementById(
+    'dashProgress'
+  ).style.width=
+    progress+'%';
+
+
+  document.getElementById(
+    'pointsTotal'
+  ).textContent=total;
+
+
+  document.getElementById(
+    'pointsOpen'
+  ).textContent=open;
+
+
+  document.getElementById(
+    'pointsDone'
+  ).textContent=done;
+
+
+  document.getElementById(
+    'pointsCategoryCount'
+  ).textContent=
+    new Set(
+      workPoints.map(
+        p=>p.category
+      )
+    ).size;
+
+
+  updatePointsList();
 
 }
 
@@ -2598,10 +3418,625 @@ function updatePointsList(){
     );
 
 
-  if(!ownPoints.length){
+  if(!workPoints.length){
 
     e.innerHTML =
-      '<p class="hint">Noch keine eigenen Punkte gespeichert.</p>';
+      `
+        <p class="hint">
+          Noch keine Werkdienst-Punkte vorhanden.
+        </p>
+      `;
+
+    return;
+
+  }
+
+
+  const sorted =
+    [...workPoints].sort(
+      (a,b)=>
+        Number(a.done)-
+        Number(b.done)
+    );
+
+
+  e.innerHTML =
+    sorted.map(
+      p=>{
+
+        const cat =
+          CATEGORY[p.category] ||
+          CATEGORY.sonstiges;
+
+
+        return `
+
+        <div class="point-item">
+
+          <div class="point-title">
+
+            <div>
+
+              <b>
+                ${cat.icon}
+                ${esc(p.name)}
+              </b>
+
+              <div class="hint">
+                ${esc(cat.label)}
+              </div>
+
+            </div>
+
+            <span class="
+              point-badge
+              ${p.done?'point-done':''}
+            ">
+              ${p.done?'ERLEDIGT':'OFFEN'}
+            </span>
+
+          </div>
+
+          ${
+            p.note
+              ? `
+                <div class="hint"
+                  style="margin-top:5px">
+                  ${esc(p.note)}
+                </div>
+              `
+              : ''
+          }
+
+          <div class="hint">
+            ${p.lat.toFixed(5)},
+            ${p.lng.toFixed(5)}
+          </div>
+
+          <div class="point-actions">
+
+            <button
+              class="smallbtn"
+              onclick="showWorkPoint('${p.id}')"
+            >
+              📍 Anzeigen
+            </button>
+
+            <button
+              class="smallbtn"
+              onclick="navigateToWorkPoint('${p.id}')"
+            >
+              🧭 Navi
+            </button>
+
+            <button
+              class="smallbtn ${
+                p.done
+                  ? ''
+                  : 'green'
+              }"
+              onclick="toggleWorkDone('${p.id}')"
+            >
+              ${
+                p.done
+                  ? '↩️ Offen'
+                  : '✅ Erledigt'
+              }
+            </button>
+
+          </div>
+
+          <div class="point-actions">
+
+            ${
+              p.photo
+                ? `
+                  <button
+                    class="smallbtn"
+                    onclick="showPhoto('${p.id}')"
+                  >
+                    📸 Foto
+                  </button>
+                `
+                : ''
+            }
+
+            <button
+              class="smallbtn danger"
+              onclick="deleteWorkPoint('${p.id}')"
+            >
+              🗑️ Löschen
+            </button>
+
+          </div>
+
+        </div>
+
+        `;
+
+      }
+    ).join('');
+
+}
+
+
+/* =========================================================
+   FOTO ANZEIGEN
+   ========================================================= */
+
+function showPhoto(id){
+
+  const p =
+    workPoints.find(
+      x=>x.id===id
+    );
+
+
+  if(!p || !p.photo){
+    return;
+  }
+
+
+  const win =
+    window.open();
+
+
+  if(win){
+
+    win.document.write(
+      `
+        <title>${esc(p.name)}</title>
+
+        <body style="
+          margin:0;
+          background:#111;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          min-height:100vh
+        ">
+
+          <img
+            src="${p.photo}"
+            style="
+              max-width:100%;
+              max-height:100vh;
+              object-fit:contain
+            "
+          >
+
+        </body>
+      `
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   GPS-SPUR START
+   ========================================================= */
+
+function startTrack(){
+
+  if(trackActive){
+
+    stopTrack();
+
+    return;
+
+  }
+
+
+  if(!currentPosition){
+
+    toast(
+      'GPS wird noch gesucht.'
+    );
+
+    return;
+
+  }
+
+
+  trackActive=true;
+
+  trackPoints=[];
+
+  trackDistanceMeters=0;
+
+  trackStartedAt=Date.now();
+
+
+  if(trackLayer){
+
+    map.removeLayer(trackLayer);
+
+  }
+
+
+  trackLayer =
+    L.polyline(
+      [],
+      {
+        pane:'gpsTrackPane',
+
+        color:'#dc2626',
+
+        weight:6,
+
+        opacity:.9
+      }
+    ).addTo(map);
+
+
+  addTrackPoint(
+    currentPosition.lat,
+    currentPosition.lng
+  );
+
+
+  document.getElementById(
+    'trackBtn'
+  ).textContent =
+    '⏹️ GPS-Spur stoppen';
+
+
+  document.getElementById(
+    'trackStatus'
+  ).textContent =
+    'Aktiv';
+
+
+  trackTimer =
+    setInterval(
+      updateTrackUI,
+      1000
+    );
+
+
+  toast(
+    'GPS-Spur gestartet.'
+  );
+
+}
+
+
+/* =========================================================
+   GPS-SPUR STOPP
+   ========================================================= */
+
+function stopTrack(){
+
+  trackActive=false;
+
+
+  clearInterval(
+    trackTimer
+  );
+
+
+  trackTimer=null;
+
+
+  document.getElementById(
+    'trackBtn'
+  ).textContent =
+    '▶️ GPS-Spur starten';
+
+
+  document.getElementById(
+    'trackStatus'
+  ).textContent =
+    'Nicht aktiv';
+
+
+  updateTrackUI();
+
+
+  toast(
+    'GPS-Spur beendet.'
+  );
+
+}
+
+
+/* =========================================================
+   TRACK PUNKT
+   ========================================================= */
+
+function addTrackPoint(lat,lng){
+
+  if(!trackActive){
+    return;
+  }
+
+
+  const last =
+    trackPoints[
+      trackPoints.length-1
+    ];
+
+
+  if(last){
+
+    const d =
+      distanceBetween(
+        last[0],
+        last[1],
+        lat,
+        lng
+      );
+
+
+    /*
+      GPS-Sprünge ignorieren.
+    */
+
+    if(
+      d>0 &&
+      d<500
+    ){
+
+      trackDistanceMeters+=d;
+
+    }
+
+  }
+
+
+  trackPoints.push([
+    lat,
+    lng
+  ]);
+
+
+  if(trackLayer){
+
+    trackLayer.setLatLngs(
+      trackPoints
+    );
+
+  }
+
+
+  updateTrackUI();
+
+}
+
+
+/* =========================================================
+   ENTFERNUNG
+   ========================================================= */
+
+function distanceBetween(
+  lat1,
+  lon1,
+  lat2,
+  lon2
+){
+
+  const R=6371000;
+
+  const p1=
+    lat1*Math.PI/180;
+
+  const p2=
+    lat2*Math.PI/180;
+
+  const dp=
+    (lat2-lat1)*Math.PI/180;
+
+  const dl=
+    (lon2-lon1)*Math.PI/180;
+
+
+  const a =
+    Math.sin(dp/2)**2+
+    Math.cos(p1)*
+    Math.cos(p2)*
+    Math.sin(dl/2)**2;
+
+
+  return 2*
+    R*
+    Math.atan2(
+      Math.sqrt(a),
+      Math.sqrt(1-a)
+    );
+
+}
+
+
+/* =========================================================
+   TRACK UI
+   ========================================================= */
+
+function updateTrackUI(){
+
+  const seconds =
+    trackStartedAt
+      ? Math.floor(
+          (Date.now()-
+          trackStartedAt)/1000
+        )
+      : 0;
+
+
+  document.getElementById(
+    'trackTime'
+  ).textContent =
+    formatDuration(seconds);
+
+
+  document.getElementById(
+    'trackDistance'
+  ).textContent =
+    (
+      trackDistanceMeters/1000
+    ).toFixed(2)+
+    ' km';
+
+
+  document.getElementById(
+    'dashKm'
+  ).textContent =
+    (
+      trackDistanceMeters/1000
+    ).toFixed(1);
+
+}
+
+
+function formatDuration(s){
+
+  const h =
+    Math.floor(s/3600);
+
+
+  const m =
+    Math.floor(
+      (s%3600)/60
+    );
+
+
+  const sec =
+    s%60;
+
+
+  return String(h).padStart(2,'0')+
+    ':'+
+    String(m).padStart(2,'0')+
+    ':'+
+    String(sec).padStart(2,'0');
+
+}
+
+
+/* =========================================================
+   TOUR SPEICHERN
+   ========================================================= */
+
+function saveCurrentTour(){
+
+  if(trackPoints.length<2){
+
+    toast(
+      'Noch keine ausreichende GPS-Spur vorhanden.'
+    );
+
+    return;
+
+  }
+
+
+  const name =
+    prompt(
+      'Name der Tour:',
+      'Werkdienst Tour '+
+      new Date().toLocaleDateString(
+        'de-CH'
+      )
+    );
+
+
+  if(!name){
+    return;
+  }
+
+
+  const tour={
+
+    id:uid(),
+
+    name,
+
+    createdAt:
+      new Date().toISOString(),
+
+    distanceMeters:
+      trackDistanceMeters,
+
+    durationSeconds:
+      trackStartedAt
+        ? Math.floor(
+            (Date.now()-
+            trackStartedAt)/1000
+          )
+        : 0,
+
+    points:[
+      ...trackPoints
+    ]
+
+  };
+
+
+  tours.unshift(tour);
+
+  saveTours();
+
+  renderTours();
+
+  toast(
+    'Tour gespeichert.'
+  );
+
+}
+
+
+/* =========================================================
+   TOUREN
+   ========================================================= */
+
+function loadTours(){
+
+  try{
+
+    tours =
+      JSON.parse(
+        localStorage.getItem(
+          'maurToursV17'
+        ) ||
+        '[]'
+      );
+
+  }catch(e){
+
+    tours=[];
+
+  }
+
+}
+
+
+function saveTours(){
+
+  localStorage.setItem(
+    'maurToursV17',
+    JSON.stringify(tours)
+  );
+
+}
+
+
+function renderTours(){
+
+  const e =
+    document.getElementById(
+      'tourList'
+    );
+
+
+  if(!tours.length){
+
+    e.innerHTML =
+      `
+        <p class="hint">
+          Noch keine Touren gespeichert.
+        </p>
+      `;
 
     return;
 
@@ -2609,34 +4044,57 @@ function updatePointsList(){
 
 
   e.innerHTML =
-    ownPoints.map(
-      p=>`
+    tours.map(
+      t=>`
 
-      <div class="point-item">
+      <div class="tour-item">
 
         <b>
-          ${esc(p.name)}
+          🗺️ ${esc(t.name)}
         </b>
 
         <div class="hint">
-          ${p.lat.toFixed(5)},
-          ${p.lng.toFixed(5)}
+          ${
+            new Date(
+              t.createdAt
+            ).toLocaleString(
+              'de-CH'
+            )
+          }
+        </div>
+
+        <div class="hint">
+
+          ${(t.distanceMeters/1000).toFixed(2)}
+          km
+          •
+          ${formatDuration(
+            t.durationSeconds
+          )}
+
         </div>
 
         <div class="point-actions">
 
           <button
-            class="smallbtn primary"
-            onclick="showPoint(${p.id})"
+            class="smallbtn"
+            onclick="showTour('${t.id}')"
           >
-            Anzeigen
+            👁️ Anzeigen
+          </button>
+
+          <button
+            class="smallbtn"
+            onclick="fitTour('${t.id}')"
+          >
+            🔎 Ganze Tour
           </button>
 
           <button
             class="smallbtn danger"
-            onclick="deletePoint(${p.id})"
+            onclick="deleteTour('${t.id}')"
           >
-            Löschen
+            🗑️ Löschen
           </button>
 
         </div>
@@ -2649,48 +4107,116 @@ function updatePointsList(){
 }
 
 
-function showPoint(id){
+/* =========================================================
+   TOUR ANZEIGEN
+   ========================================================= */
 
-  const p =
-    ownPoints.find(
+let displayedTourLayer=null;
+
+
+function showTour(id){
+
+  const t =
+    tours.find(
       x=>x.id===id
     );
 
 
-  if(!p){
+  if(!t){
     return;
   }
 
 
-  closePanels();
+  if(displayedTourLayer){
+
+    map.removeLayer(
+      displayedTourLayer
+    );
+
+  }
 
 
-  map.setView(
-    [p.lat,p.lng],
-    16
+  displayedTourLayer =
+    L.polyline(
+      t.points,
+      {
+        pane:'gpsTrackPane',
+
+        color:'#f97316',
+
+        weight:5,
+
+        opacity:.9
+      }
+    ).addTo(map);
+
+
+  map.fitBounds(
+    displayedTourLayer.getBounds(),
+    {
+      padding:[30,120],
+      maxZoom:16
+    }
   );
 
 
   toast(
-    p.name
+    'Tour angezeigt.'
   );
 
 }
 
 
-function deletePoint(id){
+/* =========================================================
+   TOUR FITTEN
+   ========================================================= */
 
-  ownPoints =
-    ownPoints.filter(
+function fitTour(id){
+
+  const t =
+    tours.find(
+      x=>x.id===id
+    );
+
+
+  if(!t){
+    return;
+  }
+
+
+  showTour(id);
+
+}
+
+
+/* =========================================================
+   TOUR LÖSCHEN
+   ========================================================= */
+
+function deleteTour(id){
+
+  if(
+    !confirm(
+      'Diese Tour wirklich löschen?'
+    )
+  ){
+    return;
+  }
+
+
+  tours =
+    tours.filter(
       x=>x.id!==id
     );
 
 
-  savePoints();
+  saveTours();
 
-  renderPoints();
+  renderTours();
 
-  updatePointsList();
+  toast(
+    'Tour gelöscht.'
+  );
 
 }
 
@@ -2702,30 +4228,31 @@ function deletePoint(id){
 function openPanel(id){
 
   document
-    .querySelectorAll(
-      '.panel'
-    )
+    .querySelectorAll('.panel')
     .forEach(
       x=>{
-        x.classList.remove(
-          'open'
-        );
+        x.classList.remove('open');
       }
     );
 
 
   document
     .getElementById(id)
-    .classList.add(
-      'open'
-    );
+    .classList.add('open');
 
 
   document
-    .getElementById(
-      'searchWrap'
-    )
+    .getElementById('searchWrap')
     .style.display='none';
+
+
+  document
+    .querySelectorAll('.bottom button')
+    .forEach(
+      b=>{
+        b.classList.remove('active');
+      }
+    );
 
 }
 
@@ -2733,32 +4260,24 @@ function openPanel(id){
 function closePanels(){
 
   document
-    .querySelectorAll(
-      '.panel'
-    )
+    .querySelectorAll('.panel')
     .forEach(
       x=>{
-        x.classList.remove(
-          'open'
-        );
+        x.classList.remove('open');
       }
     );
 
 
   document
-    .getElementById(
-      'searchWrap'
-    )
+    .getElementById('searchWrap')
     .style.display='block';
 
 
   setTimeout(
     ()=>{
-
       map.invalidateSize({
         pan:false
       });
-
     },
     100
   );
@@ -2767,15 +4286,13 @@ function closePanels(){
 
 
 /* =========================================================
-   FEHLERMELDUNG
+   FEHLER
    ========================================================= */
 
 function showMapMsg(t){
 
   const e =
-    document.getElementById(
-      'mapmsg'
-    );
+    document.getElementById('mapmsg');
 
 
   e.textContent=t;
@@ -2788,6 +4305,215 @@ function showMapMsg(t){
       e.style.display='none';
     },
     5000
+  );
+
+}
+
+
+/* =========================================================
+   EXPORT
+   ========================================================= */
+
+function exportData(){
+
+  const data={
+
+    app:'Maur Strassendienst',
+
+    version:'V17',
+
+    exportedAt:
+      new Date().toISOString(),
+
+    workPoints,
+
+    tours
+
+  };
+
+
+  const blob =
+    new Blob(
+      [
+        JSON.stringify(
+          data,
+          null,
+          2
+        )
+      ],
+      {
+        type:'application/json'
+      }
+    );
+
+
+  const url =
+    URL.createObjectURL(blob);
+
+
+  const a =
+    document.createElement('a');
+
+
+  a.href=url;
+
+  a.download =
+    'maur-strassendienst-'+
+    new Date()
+      .toISOString()
+      .slice(0,10)+
+    '.json';
+
+
+  document.body.appendChild(a);
+
+  a.click();
+
+  a.remove();
+
+
+  URL.revokeObjectURL(url);
+
+
+  toast(
+    'Werkdienst-Daten exportiert.'
+  );
+
+}
+
+
+/* =========================================================
+   IMPORT
+   ========================================================= */
+
+function importData(){
+
+  document
+    .getElementById('importFile')
+    .click();
+
+}
+
+
+document
+  .getElementById('importFile')
+  .addEventListener(
+    'change',
+    async e=>{
+
+      const file =
+        e.target.files?.[0];
+
+
+      if(!file){
+        return;
+      }
+
+
+      try{
+
+        const text =
+          await file.text();
+
+
+        const data =
+          JSON.parse(text);
+
+
+        if(
+          !Array.isArray(
+            data.workPoints
+          )
+        ){
+
+          throw Error(
+            'Keine Werkdienst-Daten'
+          );
+
+        }
+
+
+        workPoints =
+          data.workPoints;
+
+
+        if(
+          Array.isArray(
+            data.tours
+          )
+        ){
+
+          tours=data.tours;
+
+        }
+
+
+        saveWorkData();
+
+        saveTours();
+
+        renderWorkPoints();
+
+        updateDashboard();
+
+        renderTours();
+
+
+        toast(
+          'Daten erfolgreich importiert.'
+        );
+
+
+      }catch(err){
+
+        console.warn(err);
+
+        toast(
+          'Import konnte nicht gelesen werden.'
+        );
+
+      }
+
+
+      e.target.value='';
+
+    }
+  );
+
+
+/* =========================================================
+   ALLE DATEN LÖSCHEN
+   ========================================================= */
+
+function clearAllData(){
+
+  if(
+    !confirm(
+      'Wirklich ALLE Werkdienst-Punkte und Touren löschen?'
+    )
+  ){
+    return;
+  }
+
+
+  workPoints=[];
+
+  tours=[];
+
+
+  saveWorkData();
+
+  saveTours();
+
+  renderWorkPoints();
+
+  updateDashboard();
+
+  renderTours();
+
+
+  toast(
+    'Alle Werkdienst-Daten gelöscht.'
   );
 
 }
@@ -2812,15 +4538,25 @@ document.getElementById(
 
 
 document.getElementById(
+  'closeDashboard'
+).onclick =
+  closePanels;
+
+
+document.getElementById(
+  'closeWorkPoint'
+).onclick =
+  closePanels;
+
+
+document.getElementById(
   'closePoints'
 ).onclick =
   closePanels;
 
 
 document
-  .querySelectorAll(
-    '[data-view]'
-  )
+  .querySelectorAll('[data-view]')
   .forEach(
     b=>{
       b.onclick =
@@ -2865,18 +4601,43 @@ document.getElementById(
   'locateBtn'
 ).onclick =
   ()=>{
-
     closePanels();
-
     goToLocation();
+  };
 
+
+document.getElementById(
+  'newWorkPointBtn'
+).onclick =
+  ()=>{
+    openNewWorkPoint('sonstiges');
   };
 
 
 document.getElementById(
   'addPointBtn'
 ).onclick =
-  addPoint;
+  ()=>{
+    openNewWorkPoint('sonstiges');
+  };
+
+
+document.getElementById(
+  'saveWorkPointBtn'
+).onclick =
+  saveWorkPoint;
+
+
+document.getElementById(
+  'trackBtn'
+).onclick =
+  startTrack;
+
+
+document.getElementById(
+  'saveTourBtn'
+).onclick =
+  saveCurrentTour;
 
 
 document.getElementById(
@@ -2898,14 +4659,68 @@ document.getElementById(
 
 
 document.getElementById(
+  'exportBtn'
+).onclick =
+  exportData;
+
+
+document.getElementById(
+  'importBtn'
+).onclick =
+  importData;
+
+
+document.getElementById(
+  'clearDataBtn'
+).onclick =
+  clearAllData;
+
+
+/* =========================================================
+   KATEGORIE BUTTONS
+   ========================================================= */
+
+document
+  .querySelectorAll('[data-category]')
+  .forEach(
+    b=>{
+
+      b.onclick =
+        ()=>{
+          openNewWorkPoint(
+            b.dataset.category
+          );
+        };
+
+    }
+  );
+
+
+/* =========================================================
+   BOTTOM NAV
+   ========================================================= */
+
+document.getElementById(
+  'dashboardTab'
+).onclick =
+  ()=>{
+    openPanel(
+      'dashboardPanel'
+    );
+
+    updateDashboard();
+
+    renderTours();
+  };
+
+
+document.getElementById(
   'navTab'
 ).onclick =
   ()=>{
-
     closePanels();
 
     search.focus();
-
   };
 
 
@@ -2913,11 +4728,9 @@ document.getElementById(
   'gpsTab'
 ).onclick =
   ()=>{
-
     closePanels();
 
     goToLocation();
-
   };
 
 
@@ -2925,13 +4738,11 @@ document.getElementById(
   'pointsTab'
 ).onclick =
   ()=>{
-
     openPanel(
       'pointsPanel'
     );
 
     updatePointsList();
-
   };
 
 
@@ -2939,40 +4750,38 @@ document.getElementById(
   'mapTab'
 ).onclick =
   ()=>{
-
     closePanels();
 
     map.invalidateSize({
       pan:false
     });
-
   };
 
 
 /* =========================================================
-   RESIZE / ONLINE
+   RESIZE
    ========================================================= */
 
 window.addEventListener(
   'resize',
   ()=>{
-
     map.invalidateSize({
       pan:false
     });
-
   }
 );
 
 
+/* =========================================================
+   ONLINE / OFFLINE
+   ========================================================= */
+
 window.addEventListener(
   'online',
   ()=>{
-
     status(
       'ONLINE • NUR GEMEINDE MAUR'
     );
-
   }
 );
 
@@ -2980,13 +4789,16 @@ window.addEventListener(
 window.addEventListener(
   'offline',
   ()=>{
-
     status(
       'OFFLINE • NUR GEMEINDE MAUR'
     );
-
   }
 );
+
+
+/* =========================================================
+   ENDE V17
+   ========================================================= */
 
 </script>
 
